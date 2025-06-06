@@ -27,7 +27,11 @@
                     </div>
                 </div>
                 <div class="card-grid">
-                    <div class="card" v-for="(item, index) in secondaryList" :key="index">
+                    <div class="card" 
+                        v-for="(item, index) in secondaryList" 
+                        :key="index"
+                        @click="handleCardClick(item)"
+                    >
                         <div class="card-icon">
                             <el-icon>
                                 <Monitor />
@@ -35,7 +39,7 @@
                         </div>
                         <div class="card-content">
                             <div class="card-title">{{ item.name }}</div>
-                            <div class="card-desc">{{ item.description || '暂无描述' }}</div>
+                            <div class="card-desc">{{ item.description }}</div>
                         </div>
                     </div>
                 </div>
@@ -159,10 +163,45 @@
             <el-button type="primary" @click="handleConfirm">确定</el-button>
         </div>
     </el-dialog>
+
+    <!-- 添加卡片详情弹框 -->
+    <el-dialog
+        v-model="cardDialogVisible"
+        width="700px"
+        :close-on-click-modal="false"
+        class="standard-dialog app-dialog"
+    >
+        <div class="app-dialog-content">
+            <div class="app-header">
+                <div class="app-icon">
+                    <el-icon :size="32">
+                        <Monitor />
+                    </el-icon>
+                </div>
+                <div class="app-title">
+                    <div class="name">{{ currentCard?.name }}</div>
+                    <div class="desc">{{ currentCard?.description }}</div>
+                </div>
+                <el-button type="primary" class="launch-btn" @click="cardDialogVisible = false">启动应用</el-button>
+            </div>
+            <div class="app-desc">
+                {{ currentCard?.name }}，无需本地部署，通过云端在线服务，实现智能给排水调试、喷头一键生成、管线自动布置。基于消防规范与智能算法，快速生成合规设计方案，支持多场景应用，助力企业高效完成消防系统设计与运维，降低成本与安全风险。
+            </div>
+            <div class="app-preview">
+                <h3>应用介绍</h3>
+                <div class="preview-container">
+                    <img src="@/assets/operate/one.png" alt="应用截图" class="preview-image" />
+                </div>
+            </div>
+        </div>
+        <div class="version-info">
+            版本：{{ currentCard?.extra?.version }}
+        </div>
+    </el-dialog>
 </template>
 
 <script setup lang="ts">
-import {  Search, Monitor, Setting, Shop, More, ArrowRight } from '@element-plus/icons-vue'
+import { Search, Monitor, Setting, Shop, More, ArrowRight } from '@element-plus/icons-vue'
 import { computed, ref, onMounted } from 'vue'
 import { isDark } from '../../utils/theme'
 import { getAigcPrimaryList, getAigcChildrenList } from '@/api/aigc'
@@ -315,16 +354,115 @@ const handleFireApplication = async (list: ProjectItem[], componentsList: AigcMo
         throw new Error('获取子分类数据失败');
     }
 
-    const children = childrenRes.data;
-    console.log('子分类原始数据:', children);
+    // 使用假数据替换实际数据
+    secondaryList.value = [
+        {
+            id: 1,
+            name: '自动喷淋灭火系统',
+            description: '智能给排水・喷头一键生成，管线自动布置',
+            value: 'sprinkler_system',
+            extra: { version: '1.0.0' }
+        },
+        {
+            id: 2,
+            name: '室内消火栓系统',
+            description: '智能给排水・消火栓布置，管线智能连接',
+            value: 'hydrant_system',
+            extra: { version: '1.0.0' }
+        },
+        {
+            id: 3,
+            name: '火灾自动报警系统',
+            description: '智能电气・探测器布置，线路智能连接',
+            value: 'alarm_system',
+            extra: { version: '1.0.0' }
+        },
+        {
+            id: 4,
+            name: '消防应急照明系统',
+            description: '智能电气・应急照明，疏散指示设计',
+            value: 'emergency_lighting',
+            extra: { version: '1.0.0' }
+        },
+        {
+            id: 5,
+            name: '防火分区划分',
+            description: '智能建筑・防火分区划分，面积智能校核',
+            value: 'fire_compartment',
+            extra: { version: '1.0.0' }
+        },
+        {
+            id: 6,
+            name: '防火门监控系统',
+            description: '智能电气・防火门监控，系统自动设计',
+            value: 'fire_door_monitoring',
+            extra: { version: '1.0.0' }
+        },
+        {
+            id: 7,
+            name: '消防水炮系统',
+            description: '智能给排水・水炮布置，管线智能连接',
+            value: 'water_cannon',
+            extra: { version: '1.0.0' }
+        },
+        {
+            id: 8,
+            name: '气体灭火系统',
+            description: '智能给排水・气体灭火，系统智能设计',
+            value: 'gas_extinguishing',
+            extra: { version: '1.0.0' }
+        },
+        {
+            id: 9,
+            name: '防排烟系统',
+            description: '智能暖通・排烟设计，风管智能布置',
+            value: 'smoke_control',
+            extra: { version: '1.0.0' }
+        },
+        {
+            id: 10,
+            name: '消防电源监控系统',
+            description: '智能电气・电源监控，系统智能设计',
+            value: 'power_monitoring',
+            extra: { version: '1.0.0' }
+        },
+        {
+            id: 11,
+            name: '消防联动控制系统',
+            description: '智能电气・联动控制，系统智能设计',
+            value: 'linkage_control',
+            extra: { version: '1.0.0' }
+        },
+        {
+            id: 12,
+            name: '消防广播系统',
+            description: '智能电气・广播系统，设备智能布置',
+            value: 'broadcast_system',
+            extra: { version: '1.0.0' }
+        },
+        {
+            id: 13,
+            name: '消防电梯',
+            description: '智能建筑・消防电梯，系统智能设计',
+            value: 'fire_elevator',
+            extra: { version: '1.0.0' }
+        },
+        {
+            id: 14,
+            name: '消防泵房',
+            description: '智能给排水・泵房设计，系统智能布置',
+            value: 'pump_room',
+            extra: { version: '1.0.0' }
+        },
+        {
+            id: 15,
+            name: '消防控制室',
+            description: '智能建筑・控制室设计，布局智能规划',
+            value: 'control_room',
+            extra: { version: '1.0.0' }
+        }
+    ];
     
-    // 处理子分类数据
-    secondaryList.value = children
-        .filter(item => item.extra?.version)
-        .map(item => ({
-            ...item,
-            contentShow: Array.isArray(fireList.value) && fireList.value.includes(item.name)
-        }));
     console.log('处理后的子分类列表:', secondaryList.value);
 
     if (secondaryList.value.length > 0) {
@@ -374,19 +512,6 @@ const tags = [
 ]
 
 // 计算样式
-// const cardTextColor = computed(() => isDark.value ? '#e5eaf3' : '#303133')
-// const cardBorderColor = computed(() => isDark.value ? 'rgba(65, 66, 67, 0.5)' : 'rgba(228, 231, 237, 0.6)')
-// const statisticTitleColor = computed(() => isDark.value ? '#a3a6ad' : '#909399')
-// const iconColor = computed(() => '#409eff')
-// const cardShadow = computed(() => isDark.value ?
-//     '0 1px 4px rgba(0, 0, 0, 0.12)' :
-//     '0 1px 4px rgba(0, 0, 0, 0.05)'
-// )
-// const cardHoverShadow = computed(() => isDark.value ?
-//     '0 4px 12px rgba(0, 0, 0, 0.2)' :
-//     '0 4px 12px rgba(0, 0, 0, 0.08)'
-// )
-
 const menuTextColor = computed(() => isDark.value ? '#e5eaf3' : '#303133')
 const subTextColor = computed(() => isDark.value ? '#a3a6ad' : '#909399')
 const borderColor = computed(() => isDark.value ? 'rgba(65, 66, 67, 0.5)' : 'rgba(228, 231, 237, 0.6)')
@@ -394,7 +519,6 @@ const menuBgColor = computed(() => isDark.value ? '#1d1e1f' : '#ffffff')
 const menuHoverBgColor = computed(() => isDark.value ? '#2b2b2b' : '#f5f7fa')
 const dialogBgColor = computed(() => isDark.value ? '#141414' : '#ffffff')
 const dialogHeaderBgColor = computed(() => isDark.value ? '#1d1e1f' : '#f5f7fa')
-// const menuActiveTextColor = computed(() => '#409EFF')
 
 const hvacCardList = [
     {
@@ -467,6 +591,22 @@ const supplierList = ref<Array<Supplier>>([
 const handleSupplierClick = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer');
 };
+
+// 添加新的响应式变量
+const cardDialogVisible = ref(false)
+const currentCard = ref<any>(null)
+
+// 添加卡片点击事件处理函数
+const handleCardClick = (item: any) => {
+    currentCard.value = item;
+    cardDialogVisible.value = true;
+}
+
+// 添加计算属性
+const iconBgColor = computed(() => isDark.value ? '#141414' : '#f5f7fa')
+const iconColor = computed(() => isDark.value ? '#fff' : '#303133')
+const btnBorderColor = computed(() => 'rgba(231, 231, 224, 0.2980392156862745)')
+const closeHoverColor = computed(() => isDark.value ? '#f3cc2e' : '#409eff')
 </script>
 
 <style scoped>
@@ -944,5 +1084,150 @@ const handleSupplierClick = (url: string) => {
     background-color: #66b1ff;
     border-color: #66b1ff;
     color: #ffffff;
+}
+
+/* 修改卡片弹框样式 */
+.app-dialog {
+    :deep(.el-dialog__header) {
+        display: none;
+    }
+    
+    :deep(.el-dialog__body) {
+        padding: 0;
+        margin: 0;
+        background-color: v-bind(dialogBgColor);
+    }
+
+    :deep(.el-dialog) {
+        background-color: v-bind(dialogBgColor);
+        border: 1px solid v-bind(borderColor);
+    }
+}
+
+.app-dialog-content {
+    position: relative;
+    padding: 24px;
+    color: v-bind(menuTextColor);
+}
+
+.app-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid v-bind(borderColor);
+}
+
+.app-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    background-color: v-bind(iconBgColor);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: v-bind(iconColor);
+    flex-shrink: 0;
+}
+
+.app-title {
+    flex: 1;
+    min-width: 0;
+}
+
+.app-title .name {
+    font-size: 20px;
+    font-weight: 500;
+    color: v-bind(menuTextColor);
+    margin-bottom: 4px;
+}
+
+.app-title .desc {
+    font-size: 14px;
+    color: v-bind(subTextColor);
+}
+
+.launch-btn {
+    width: 120px;
+    height: 40px;
+    background: inherit;
+    background-color: rgba(249, 222, 74, 1);
+    box-sizing: border-box;
+    border: none;
+    border-radius: 5px;
+    filter: drop-shadow(none);
+    transition: none;
+    font-family: "PingFangHK-Semibold", "PingFang HK Semibold", "PingFang HK", sans-serif;
+    font-weight: 650;
+    font-style: normal;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.launch-btn:hover {
+    background-color: rgba(249, 222, 74, 0.8);
+    color: #000;
+}
+
+.app-desc {
+    font-size: 14px;
+    line-height: 1.8;
+    color: v-bind(menuTextColor);
+    margin-bottom: 24px;
+    text-align: justify;
+}
+
+.app-preview {
+    h3 {
+        font-size: 16px;
+        font-weight: 500;
+        color: v-bind(menuTextColor);
+        margin: 0 0 16px 0;
+    }
+}
+
+.preview-container {
+    width: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.preview-image {
+    width: 100%;
+    display: block;
+}
+
+.version-info {
+    position: relative;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    margin-top: 20px;
+    padding: 0 24px;
+    font-size: 12px;
+    color: v-bind(subTextColor);
+    border-top: 1px solid v-bind(borderColor);
+    display: flex;
+    align-items: center;
+}
+
+/* 关闭按钮样式 */
+:deep(.el-dialog__headerbtn) {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+}
+
+:deep(.el-dialog__close) {
+    color: v-bind(menuTextColor);
+    font-size: 18px;
+}
+
+:deep(.el-dialog__close:hover) {
+    color: v-bind(closeHoverColor);
 }
 </style>
