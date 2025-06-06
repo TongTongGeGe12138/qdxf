@@ -11,11 +11,11 @@ export interface PurchaseInfo {
   updateTime: Date;
 }
 
-// API 响应的通用接口
+// API 响应接口
 export interface ApiResponse<T> {
-    code: number;
-    message: string;
-    data: T;
+  code: number;
+  data: T;
+  message?: string;
 }
 
 // 列表数据的通用接口
@@ -26,25 +26,47 @@ export interface ListData<T> {
 
 // 项目项接口
 export interface ProjectItem {
-    id: number;
-    name: string;
-    value: string;
-    path?: string;
-    description?: string;
-    children?: ProjectItem[];
-    content?: string;
-    contentShow?: boolean;
-    extra?: {
-        group?: string;
-        version?: string;
-        url?: string;
-        tip?: string;
-        englishName?: string;
-    };
+  id: string;
+  name: string;
+  value: string;
+  content?: string;
+  contentShow?: boolean;
+  description?: string;
+  status: number;
+  createTime: string;
+  updateTime: string;
+  extra?: {
+    version?: string;
+    url?: string;
+    tip?: string;
+    englishName?: string;
+    group?: string;
+  };
 }
 
-// 项目列表响应类型
-export type ProjectListResult = ApiResponse<ListData<ProjectItem>>;
+// 项目列表结果接口
+export interface ProjectListResult {
+  code: number;
+  data: ProjectItem[];
+  message?: string;
+}
+
+// AIGC 模块组件接口
+export interface AigcModuleComponent {
+  id?: string;
+  title: string;
+  content: string;
+  status: number;
+  description?: string;
+}
+
+// AIGC 模块接口
+export interface AigcModule {
+  id: string;
+  name: string;
+  content: string;
+  components: AigcModuleComponent[];
+}
 
 export interface ProjectInfo {
   adminName: string;

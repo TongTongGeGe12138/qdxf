@@ -30,7 +30,7 @@
                     <div class="card" 
                         v-for="(item, index) in secondaryList" 
                         :key="index"
-                        @click="handleCardClick(item)"
+                            @click="handleCardClick(item)"
                     >
                         <div class="card-icon">
                             <el-icon>
@@ -182,7 +182,7 @@
                     <div class="name">{{ currentCard?.name }}</div>
                     <div class="desc">{{ currentCard?.description }}</div>
                 </div>
-                <el-button type="primary" class="launch-btn" @click="cardDialogVisible = false">启动应用</el-button>
+                <el-button type="primary" class="launch-btn" @click="handleLaunchClick">启动应用</el-button>
             </div>
             <div class="app-desc">
                 {{ currentCard?.name }}，无需本地部署，通过云端在线服务，实现智能给排水调试、喷头一键生成、管线自动布置。基于消防规范与智能算法，快速生成合规设计方案，支持多场景应用，助力企业高效完成消防系统设计与运维，降低成本与安全风险。
@@ -208,31 +208,50 @@ import { getAigcPrimaryList, getAigcChildrenList } from '@/api/aigc'
 import type { ProjectItem } from '@/api/model/detailModel'
 import { ElMessage } from 'element-plus'
 
-const searchText = ref('')
-const activeTag = ref('所有')
-const allList = ref<ProjectItem[]>([])
-const applicationList = ref<ProjectItem[]>([])
-const fireList = ref<any[]>([])
-const aigcList = ref<any[]>([])
-const current = ref<string>('')
-const secondary = ref<string>('')
-const secondaryList = ref<ProjectItem[]>([])
+
+
+
+
 
 // 类型定义
-interface AigcModuleComponent {
-    title: string;
-    description: string;
+interface ProjectItemExtended extends ProjectItem {
+    contentShow?: boolean;
+    extra?: {
+        version?: string;
+        url?: string;
+        tip?: string;
+        englishName?: string;
+        group?: string;
+    };
 }
 
-interface AigcModule {
-    components: AigcModuleComponent[];
+
+
+interface AigcModuleComponent {
+  title: string;
+  description: string;
+  content?: string;
+  name?: string;
 }
+
+
 
 interface Supplier {
-    name: string;
-    imageUrl: string;
-    url: string;
+  name: string;
+  imageUrl: string;
+  url: string;
 }
+
+const searchText = ref('')
+const activeTag = ref('所有')
+const allList = ref<ProjectItemExtended[]>([])
+const applicationList = ref<ProjectItemExtended[]>([])
+const fireList = ref<AigcModuleComponent[]>([])
+const aigcList = ref<ProjectItemExtended[]>([])
+const current = ref('')
+const secondary = ref('')
+const secondaryList = ref<ProjectItemExtended[]>([])
+const threeStatus = ref(false)
 
 // 常量配置
 const AIGC_MODULES = {
@@ -242,22 +261,42 @@ const AIGC_MODULES = {
     FIRE: '智能消防'
 } as const;
 
-// 模拟数据
-const aigcModuleSkuList: AigcModule[] = [
-    { components: [] }, // 0
-    { components: [] }, // 1
-    { components: [ // 2 - 智能给排水
-        { title: '自动喷淋灭火系统', description: '智能给排水・喷头一键生成，管线自动布置' },
-        { title: '室内消火栓系统', description: '智能给排水・消火栓布置，管线智能连接' }
-    ]},
-    { components: [ // 3 - 智能暖通
-        { title: '排烟及补风系统', description: '智能暖通・排烟设计，风管智能布置' },
-        { title: '防烟系统', description: '智能暖通・防烟分区，系统自动设计' }
-    ]},
-    { components: [ // 4 - 智能电气
-        { title: '火灾自动报警系统', description: '智能电气・探测器布置，线路智能连接' },
-        { title: '消防应急照明系统', description: '智能电气・应急照明，疏散指示设计' }
-    ]}
+// 定义 AIGC 模块列表
+const aigcModuleSkuList = [
+  {
+    name: '智能消防',
+    content: 'AigcCmpPkgFirefighting',
+    components: [] as AigcModuleComponent[]
+  },
+  {
+    name: '装饰消防',
+    content: 'AigcCmpPkgDecoration',
+    components: [] as AigcModuleComponent[]
+  },
+  {
+    name: '智能给排水',
+    content: 'AigcCmpPkgPlumbing',
+    components: [
+      { title: '给排水1', content: 'plumbing1', status: 1, description: '智能给排水・喷头一键生成，管线自动布置' } as AigcModuleComponent,
+      { title: '给排水2', content: 'plumbing2', status: 1, description: '智能给排水・消火栓布置，管线智能连接' } as AigcModuleComponent
+    ]
+  },
+  {
+    name: '智能暖通',
+    content: 'AigcCmpPkgHvac',
+    components: [
+      { title: '暖通1', content: 'hvac1', status: 1, description: '智能暖通・排烟设计，风管智能布置' } as AigcModuleComponent,
+      { title: '暖通2', content: 'hvac2', status: 1, description: '智能暖通・防烟分区，系统自动设计' } as AigcModuleComponent
+    ]
+  },
+  {
+    name: '智能电气',
+    content: 'AigcCmpPkgElectrical',
+    components: [
+      { title: '电气1', content: 'electrical1', status: 1, description: '智能电气・探测器布置，线路智能连接' } as AigcModuleComponent,
+      { title: '电气2', content: 'electrical2', status: 1, description: '智能电气・应急照明，疏散指示设计' } as AigcModuleComponent
+    ]
+  }
 ];
 
 // 获取数据的方法
@@ -340,139 +379,24 @@ const updateFireList = (moduleName: string) => {
 
 // 处理智能消防应用
 const handleFireApplication = async (list: ProjectItem[], componentsList: AigcModuleComponent[]) => {
-    const fireApps = list.filter((item: ProjectItem) => item.name === AIGC_MODULES.FIRE);
-    applicationList.value = fireApps;
-    console.log('智能消防应用列表:', fireApps);
-    
-    const fireApp = fireApps[0];
-    if (!fireApp?.value) return;
-
-    const childrenRes = await getAigcChildrenList(fireApp.value);
-    console.log('子分类响应数据:', childrenRes);
-    
-    if (childrenRes?.code !== 200 || !Array.isArray(childrenRes?.data)) {
-        throw new Error('获取子分类数据失败');
+  const fireApps = list.filter((item: ProjectItem) => item.name === '智能消防');
+  applicationList.value = fireApps;
+  console.log('智能消防应用列表:', fireApps);
+  
+  const fireApp = fireApps[0];
+  if (!fireApp?.value) return;
+  
+  const childrenRes = await getAigcChildrenList(fireApp.value);
+  if (childrenRes.code === 200) {
+    current.value = fireApp.value;
+    const childrenData = Array.isArray(childrenRes.data) ? childrenRes.data : [];
+    if (childrenData.length > 0) {
+      secondary.value = childrenData[0].value;
+      const processedData = getAigcCadStatus(childrenData);
+      secondaryList.value = processedData;
+      threeStatus.value = true;
     }
-
-    // 使用假数据替换实际数据
-    secondaryList.value = [
-        {
-            id: 1,
-            name: '自动喷淋灭火系统',
-            description: '智能给排水・喷头一键生成，管线自动布置',
-            value: 'sprinkler_system',
-            extra: { version: '1.0.0' }
-        },
-        {
-            id: 2,
-            name: '室内消火栓系统',
-            description: '智能给排水・消火栓布置，管线智能连接',
-            value: 'hydrant_system',
-            extra: { version: '1.0.0' }
-        },
-        {
-            id: 3,
-            name: '火灾自动报警系统',
-            description: '智能电气・探测器布置，线路智能连接',
-            value: 'alarm_system',
-            extra: { version: '1.0.0' }
-        },
-        {
-            id: 4,
-            name: '消防应急照明系统',
-            description: '智能电气・应急照明，疏散指示设计',
-            value: 'emergency_lighting',
-            extra: { version: '1.0.0' }
-        },
-        {
-            id: 5,
-            name: '防火分区划分',
-            description: '智能建筑・防火分区划分，面积智能校核',
-            value: 'fire_compartment',
-            extra: { version: '1.0.0' }
-        },
-        {
-            id: 6,
-            name: '防火门监控系统',
-            description: '智能电气・防火门监控，系统自动设计',
-            value: 'fire_door_monitoring',
-            extra: { version: '1.0.0' }
-        },
-        {
-            id: 7,
-            name: '消防水炮系统',
-            description: '智能给排水・水炮布置，管线智能连接',
-            value: 'water_cannon',
-            extra: { version: '1.0.0' }
-        },
-        {
-            id: 8,
-            name: '气体灭火系统',
-            description: '智能给排水・气体灭火，系统智能设计',
-            value: 'gas_extinguishing',
-            extra: { version: '1.0.0' }
-        },
-        {
-            id: 9,
-            name: '防排烟系统',
-            description: '智能暖通・排烟设计，风管智能布置',
-            value: 'smoke_control',
-            extra: { version: '1.0.0' }
-        },
-        {
-            id: 10,
-            name: '消防电源监控系统',
-            description: '智能电气・电源监控，系统智能设计',
-            value: 'power_monitoring',
-            extra: { version: '1.0.0' }
-        },
-        {
-            id: 11,
-            name: '消防联动控制系统',
-            description: '智能电气・联动控制，系统智能设计',
-            value: 'linkage_control',
-            extra: { version: '1.0.0' }
-        },
-        {
-            id: 12,
-            name: '消防广播系统',
-            description: '智能电气・广播系统，设备智能布置',
-            value: 'broadcast_system',
-            extra: { version: '1.0.0' }
-        },
-        {
-            id: 13,
-            name: '消防电梯',
-            description: '智能建筑・消防电梯，系统智能设计',
-            value: 'fire_elevator',
-            extra: { version: '1.0.0' }
-        },
-        {
-            id: 14,
-            name: '消防泵房',
-            description: '智能给排水・泵房设计，系统智能布置',
-            value: 'pump_room',
-            extra: { version: '1.0.0' }
-        },
-        {
-            id: 15,
-            name: '消防控制室',
-            description: '智能建筑・控制室设计，布局智能规划',
-            value: 'control_room',
-            extra: { version: '1.0.0' }
-        }
-    ];
-    
-    console.log('处理后的子分类列表:', secondaryList.value);
-
-    if (secondaryList.value.length > 0) {
-        current.value = fireApp.value;
-        secondary.value = secondaryList.value[0].value;
-        console.log('设置当前选中:', {
-            current: current.value,
-            secondary: secondary.value
-        });
-    }
+  }
 };
 
 // 弹框相关
@@ -597,16 +521,194 @@ const cardDialogVisible = ref(false)
 const currentCard = ref<any>(null)
 
 // 添加卡片点击事件处理函数
-const handleCardClick = (item: any) => {
+const handleCardClick = (item: ProjectItemExtended) => {
     currentCard.value = item;
+    console.log('当前卡片数据:', {
+        名称: item.name,
+        值: item.value,
+        描述: item.description,
+        额外信息: {
+            版本: item.extra?.version,
+            链接: item.extra?.url,
+            提示: item.extra?.tip,
+            英文名: item.extra?.englishName,
+            分组: item.extra?.group
+        },
+        显示状态: item.contentShow
+    });
     cardDialogVisible.value = true;
-}
+};
+
+
 
 // 添加计算属性
 const iconBgColor = computed(() => isDark.value ? '#141414' : '#f5f7fa')
 const iconColor = computed(() => isDark.value ? '#fff' : '#303133')
-const btnBorderColor = computed(() => 'rgba(231, 231, 224, 0.2980392156862745)')
+// const btnBorderColor = computed(() => 'rgba(231, 231, 224, 0.2980392156862745)')
 const closeHoverColor = computed(() => isDark.value ? '#f3cc2e' : '#409eff')
+
+// 获取并处理子分类数据
+const getAigcChildren = async (val: any) => {
+  try {
+    console.log('开始获取子分类数据，参数:', val);
+    const { data, code } = await getAigcChildrenList(val.value);
+    console.log('子分类接口返回的原始数据:', data);
+    
+    if (code === 200) {
+      current.value = val.value;
+      if (Array.isArray(data) && data.length > 0) {
+        // 先过滤有 version 的数据
+        const uniqueData = unique(data);
+        console.log('unique 过滤后的数据:', uniqueData);
+        
+        secondary.value = uniqueData[0]?.value || '';
+        
+        // 处理数据状态
+        const processedData = getAigcCadStatus(uniqueData);
+        console.log('CAD状态处理后的数据:', processedData);
+        
+        secondaryList.value = processedData;
+        threeStatus.value = true;
+      } else {
+        console.warn('接口返回的数据为空或不是数组');
+      }
+    } else {
+      console.warn('接口返回非200状态码:', code);
+    }
+  } catch (error) {
+    console.error('获取子分类数据失败:', error);
+    ElMessage.error(error instanceof Error ? error.message : '获取子分类数据失败');
+  }
+};
+
+// 处理 CAD 状态
+const getAigcCadStatus = (data: ProjectItem[]) => {
+  console.log('进入 getAigcCadStatus 函数，原始数据:', data);
+  
+  const val = allList.value.filter((key: any) => key.value === current.value)[0];
+  console.log('找到的当前项:', val);
+  
+  if (!val) {
+    console.warn('未找到匹配的当前项，返回原始数据');
+    return data;
+  }
+  
+  // 首先过滤掉没有 version 的项目
+  const filteredData = data.filter(item => item.extra && item.extra.version);
+  console.log('过滤后的数据:', filteredData);
+  
+  const result = filteredData.map((item: ProjectItem) => {
+    const newItem = { ...item };
+    if (val.name === '智能消防' || val.name === '装饰消防') {
+      newItem.contentShow = fireList.value.some(fireItem => fireItem.title === item.name);
+    } else {
+      newItem.contentShow = !!val.content;
+    }
+    return newItem;
+  });
+  
+  console.log('最终处理后的数据:', result);
+  return result;
+};
+
+// 获取主分类数据
+const getAigcPrimary = async () => {
+  try {
+    console.log('开始获取主分类数据');
+    const result = await getAigcPrimaryList();
+    console.log('主分类接口返回数据:', result);
+    
+    if (result.code === 200 && Array.isArray(result.data)) {
+      console.log('主分类数据是数组，长度:', result.data.length);
+      
+      const componentsToAdd: AigcModuleComponent[] = [];
+      
+      // 处理数据并收集组件
+      aigcList.value.forEach(element => {
+        console.log('处理 aigcList 元素:', element);
+        result.data.forEach(key => {
+          if (element.name === key.name) {
+            key.content = element.content;
+            // 根据不同类型收集组件
+            switch(key.name) {
+              case '智能给排水':
+                componentsToAdd.push(...aigcModuleSkuList[2].components);
+                console.log('添加给排水组件');
+                break;
+              case '智能暖通':
+                componentsToAdd.push(...aigcModuleSkuList[3].components);
+                console.log('添加暖通组件');
+                break;
+              case '智能电气':
+                componentsToAdd.push(...aigcModuleSkuList[4].components);
+                console.log('添加电气组件');
+                break;
+            }
+          }
+        });
+      });
+      
+      // 使用 Set 去重
+      const uniqueComponents = [...new Set(componentsToAdd.map(comp => JSON.stringify(comp)))].map(str => JSON.parse(str) as AigcModuleComponent);
+      console.log('去重后的组件列表:', uniqueComponents);
+      
+      fireList.value = uniqueComponents;
+      allList.value = result.data;
+      
+      // 处理智能消防应用
+      await handleFireApplication(result.data, uniqueComponents);
+    } else {
+      console.warn('主分类数据异常:', { code: result.code, isArray: Array.isArray(result.data) });
+    }
+  } catch (error) {
+    console.error('获取主分类数据失败:', error);
+    ElMessage.error(error instanceof Error ? error.message : '获取主分类数据失败');
+  }
+};
+
+function unique(arr: any) {
+  console.log('进入 unique 函数，原始数据:', arr);
+  const list = [];
+  for (let i = 0; i < arr.length; i++) {
+    const element = arr[i];
+    console.log('检查数据项:', {
+      name: element.name,
+      hasExtra: !!element.extra,
+      hasVersion: element.extra?.version,
+      version: element.extra?.version
+    });
+    if (element.extra?.version) {
+      list.push(element);
+    }
+  }
+  console.log('unique 函数处理后的数据:', list);
+  return list;
+}
+
+// 添加启动应用点击处理函数
+const handleLaunchClick = () => {
+    console.log('启动应用数据:', {
+        名称: currentCard.value?.name,
+        值: currentCard.value?.value,
+        描述: currentCard.value?.description,
+        额外信息: {
+            版本: currentCard.value?.extra?.version,
+            链接: currentCard.value?.extra?.url,
+            提示: currentCard.value?.extra?.tip,
+            英文名: currentCard.value?.extra?.englishName,
+            分组: currentCard.value?.extra?.group
+        },
+        显示状态: currentCard.value?.contentShow
+    });
+    if (currentCard.value?.extra?.url) {
+        const baseUrl = 'http://cloud.dev.ifeng.com';
+        const fullUrl = `${baseUrl}${currentCard.value.extra.url}`;
+        window.open(fullUrl, '_blank', 'noopener,noreferrer');
+    } else {
+        ElMessage.info('未配置跳转链接');
+    }
+    cardDialogVisible.value = false;
+};
 </script>
 
 <style scoped>
