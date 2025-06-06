@@ -1,0 +1,319 @@
+:root {
+  --theme-primary: #409eff;
+  --theme-success: #67c23a;
+  --theme-warning: #e6a23c;
+  --theme-danger: #f56c6c;
+  --theme-background: rgba(231, 232, 235, 1);
+  --theme-menuBg: var(--el-bg-color);
+  --theme-menuText: #303133;
+  --theme-menuActiveText: #409eff;
+  --theme-menuHover: #f6f6f6;
+  --theme-headerBg: #ffffff;
+  --theme-headerText: #303133;
+  --theme-borderColor: #e4e7ed;
+  --theme-borderLightColor: #e6e6e6;
+  --theme-borderDarkColor: #dcdfe6;
+  
+  /* Element Plus 内部变量覆盖 */
+  --051739fd-menuBgColor: var(--theme-menuBg) !important;
+  --el-color-primary: #409eff;
+}
+
+html.dark {
+  --el-bg-color: #141414;
+  --el-bg-color-page: #0a0a0a;
+  --el-bg-color-overlay: #1d1e1f;
+  --el-text-color-primary: #ffffff;
+  --el-text-color-regular: #e5eaf3;
+  --el-text-color-secondary: #a3a6ad;
+  --el-text-color-placeholder: #8d9095;
+  --el-text-color-disabled: #6c6e72;
+  --el-border-color: #4c4d4f;
+  --el-border-color-light: #414243;
+  --el-border-color-lighter: #363637;
+  --el-border-color-extra-light: #2b2b2c;
+  --el-fill-color: #262727;
+  --el-fill-color-light: #1d1d1d;
+  --el-fill-color-lighter: #262727;
+  --el-fill-color-extra-light: #2b2b2c;
+  --el-fill-color-dark: #363637;
+  --el-fill-color-blank: transparent;
+  --el-mask-color: rgba(0, 0, 0, .8);
+  --el-mask-color-extra-light: rgba(0, 0, 0, .3);
+  --el-menu-bg-color: #141414;
+  --el-menu-text-color: #ffffff;
+  --el-menu-active-color: #409eff;
+  --el-menu-hover-bg-color: #0c2135;
+}
+
+html {
+  --el-bg-color: #ffffff;
+  --el-bg-color-page: #f2f3f5;
+  --el-bg-color-overlay: #ffffff;
+  --el-text-color-primary: #303133;
+  --el-text-color-regular: #606266;
+  --el-text-color-secondary: #909399;
+  --el-text-color-placeholder: #a8abb2;
+  --el-text-color-disabled: #c0c4cc;
+  --el-border-color: #dcdfe6;
+  --el-border-color-light: #e4e7ed;
+  --el-border-color-lighter: #ebeef5;
+  --el-border-color-extra-light: #f2f6fc;
+  --el-fill-color: #f0f2f5;
+  --el-fill-color-light: #f5f7fa;
+  --el-fill-color-lighter: #fafafa;
+  --el-fill-color-extra-light: #fafcff;
+  --el-fill-color-dark: #ebedf0;
+  --el-fill-color-blank: #ffffff;
+  --el-mask-color: rgba(255, 255, 255, .9);
+  --el-mask-color-extra-light: rgba(255, 255, 255, .3);
+  --el-menu-bg-color: #ffffff;
+  --el-menu-text-color: #303133;
+  --el-menu-active-color: #409eff;
+  --el-menu-hover-bg-color: #ecf5ff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 添加全局过渡效果 */
+:root {
+  transition: all 0.3s ease-in-out;
+}
+
+:root * {
+  transition: background-color 0.3s ease-in-out,
+              border-color 0.3s ease-in-out,
+              color 0.3s ease-in-out,
+              box-shadow 0.3s ease-in-out;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--el-bg-color-page);
+  color: var(--el-text-color-primary);
+  transition: all 0.3s;
+}
+
+body {
+  background-color: var(--theme-background);
+  color: var(--theme-headerText);
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+/* Element Plus 菜单样式覆盖 */
+.el-menu {
+  background-color: var(--theme-menuBg) !important;
+  border: none !important;
+  transition: all 0.3s !important;
+}
+
+.el-menu-item {
+  background-color: var(--theme-menuBg) !important;
+  color: var(--theme-menuText) !important;
+  transition: all 0.3s !important;
+  border: none !important;
+}
+
+.el-menu-item:hover {
+  background-color: var(--theme-menuHover) !important;
+}
+
+.el-menu-item.is-active {
+  color: var(--theme-menuActiveText) !important;
+  background-color: var(--theme-menuHover) !important;
+}
+
+/* 修复布局容器样式 */
+.layout-container {
+  min-height: 100vh;
+  width: 100%;
+}
+
+.el-aside {
+  transition: all 0.3s;
+  overflow: hidden;
+  background-color: var(--theme-menuBg) !important;
+  border: none !important;
+}
+
+.el-main {
+  padding: 20px;
+  background-color: var(--theme-background);
+  transition: all 0.3s;
+}
+
+.el-header {
+  padding: 0 20px;
+  background-color: var(--theme-headerBg);
+  border: none !important;
+  transition: all 0.3s;
+}
+
+/* 卡片样式 */
+.el-card {
+  border: none !important;
+  transition: all 0.3s !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.el-card__header {
+  border-bottom: none !important;
+}
+
+/* 下拉菜单样式 */
+.el-dropdown-menu {
+  background-color: var(--theme-menuBg) !important;
+  border-color: var(--theme-borderColor) !important;
+  transition: all 0.3s !important;
+}
+
+.el-dropdown-menu__item {
+  color: var(--theme-menuText) !important;
+  transition: all 0.3s !important;
+}
+
+.el-dropdown-menu__item:hover {
+  background-color: var(--theme-menuHover) !important;
+}
+
+/* 输入框样式 */
+.el-input__wrapper {
+  background-color: var(--theme-menuBg) !important;
+  border-color: var(--theme-borderColor) !important;
+  transition: all 0.3s !important;
+}
+
+.el-input__wrapper.is-focus {
+  border-color: var(--theme-primary) !important;
+  box-shadow: 0 0 0 1px var(--theme-primary) !important;
+}
+
+.el-input__inner {
+  color: var(--theme-menuText) !important;
+  transition: all 0.3s !important;
+}
+
+/* 按钮样式 */
+.el-button {
+  border-color: var(--theme-borderColor) !important;
+  transition: all 0.3s !important;
+}
+
+.el-button--primary {
+  border-color: var(--theme-primary) !important;
+}
+
+/* 表格样式 */
+.el-table {
+  border-color: var(--theme-borderColor) !important;
+  transition: all 0.3s !important;
+}
+
+.el-table th.el-table__cell {
+  background-color: var(--theme-menuHover) !important;
+  border-bottom: 1px solid var(--theme-borderColor) !important;
+}
+
+.el-table td.el-table__cell {
+  border-bottom: 1px solid var(--theme-borderColor) !important;
+}
+
+/* 分割线样式 */
+.el-divider {
+  background-color: var(--theme-borderColor) !important;
+  transition: all 0.3s !important;
+}
+
+/* 暗色主题特殊处理 */
+.dark {
+  color-scheme: dark;
+  --theme-menuBg: var(--el-bg-color-overlay);
+  --theme-menuText: var(--el-text-color-primary);
+  --theme-menuActiveText: var(--el-color-primary);
+  --theme-menuHover: var(--el-fill-color-light);
+  --theme-headerBg: var(--el-bg-color-overlay);
+  --theme-headerText: var(--el-text-color-primary);
+  --theme-borderColor: var(--el-border-color);
+  --theme-borderLightColor: var(--el-border-color-light);
+  --theme-borderDarkColor: var(--el-border-color-dark);
+  
+  /* Element Plus 内部变量覆盖 */
+  --051739fd-menuBgColor: var(--theme-menuBg) !important;
+}
+
+.dark .el-card,
+.dark .el-dropdown-menu,
+.dark .el-input__wrapper,
+.dark .el-button,
+.dark .el-table,
+.dark .el-divider {
+  border-color: var(--theme-borderColor) !important;
+}
+
+.dark .el-table th.el-table__cell {
+  background-color: var(--theme-menuBg) !important;
+}
+
+/* 图标样式 */
+.el-icon {
+  transition: all 0.3s;
+}
+
+.dark .el-menu-item .el-icon {
+  color: var(--theme-menuText);
+}
+
+.dark .el-menu-item:hover .el-icon,
+.dark .el-menu-item.is-active .el-icon {
+  color: var(--theme-menuActiveText);
+}
+
+/* Element Plus 变量覆盖 */
+:root {
+  --el-menu-bg-color: var(--theme-menuBg) !important;
+  --el-menu-hover-bg-color: var(--theme-menuHover) !important;
+}
+
+/* 强制覆盖菜单背景色 */
+.el-menu,
+.el-menu--popup,
+.el-sub-menu,
+.el-menu-item {
+  background-color: var(--theme-menuBg) !important;
+}
+
+.dark .el-menu,
+.dark .el-menu--popup,
+.dark .el-sub-menu,
+.dark .el-menu-item {
+  background-color: var(--theme-menuBg) !important;
+}
+
+/* 暗色主题特殊处理 */
+.dark .el-menu,
+.dark .el-menu-item,
+.dark .el-aside {
+  background-color: var(--theme-menuBg) !important;
+}
+
+/* 确保 scoped CSS 也能正确应用主题 */
+[data-v-051739fd] .el-menu,
+[data-v-051739fd] .el-menu-item,
+[data-v-051739fd] .el-sub-menu {
+  background-color: var(--theme-menuBg) !important;
+}
+
