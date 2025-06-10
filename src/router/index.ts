@@ -14,7 +14,7 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/dashboard/index.vue'),
         meta: {
           title: '智能应用',
-          icon: 'Odometer'
+          icon: 'smart_application'
         }
       }
     ]
@@ -23,12 +23,22 @@ const routes: Array<RouteRecordRaw> = [
     path: '/login',
     name: 'Login',
     component: () => import('../views/login/index.vue')
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/error/404.vue')
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+// 添加全局错误处理
+router.onError((error) => {
+  console.error('路由错误:', error)
 })
 
 export default router 

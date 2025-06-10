@@ -20,7 +20,7 @@
 }
 
 html.dark {
-  --el-bg-color: #141414;
+  --el-bg-color: #000;
   --el-bg-color-page: #0a0a0a;
   --el-bg-color-overlay: #1d1e1f;
   --el-text-color-primary: #ffffff;
@@ -315,5 +315,23 @@ body {
 [data-v-051739fd] .el-menu-item,
 [data-v-051739fd] .el-sub-menu {
   background-color: var(--theme-menuBg) !important;
+}
+
+/* 下拉菜单样式 */
+.el-popper.el-dropdown__popper {
+    box-shadow: 5px 5px 5px rgba(255, 255, 255, 0.3) !important;
+}
+
+.el-dropdown .el-dropdown__popper.el-popper[role="tooltip"] {
+    box-shadow: 5px 5px 5px rgba(255, 255, 255, 0.3) !important;
+}
+
+.el-popper.is-pure.is-light {
+    box-shadow: 5px 5px 5px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* 移除下拉菜单的箭头 */
+.el-popper__arrow {
+    display: none !important;
 }
 

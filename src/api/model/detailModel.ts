@@ -41,6 +41,7 @@ export interface ProjectItem {
     tip?: string;
     englishName?: string;
     group?: string;
+    icon?: any;
   };
 }
 

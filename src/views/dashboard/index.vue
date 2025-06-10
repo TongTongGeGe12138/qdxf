@@ -8,16 +8,16 @@
                     <div class="sub-title">用智能设计重新定义消防工程，五分钟解决消防点线布置</div>
                 </div>
                 <div class="search-section">
-                    <el-input v-model="searchText" placeholder="搜索应用..." class="search-input">
-                        <template #prefix>
-                            <el-icon>
-                                <Search />
-                            </el-icon>
-                        </template>
-                    </el-input>
+                    <div class="search-input">
+                        <el-input
+                            v-model="searchText"
+                            placeholder="搜索应用"
+                            :prefix-icon="Search"
+                        />
+                    </div>
                     <div class="tags">
-                        <el-tag 
-                            v-for="tag in tags" 
+                        <el-tag
+                            v-for="tag in tags"
                             :key="tag.name"
                             :class="{ 'is-active': activeTag === tag.name }"
                             @click="activeTag = tag.name"
@@ -28,18 +28,27 @@
                 </div>
                 <div class="card-grid">
                     <div class="card" 
-                        v-for="(item, index) in secondaryList" 
+                        v-for="(item, index) in filteredSecondaryList" 
                         :key="index"
-                            @click="handleCardClick(item)"
+                        @click="handleCardClick(item)"
                     >
-                        <div class="card-icon">
-                            <el-icon>
-                                <Monitor />
-                            </el-icon>
+                        <div class="fire-icon-container" :class="isDark ? 'dark-mode' : 'light-mode'">
+                            <img 
+                                v-if="item.value"
+                                :src="getIconUrl(item.value)"
+                                :alt="item.name"
+                                class="fire-icon"
+                                @error="console.log('Failed to load image:', item.value)"
+                            />
                         </div>
                         <div class="card-content">
                             <div class="card-title">{{ item.name }}</div>
-                            <div class="card-desc">{{ item.description }}</div>
+                            <div class="card-desc">{{ item.value }}</div>
+                        </div>
+                        <div class="circle-icon">
+                            <el-icon>
+                                <Right />
+                            </el-icon>
                         </div>
                     </div>
                 </div>
@@ -68,7 +77,12 @@
                 </div>
                 <div class="equipment-list">
                     <div class="list-header">
-                        <el-icon><Setting /></el-icon>
+                        <img 
+                            :src="getIconUrl('Setting')"
+                            alt="设置"
+                            class="header-icon"
+                            :class="{ 'dark-icon': isDark, 'light-icon': !isDark }"
+                        />
                         <span>消防设备选型</span>
                         <el-icon class="expand-icon"><More /></el-icon>
                     </div>
@@ -81,7 +95,12 @@
                 </div>
                 <div class="supplier-list">
                     <div class="list-header">
-                        <el-icon><Shop /></el-icon>
+                        <img 
+                            :src="getIconUrl('Shop')"
+                            alt="商店"
+                            class="header-icon"
+                            :class="{ 'dark-icon': isDark, 'light-icon': !isDark }"
+                        />
                         <span>消防认证供应商</span>
                         <el-icon class="expand-icon"><More /></el-icon>
                     </div>
@@ -201,17 +220,24 @@
 </template>
 
 <script setup lang="ts">
-import { Search, Monitor, Setting, Shop, More, ArrowRight } from '@element-plus/icons-vue'
-import { computed, ref, onMounted } from 'vue'
+import { Search, Monitor, Setting, Shop, More, ArrowRight, Timer, Warning, Notification, Operation, ScaleToOriginal, Switch, Aim, Cpu, Smoking, Connection, Link, Microphone, OfficeBuilding, House, Management, Right } from '@element-plus/icons-vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { isDark } from '../../utils/theme'
 import { getAigcPrimaryList, getAigcChildrenList } from '@/api/aigc'
 import type { ProjectItem } from '@/api/model/detailModel'
 import { ElMessage } from 'element-plus'
 
-
-
-
-
+// 获取所有svg图标
+const getIconUrl = (name: string) => {
+    if (!name) return '';
+    try {
+        // 使用动态导入
+        return new URL(`../../assets/tb/${name}.svg`, import.meta.url).href;
+    } catch (error) {
+        console.error('Error loading icon:', name, error);
+        return '';
+    }
+}
 
 // 类型定义
 interface ProjectItemExtended extends ProjectItem {
@@ -222,10 +248,9 @@ interface ProjectItemExtended extends ProjectItem {
         tip?: string;
         englishName?: string;
         group?: string;
+        icon?: any;  // 添加 icon 属性
     };
 }
-
-
 
 interface AigcModuleComponent {
   title: string;
@@ -233,8 +258,6 @@ interface AigcModuleComponent {
   content?: string;
   name?: string;
 }
-
-
 
 interface Supplier {
   name: string;
@@ -347,7 +370,7 @@ const handleAigcListData = (list: ProjectItem[], componentsList: AigcModuleCompo
             if (element.name !== key.name) continue;
 
             key.content = element.content;
-            console.log(`匹配到项目 ${key.name}, 设置 content:`, element.content);
+            console.log(`匹配到项目 ${key.name}, icon:`, key.extra?.icon);
 
             updateFireList(key.name);
             
@@ -394,6 +417,7 @@ const handleFireApplication = async (list: ProjectItem[], componentsList: AigcMo
       secondary.value = childrenData[0].value;
       const processedData = getAigcCadStatus(childrenData);
       secondaryList.value = processedData;
+      console.log('processedData', secondaryList.value);
       threeStatus.value = true;
     }
   }
@@ -436,27 +460,37 @@ const tags = [
 ]
 
 // 计算样式
-const menuTextColor = computed(() => isDark.value ? '#e5eaf3' : '#303133')
-const subTextColor = computed(() => isDark.value ? '#a3a6ad' : '#909399')
-const borderColor = computed(() => isDark.value ? 'rgba(65, 66, 67, 0.5)' : 'rgba(228, 231, 237, 0.6)')
+const menuTextColor = computed(() => isDark.value ?'#EDEDED' : '#13343C')
+const subTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
+const borderColor = computed(() => isDark.value ? 'transparent' : 'rgba(228, 231, 237, 0.6)')
 const menuBgColor = computed(() => isDark.value ? '#1d1e1f' : '#ffffff')
 const menuHoverBgColor = computed(() => isDark.value ? '#2b2b2b' : '#f5f7fa')
 const dialogBgColor = computed(() => isDark.value ? '#141414' : '#ffffff')
 const dialogHeaderBgColor = computed(() => isDark.value ? '#1d1e1f' : '#f5f7fa')
+const tagsBorderColor = computed(() => isDark.value ? '#222222' : 'rgba(51, 51, 51, 0.2980392156862745)')
+const tagsBgColor = computed(() => isDark.value ? '#0A0A0A' : '#FFFFFF')
+const tagTextColor = computed(() => isDark.value ? '#C4C4D3' : '#000000')
+const tagHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#F9F9F9')
+const tagActiveBgColor = computed(() => isDark.value ? '#191919' : '#F2F2F2')
+const cardBgColor = computed(() => isDark.value ? 'rgb(10,10,10)' : 'rgba(255, 253, 246, 1)')
+const cardHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#FFF8CC')
+const plusIconBgColor = computed(() => isDark.value ? '#C5C3D2' : '#FFF8CC')
+const plusIconBorderColor = computed(() => isDark.value ? '#C5C3D2' : '#000000')
+const plusIconColor = computed(() => isDark.value ? '#000' : '#000000')
 
 const hvacCardList = [
     {
         title: 'CloudBeeCAD',
         description: '基于云架构，完全自主产权的新一代 CAD'
     },
-    {
-        title: '智能物联',
-        description: '基于云架构，完全自主产权的新一代 CAD'
-    },
-    {
-        title: '智能建筑',
-        description: '基于云架构，完全自主产权的新一代 CAD'
-    },
+    // {
+    //     title: '智能物联',
+    //     description: '基于云架构，完全自主产权的新一代 CAD'
+    // },
+    // {
+    //     title: '智能建筑',
+    //     description: '基于云架构，完全自主产权的新一代 CAD'
+    // },
 
 ]
 
@@ -539,8 +573,6 @@ const handleCardClick = (item: ProjectItemExtended) => {
     cardDialogVisible.value = true;
 };
 
-
-
 // 添加计算属性
 const iconBgColor = computed(() => isDark.value ? '#141414' : '#f5f7fa')
 const iconColor = computed(() => isDark.value ? '#fff' : '#303133')
@@ -596,6 +628,25 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
   // 首先过滤掉没有 version 的项目
   const filteredData = data.filter(item => item.extra && item.extra.version);
   console.log('过滤后的数据:', filteredData);
+
+  // 定义图标映射
+  const iconMap: { [key: string]: any } = {
+    'sprinkler': Timer,
+    'firehose_extinguisher': Warning,
+    'extinguishing': Cpu,
+    'watermist': Operation,
+    'rain_water_curtain': ScaleToOriginal,
+    'foam': Switch,
+    'deluge': Aim,
+    'firemonitor': Monitor,
+    'firealarm': Notification,
+    'lighting_evacuation': Operation,
+    'firedoor_monitoring': Switch,
+    'firepump_monitoring': Connection,
+    'pressurization': Smoking,
+    'ventilation_pressurization': Link,
+    'smoke_control': Smoking
+  };
   
   const result = filteredData.map((item: ProjectItem) => {
     const newItem = { ...item };
@@ -604,66 +655,15 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
     } else {
       newItem.contentShow = !!val.content;
     }
+    // 添加图标
+    if (newItem.extra) {
+      newItem.extra.icon = iconMap[item.value] || Monitor; // 如果没有匹配的图标，使用默认的 Monitor 图标
+    }
     return newItem;
   });
   
   console.log('最终处理后的数据:', result);
   return result;
-};
-
-// 获取主分类数据
-const getAigcPrimary = async () => {
-  try {
-    console.log('开始获取主分类数据');
-    const result = await getAigcPrimaryList();
-    console.log('主分类接口返回数据:', result);
-    
-    if (result.code === 200 && Array.isArray(result.data)) {
-      console.log('主分类数据是数组，长度:', result.data.length);
-      
-      const componentsToAdd: AigcModuleComponent[] = [];
-      
-      // 处理数据并收集组件
-      aigcList.value.forEach(element => {
-        console.log('处理 aigcList 元素:', element);
-        result.data.forEach(key => {
-          if (element.name === key.name) {
-            key.content = element.content;
-            // 根据不同类型收集组件
-            switch(key.name) {
-              case '智能给排水':
-                componentsToAdd.push(...aigcModuleSkuList[2].components);
-                console.log('添加给排水组件');
-                break;
-              case '智能暖通':
-                componentsToAdd.push(...aigcModuleSkuList[3].components);
-                console.log('添加暖通组件');
-                break;
-              case '智能电气':
-                componentsToAdd.push(...aigcModuleSkuList[4].components);
-                console.log('添加电气组件');
-                break;
-            }
-          }
-        });
-      });
-      
-      // 使用 Set 去重
-      const uniqueComponents = [...new Set(componentsToAdd.map(comp => JSON.stringify(comp)))].map(str => JSON.parse(str) as AigcModuleComponent);
-      console.log('去重后的组件列表:', uniqueComponents);
-      
-      fireList.value = uniqueComponents;
-      allList.value = result.data;
-      
-      // 处理智能消防应用
-      await handleFireApplication(result.data, uniqueComponents);
-    } else {
-      console.warn('主分类数据异常:', { code: result.code, isArray: Array.isArray(result.data) });
-    }
-  } catch (error) {
-    console.error('获取主分类数据失败:', error);
-    ElMessage.error(error instanceof Error ? error.message : '获取主分类数据失败');
-  }
 };
 
 function unique(arr: any) {
@@ -709,16 +709,53 @@ const handleLaunchClick = () => {
     }
     cardDialogVisible.value = false;
 };
+
+const dashboardBgColor = computed(() => isDark.value ? '#000' : 'transparent')
+
+const toggleIconMode = () => {
+    const containers = document.querySelectorAll('.fire-icon-container');
+    containers.forEach(container => {
+        if (isDark.value) {
+            container.classList.remove('light-mode');
+            container.classList.add('dark-mode');
+        } else {
+            container.classList.remove('dark-mode');
+            container.classList.add('light-mode');
+        }
+    });
+}
+
+// 监听主题变化
+watch(isDark, () => {
+    toggleIconMode();
+});
+
+onMounted(() => {
+    toggleIconMode();
+});
+
+// 添加计算属性来过滤secondaryList
+const filteredSecondaryList = computed(() => {
+    if (!searchText.value) {
+        return secondaryList.value;
+    }
+    const searchLower = searchText.value.toLowerCase();
+    return secondaryList.value.filter(item => {
+        return item.name.toLowerCase().includes(searchLower) ||
+               (item.description && item.description.toLowerCase().includes(searchLower)) ||
+               (item.value && item.value.toLowerCase().includes(searchLower));
+    });
+});
 </script>
 
 <style scoped>
 .dashboard-container {
     padding: 20px;
-    width: 100%;
-    min-width: 895px;
+    width: 1200px;
     margin: 0 auto;
     border: 1px solid v-bind(borderColor);
     box-sizing: border-box;
+    background-color: v-bind(dashboardBgColor);
 }
 
 .title {
@@ -752,8 +789,8 @@ const handleLaunchClick = () => {
 }
 
 .container-left {
-    flex: 1;
-    min-width: 595px;
+    width: 900px;
+    min-width: 900px;
     border: 1px solid v-bind(borderColor);
     padding: 10px;
     box-sizing: border-box;
@@ -761,7 +798,7 @@ const handleLaunchClick = () => {
 
 .container-right {
     width: 260px;
-    flex-shrink: 0;
+    min-width: 260px;
     border: 1px solid v-bind(borderColor);
     padding: 10px;
     box-sizing: border-box;
@@ -799,14 +836,13 @@ const handleLaunchClick = () => {
 
 @media screen and (max-width: 1440px) {
     .dashboard-container {
-        margin: 0 20px;
+        margin: 0 auto;
     }
 }
 
 @media screen and (max-width: 1135px) {
     .dashboard-container {
-        margin: 0;
-        overflow-x: auto;
+        margin: 0 auto;
     }
 }
 
@@ -821,20 +857,19 @@ const handleLaunchClick = () => {
 .search-input {
     flex: 1;
     min-width: 0;
-    /* 防止flex项目溢出 */
 }
 
 .search-input :deep(.el-input__wrapper) {
     background-color: v-bind(menuBgColor);
-    box-shadow: none;
     border: 1px solid v-bind(borderColor);
-    border-radius: 8px;
-    padding: 8px 12px;
+    border-radius: 5px;
+    padding: 0 12px;
+    height: 40px;
 }
 
 .search-input :deep(.el-input__inner) {
     color: v-bind(menuTextColor);
-    height: 24px;
+    height: 40px;
     font-size: 14px;
 }
 
@@ -848,35 +883,39 @@ const handleLaunchClick = () => {
     flex-wrap: wrap;
     width: 400px;
     flex-shrink: 0;
-    border: 1px solid v-bind(borderColor);
-    border-radius: 8px;
-    padding: 8px;
-    background-color: v-bind(menuBgColor);
+    border: 1px solid v-bind(tagsBorderColor);
+    border-radius: 5px;
+    padding: 0 8px;
+    height: 40px;
+    background-color: v-bind(tagsBgColor);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    align-items: center;
+    overflow: hidden;
 }
 
 .tags :deep(.el-tag) {
     background-color: transparent;
     border: none;
-    color: v-bind(subTextColor);
+    color: v-bind(tagTextColor);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 0 16px;
-    height: 32px;
+    transition: all 0.2s ease-in-out;
+    padding: 0 12px;
+    height: 28px;
     display: flex;
     align-items: center;
-    border-radius: 16px;
+    border-radius: 4px;
     margin: 0;
-}
+    font-size: 12px;
+    line-height: 1;
 
-.tags :deep(.el-tag:hover) {
-    background-color: v-bind(menuHoverBgColor);
-    color: #409EFF;
-}
+    &:hover {
+        background-color: v-bind(tagHoverBgColor);
+    }
 
-.tags :deep(.el-tag.is-active) {
-    background-color: #409EFF15;
-    color: #409EFF;
+    &.is-active {
+        background-color: v-bind(tagActiveBgColor);
+        color: v-bind(tagTextColor);
+    }
 }
 
 .card-grid {
@@ -884,6 +923,7 @@ const handleLaunchClick = () => {
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
     margin-top: 20px;
+    width: 100%;
 }
 
 @media screen and (max-width: 1440px) {
@@ -893,7 +933,7 @@ const handleLaunchClick = () => {
 }
 
 .card {
-    background-color: v-bind(menuBgColor);
+    background-color: v-bind(cardBgColor);
     border-radius: 8px;
     padding: 12px;
     display: flex;
@@ -903,36 +943,21 @@ const handleLaunchClick = () => {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     height: 66px;
     box-sizing: border-box;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
 }
 
 .card:hover {
+    background-color: v-bind(cardHoverBgColor);
     transform: translateY(-2px);
-    background-color: v-bind(menuHoverBgColor);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.card:hover .card-icon {
-    background-color: #409EFF;
-    color: #FFFFFF;
-}
-
-.card-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    background-color: #409EFF15;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #409EFF;
-    font-size: 18px;
-    flex-shrink: 0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 5px 5px 5px rgba(255, 255, 255, 0.3);
 }
 
 .card-content {
     flex: 1;
     overflow: hidden;
+    padding-right: 32px;
 }
 
 .card-title {
@@ -1084,14 +1109,6 @@ const handleLaunchClick = () => {
     padding: 20px;
     margin: 0;
     background-color: v-bind(dialogBgColor);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.standard-dialog :deep(.el-dialog__footer) {
-    margin: 0;
-    padding: 20px;
-    border-top: 1px solid v-bind(borderColor);
-    background-color: v-bind(dialogHeaderBgColor);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1331,5 +1348,105 @@ const handleLaunchClick = () => {
 
 :deep(.el-dialog__close:hover) {
     color: v-bind(closeHoverColor);
+}
+
+.card-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background-color: #409EFF15;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #409EFF;
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover .card-icon {
+    background-color: #409EFF;
+    color: #FFFFFF;
+}
+
+.circle-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: v-bind(plusIconBgColor);
+    border: 1px solid v-bind(plusIconBorderColor);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.circle-icon :deep(.el-icon) {
+    font-size: 14px;
+    color: v-bind(plusIconColor);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.card:hover .circle-icon {
+    display: flex;
+    opacity: 1;
+}
+
+/* 基础图标容器样式 */
+.fire-icon-container {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+
+/* Light模式背景 */
+.fire-icon-container.light-mode {
+    background-color: #E8E9E4;
+}
+
+/* Dark模式背景 */
+.fire-icon-container.dark-mode {
+    background-color: #191919;
+}
+
+/* 图标本身的样式 */
+.fire-icon {
+    width: 21px;
+    height: 21px;
+    display: block;
+    flex-shrink: 0;
+}
+
+.header-icon {
+    width: 20px;
+    height: 20px;
+    transition: filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark-icon {
+    filter: brightness(0) invert(1); /* 将图标变为白色 #FFFFFF */
+}
+
+.light-icon {
+    filter: invert(15%) sepia(19%) saturate(934%) hue-rotate(155deg) brightness(94%) contrast(95%); /* 将图标变为 #13343C */
+}
+
+.search-icon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.6;
 }
 </style>

@@ -9,12 +9,14 @@
                 <span v-show="!isCollapse" class="logo-text">BeesFQD</span>
             </div>
             <el-menu :default-active="route.path" class="el-menu-vertical" :collapse="isCollapse" router
-                :background-color="menuBgColor" :text-color="menuTextColor" :active-text-color="menuActiveTextColor">
+                :background-color="menuBgColor" :text-color="menuTextColor" :active-text-color="menuActiveTextColor" style="padding: 20px;">
                 <el-menu-item index="/dashboard">
-                    <el-icon>
-                        <component :is="route.meta.icon" />
-                    </el-icon>
-                    <span>{{ route.meta.title }}</span>
+                    <img 
+                        :src="getIconUrl(route.meta?.icon as string)"
+                        :alt="route.meta?.title as string"
+                        class="menu-icon"
+                    />
+                    <span>{{ route.meta?.title }}</span>
                 </el-menu-item>
             </el-menu>
         </el-aside>
@@ -32,18 +34,54 @@
                 <div class="header-right">
                     <el-dropdown>
                         <span class="el-dropdown-link">
-                            <el-avatar :icon="UserFilled" />
+                            <el-avatar :icon="UserFilled" size="small" style="margin-right: 10px;" />
                             个人中心
                         </span>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item>个人信息</el-dropdown-item>
-                                <el-dropdown-item>退出登录</el-dropdown-item>
+                                <el-dropdown-item>
+                                    <div class="icon-container">
+                                        <img :src="getIconUrl('zhgl')" alt="账户管理" class="dropdown-icon" />
+                                    </div>
+                                    账户管理
+                                </el-dropdown-item>
+                                <el-dropdown-item>
+                                    <div class="icon-container">
+                                        <img :src="getIconUrl('dygl')" alt="订阅管理" class="dropdown-icon" />
+                                    </div>
+                                    订阅管理
+                                </el-dropdown-item>
+                                <el-dropdown-item>
+                                    <div class="icon-container">
+                                        <img :src="getIconUrl('ddgl')" alt="订单管理" class="dropdown-icon" />
+                                    </div>
+                                    订单管理
+                                </el-dropdown-item>
+                                <el-dropdown-item>
+                                    <div class="icon-container">
+                                        <img :src="getIconUrl('grzx')" alt="返回官网" class="dropdown-icon" />
+                                    </div>
+                                    返回官网
+                                </el-dropdown-item>
+                                <el-dropdown-item>
+                                    <div class="icon-container">
+                                        <img :src="getIconUrl('tcdl')" alt="退出登录" class="dropdown-icon" />
+                                    </div>
+                                    退出登录
+                                </el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>
-                    <el-switch v-model="darkMode" class="theme-switch" inline-prompt :active-icon="Moon"
-                        :inactive-icon="Sunny" @click="handleThemeSwitch" />
+                    <el-button
+                        class="theme-button"
+                        @click="handleThemeSwitch"
+                    >
+                        <img 
+                            :src="getIconUrl(darkMode ? 'Darkmode' : 'lightmode')"
+                            :alt="darkMode ? '暗色模式' : '亮色模式'"
+                            class="theme-icon"
+                        />
+                    </el-button>
                 </div>
             </el-header>
 
@@ -82,11 +120,16 @@ watch(isDark, (newValue) => {
 })
 
 // 计算菜单样式
-const menuBgColor = computed(() => isDark.value ? '#1d1e1f' : 'rgba(231, 232, 235, 1)')
+const menuBgColor = computed(() => isDark.value ? '#000' : 'rgba(231, 232, 235, 1)')
+const mainBgColor = computed(() => isDark.value ? '#000' : 'rgba(231, 232, 235, 1)')
 const menuTextColor = computed(() => isDark.value ? '#a3a6ad' : '#606266')
 const menuActiveTextColor = computed(() => '#fff')
-const menuHoverBgColor = computed(() => isDark.value ? '#2d2e2f' : '#f6f7f9')
+const menuHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#f6f7f9')
 const borderColor = computed(() => isDark.value ? '#414243' : '#e4e7ed')
+const dropdownTextColor = computed(() => isDark.value ? '#FFFFFF' : '#333333')
+
+const themeButtonBgColor = computed(() => darkMode.value ? '#333333' : '#E8E9E4')
+const themeButtonHoverBgColor = computed(() => darkMode.value ? '#1B2126' : '#FFF8CC')
 
 const toggleCollapse = () => {
     isCollapse.value = !isCollapse.value
@@ -107,8 +150,41 @@ const handleThemeSwitch = (event: MouseEvent) => {
     toggleDark()
 }
 
+const getIconUrl = (name: string) => {
+    if (!name) return '';
+    try {
+        return new URL(`../assets/tb/${name}.svg`, import.meta.url).href;
+    } catch (error) {
+        console.error('Error loading icon:', name, error);
+        return '';
+    }
+}
+
+const toggleIconMode = () => {
+    const containers = document.querySelectorAll('.icon-container');
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    
+    containers.forEach(container => {
+        if (isDarkMode) {
+            container.classList.remove('light-mode');
+            container.classList.add('dark-mode');
+        } else {
+            container.classList.remove('dark-mode');
+            container.classList.add('light-mode');
+        }
+    });
+}
+
+// 监听主题变化
+watch(isDark, (newValue) => {
+    document.body.classList.toggle('dark-mode', newValue);
+    toggleIconMode();
+});
+
 onMounted(() => {
     applyTheme()
+    document.body.classList.toggle('dark-mode', isDark.value);
+    toggleIconMode();
 })
 </script>
 
@@ -132,7 +208,7 @@ onMounted(() => {
     padding: 0 20px;
     overflow: hidden;
     background-color: v-bind(menuBgColor);
-    border-bottom: 1px solid v-bind(borderColor);
+    /* border-bottom: 1px solid v-bind(borderColor); */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     .logo-text {
@@ -186,12 +262,30 @@ onMounted(() => {
     margin-left: 4px;
 }
 
-.theme-switch {
-    margin-right: 8px;
+.theme-button {
+    background-color: v-bind(themeButtonBgColor);
+    border: none;
+    padding: 8px;
+    height: 40px;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-button:hover {
+    background-color: v-bind(themeButtonHoverBgColor);
+}
+
+.theme-icon {
+    width: 24px;
+    height: 24px;
 }
 
 .el-main {
-    background-color: v-bind(menuBgColor);
+    background-color: v-bind(mainBgColor);
     padding: 20px;
     height: calc(100vh - 60px);
     overflow-y: auto;
@@ -205,26 +299,23 @@ onMounted(() => {
 }
 
 :deep(.el-menu-item) {
-    border-radius: 20px;
+    border-radius: 10px;
     height: 30px;
     margin-left: 20px;
     background-color: v-bind(menuBgColor) !important;
     color: v-bind(menuTextColor) !important;
     border-right: none !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-
-    .el-icon {
-        color: v-bind(menuTextColor) !important;
-        transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+    display: flex;
+    align-items: center;
 
     &.is-active {
         background-color: rgba(255, 189, 51, 1) !important;
         color: v-bind(menuActiveTextColor) !important;
         border-right: none;
 
-        .el-icon {
-            color: v-bind(menuActiveTextColor) !important;
+        .menu-icon {
+            filter: brightness(0) invert(1);
         }
     }
 
@@ -233,19 +324,42 @@ onMounted(() => {
     }
 }
 
+:deep(.el-popper) {
+    --el-box-shadow: 5px 5px 5px rgba(255, 255, 255, 0.3) !important;
+    --el-box-shadow-light: 5px 5px 5px rgba(255, 255, 255, 0.3) !important;
+}
+
 :deep(.el-dropdown-menu) {
     background-color: v-bind(menuBgColor) !important;
     border: 1px solid v-bind(borderColor) !important;
 }
 
+:deep(.el-popper.is-pure.is-light) {
+    background-color: v-bind(menuBgColor) !important;
+    border: 1px solid v-bind(borderColor) !important;
+    box-shadow: var(--el-box-shadow) !important;
+}
+
+:deep(.el-popper__arrow) {
+    display: none !important;
+}
+
 :deep(.el-dropdown-menu__item) {
-    color: v-bind(menuTextColor) !important;
+    color: v-bind(dropdownTextColor) !important;
     background-color: v-bind(menuBgColor) !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    font-size: 13px;
 
     &:hover {
         background-color: v-bind(menuHoverBgColor) !important;
-        color: v-bind(menuActiveTextColor) !important;
+        color: #0078D9 !important;
+
+        .icon-container .dropdown-icon {
+            filter: invert(31%) sepia(100%) saturate(1954%) hue-rotate(197deg) brightness(96%) contrast(107%);
+        }
     }
 }
 
@@ -265,5 +379,31 @@ onMounted(() => {
 
 :deep(.el-switch.is-checked .el-switch__core .el-switch__inner .is-icon) {
     color: #fff !important;
+}
+
+.menu-icon {
+    width: 21px;
+    height: 21px;
+    margin-right: 8px;
+}
+
+.dropdown-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.icon-container {
+    display: flex;
+    align-items: center;
+}
+
+.icon-container.dark-mode .dropdown-icon {
+    filter: brightness(0) invert(1); /* 将图标变为白色 */
+}
+
+.icon-container.light-mode .dropdown-icon {
+    filter: invert(20%) sepia(0%) saturate(0%) hue-rotate(241deg) brightness(98%) contrast(94%); /* 将图标变为 #333333 */
 }
 </style>
