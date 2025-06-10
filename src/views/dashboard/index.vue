@@ -11,7 +11,7 @@
                     <div class="search-input">
                         <el-input
                             v-model="searchText"
-                            placeholder="搜索应用"
+                            placeholder="搜索应用..."
                             :prefix-icon="Search"
                         />
                     </div>
@@ -84,13 +84,13 @@
                             :class="{ 'dark-icon': isDark, 'light-icon': !isDark }"
                         />
                         <span>消防设备选型</span>
-                        <el-icon class="expand-icon"><More /></el-icon>
+                        <el-icon class="expand-icon"><MoreFilled /></el-icon>
                     </div>
                     <div class="list-items">
                         <div class="list-item" v-for="item in equipmentList" :key="item">
                             {{ item }}
                         </div>
-                        <div class="list-item more">更多选型 <el-icon><ArrowRight /></el-icon></div>
+                        <div class="list-item more">更多选型 <el-icon class="double-arrow"><DArrowRight /></el-icon></div>
                     </div>
                 </div>
                 <div class="supplier-list">
@@ -102,7 +102,7 @@
                             :class="{ 'dark-icon': isDark, 'light-icon': !isDark }"
                         />
                         <span>消防认证供应商</span>
-                        <el-icon class="expand-icon"><More /></el-icon>
+                        <el-icon class="expand-icon"><MoreFilled /></el-icon>
                     </div>
                     <div class="supplier-grid">
                         <div class="supplier-item" 
@@ -220,7 +220,7 @@
 </template>
 
 <script setup lang="ts">
-import { Search, Monitor, Setting, Shop, More, ArrowRight, Timer, Warning, Notification, Operation, ScaleToOriginal, Switch, Aim, Cpu, Smoking, Connection, Link, Microphone, OfficeBuilding, House, Management, Right } from '@element-plus/icons-vue'
+import { Search, Monitor, Setting, Shop, MoreFilled, ArrowRight, Timer, Warning, Notification, Operation, ScaleToOriginal, Switch, Aim, Cpu, Smoking, Connection, Link, Microphone, OfficeBuilding, House, Management, Right, DArrowRight } from '@element-plus/icons-vue'
 import { computed, ref, onMounted, watch } from 'vue'
 import { isDark } from '../../utils/theme'
 import { getAigcPrimaryList, getAigcChildrenList } from '@/api/aigc'
@@ -461,9 +461,10 @@ const tags = [
 
 // 计算样式
 const menuTextColor = computed(() => isDark.value ?'#EDEDED' : '#13343C')
-const subTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
+const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#13343C')
 const borderColor = computed(() => isDark.value ? 'transparent' : 'rgba(228, 231, 237, 0.6)')
-const menuBgColor = computed(() => isDark.value ? '#1d1e1f' : '#ffffff')
+const menuBgColor = computed(() => isDark.value ? '#000' : '#ffffff')
+const listheader = computed(() => isDark.value ? 'rgba(255, 255, 255, 0.3)' : 'rgba(51, 51, 51, 0.2980392156862745)')
 const menuHoverBgColor = computed(() => isDark.value ? '#2b2b2b' : '#f5f7fa')
 const dialogBgColor = computed(() => isDark.value ? '#141414' : '#ffffff')
 const dialogHeaderBgColor = computed(() => isDark.value ? '#1d1e1f' : '#f5f7fa')
@@ -750,7 +751,7 @@ const filteredSecondaryList = computed(() => {
 
 <style scoped>
 .dashboard-container {
-    padding: 20px;
+    /* padding: 20px; */
     width: 1200px;
     margin: 0 auto;
     border: 1px solid v-bind(borderColor);
@@ -786,6 +787,10 @@ const filteredSecondaryList = computed(() => {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+}
+.right-title{
+    margin: 0 16px;
+
 }
 
 .container-left {
@@ -987,14 +992,15 @@ const filteredSecondaryList = computed(() => {
 }
 
 .list-header {
-    padding: 16px;
+    padding: 16px 16px 16px 0;
+    margin: 0 16px;
     display: flex;
     align-items: center;
     gap: 8px;
     color: v-bind(menuTextColor);
     font-size: 14px;
     font-weight: 500;
-    border-bottom: 1px solid v-bind(borderColor);
+    border-bottom: 1px solid v-bind(listheader);
 }
 
 .list-header .expand-icon {
@@ -1031,14 +1037,24 @@ const filteredSecondaryList = computed(() => {
     color: #858694;
     justify-content: space-between;
     font-size: 12px;
+    padding-right: 0;
+    display: flex;
+    align-items: center;
 }
 
 .list-item.more:hover {
     color: rgb(249, 211, 74);
 }
 
-.list-item.more .el-icon {
+.list-item.more .double-arrow {
     font-size: 12px;
+    margin-left: 8px;
+    transform: rotate(90deg);
+    margin-right: 130px;
+    display: flex;
+    align-items: center;
+    height: 12px;
+    line-height: 1;
 }
 
 .supplier-grid {

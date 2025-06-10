@@ -3,10 +3,12 @@
         <ThemeTransition ref="themeTransitionRef" />
         <el-aside :width="isCollapse ? '64px' : '200px'">
             <div class="logo-container">
-                <el-icon :size="32" :color="menuTextColor">
-                    <Monitor />
-                </el-icon>
-                <span v-show="!isCollapse" class="logo-text">BeesFQD</span>
+                <img 
+                    :src="getIconUrl('beesfqd_ai_logo')" 
+                    alt="BeesFQD Logo" 
+                    class="logo-icon"
+                />
+                <!-- <span v-show="!isCollapse" class="logo-text">BeesFQD</span> -->
             </div>
             <el-menu :default-active="route.path" class="el-menu-vertical" :collapse="isCollapse" router
                 :background-color="menuBgColor" :text-color="menuTextColor" :active-text-color="menuActiveTextColor" style="padding: 20px;">
@@ -131,6 +133,10 @@ const dropdownTextColor = computed(() => isDark.value ? '#FFFFFF' : '#333333')
 const themeButtonBgColor = computed(() => darkMode.value ? '#333333' : '#E8E9E4')
 const themeButtonHoverBgColor = computed(() => darkMode.value ? '#1B2126' : '#FFF8CC')
 
+const logoFilter = computed(() => darkMode.value ? 'brightness(0) invert(1)' : 'none')
+
+const dropdownBgColor = computed(() => isDark.value ? 'var(--el-bg-color)' : '#E8E9E4')
+
 const toggleCollapse = () => {
     isCollapse.value = !isCollapse.value
 }
@@ -192,6 +198,7 @@ onMounted(() => {
 .layout-container {
     height: 100vh;
     width: 100%;
+    --dropdown-bg-color: v-bind(isDark.value ? 'var(--el-bg-color)' : '#E8E9E4');
 }
 
 .el-aside {
@@ -222,6 +229,7 @@ onMounted(() => {
 }
 
 .el-menu {
+    padding-top: 17.5px !important;
     border-right: none !important;
     height: calc(100% - 60px);
     background-color: v-bind(menuBgColor) !important;
@@ -301,7 +309,7 @@ onMounted(() => {
 :deep(.el-menu-item) {
     border-radius: 10px;
     height: 30px;
-    margin-left: 20px;
+    /* margin-left: 20px; */
     background-color: v-bind(menuBgColor) !important;
     color: v-bind(menuTextColor) !important;
     border-right: none !important;
@@ -324,42 +332,28 @@ onMounted(() => {
     }
 }
 
-:deep(.el-popper) {
-    --el-box-shadow: 5px 5px 5px rgba(255, 255, 255, 0.3) !important;
-    --el-box-shadow-light: 5px 5px 5px rgba(255, 255, 255, 0.3) !important;
-}
-
-:deep(.el-dropdown-menu) {
-    background-color: v-bind(menuBgColor) !important;
-    border: 1px solid v-bind(borderColor) !important;
-}
-
+:deep(.el-dropdown-menu),
 :deep(.el-popper.is-pure.is-light) {
-    background-color: v-bind(menuBgColor) !important;
+    background-color: var(--dropdown-bg-color) !important;
     border: 1px solid v-bind(borderColor) !important;
-    box-shadow: var(--el-box-shadow) !important;
-}
-
-:deep(.el-popper__arrow) {
-    display: none !important;
 }
 
 :deep(.el-dropdown-menu__item) {
+    background-color: var(--dropdown-bg-color) !important;
     color: v-bind(dropdownTextColor) !important;
-    background-color: v-bind(menuBgColor) !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     display: flex;
     align-items: center;
     padding: 8px 16px;
     font-size: 13px;
+}
 
-    &:hover {
-        background-color: v-bind(menuHoverBgColor) !important;
-        color: #0078D9 !important;
+:deep(.el-dropdown-menu__item:hover) {
+    background-color: v-bind(menuHoverBgColor) !important;
+    color: #0078D9 !important;
 
-        .icon-container .dropdown-icon {
-            filter: invert(31%) sepia(100%) saturate(1954%) hue-rotate(197deg) brightness(96%) contrast(107%);
-        }
+    .icon-container .dropdown-icon {
+        filter: invert(31%) sepia(100%) saturate(1954%) hue-rotate(197deg) brightness(96%) contrast(107%);
     }
 }
 
@@ -405,5 +399,21 @@ onMounted(() => {
 
 .icon-container.light-mode .dropdown-icon {
     filter: invert(20%) sepia(0%) saturate(0%) hue-rotate(241deg) brightness(98%) contrast(94%); /* 将图标变为 #333333 */
+}
+
+.logo-icon {
+    width: 140px;
+    height: 30px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: v-bind(logoFilter);
+    margin: 17.5px 0 0 0;
+}
+
+:deep(.el-popper__arrow) {
+    display: none !important;
+}
+
+:root {
+    --el-dropdown-menu-bg-color: v-bind(dropdownBgColor);
 }
 </style>

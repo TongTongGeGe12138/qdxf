@@ -151,7 +151,7 @@ body {
 }
 
 .el-main {
-  padding: 20px;
+  padding: 10px 20px 20px 20px;
   background-color: var(--theme-background);
   transition: all 0.3s;
 }
@@ -176,23 +176,38 @@ body {
 
 /* 下拉菜单样式 */
 .el-dropdown-menu {
-  background-color: var(--theme-menuBg) !important;
-  border-color: var(--theme-borderColor) !important;
-  transition: all 0.3s !important;
+    --el-bg-color: var(--el-bg-color) !important;
+    --el-bg-color-overlay: var(--el-bg-color) !important;
+    background-color: var(--el-bg-color) !important;
+    border-color: var(--theme-borderColor) !important;
+    transition: all 0.3s !important;
+}
+
+html:not(.dark) .el-dropdown-menu,
+html:not(.dark) .el-popper.is-pure.is-light {
+    --el-bg-color: #E8E9E4 !important;
+    --el-bg-color-overlay: #E8E9E4 !important;
+    background-color: #E8E9E4 !important;
 }
 
 .el-dropdown-menu__item {
-  color: var(--theme-menuText) !important;
-  transition: all 0.3s !important;
+    color: var(--theme-menuText) !important;
+    background-color: var(--el-bg-color) !important;
+    transition: all 0.3s !important;
+}
+
+html:not(.dark) .el-dropdown-menu__item {
+    background-color: #E8E9E4 !important;
 }
 
 .el-dropdown-menu__item:hover {
-  background-color: var(--theme-menuHover) !important;
+    background-color: var(--theme-menuHover) !important;
 }
 
 /* 输入框样式 */
 .el-input__wrapper {
-  background-color: var(--theme-menuBg) !important;
+  /* background-color: var(--theme-menuBg) !important; */
+  background-color: #000 !important;
   border-color: var(--theme-borderColor) !important;
   transition: all 0.3s !important;
 }
@@ -319,6 +334,7 @@ body {
 
 /* 下拉菜单样式 */
 .el-popper.el-dropdown__popper {
+  margin-top: 10px !important;
     box-shadow: 5px 5px 5px rgba(255, 255, 255, 0.3) !important;
 }
 
