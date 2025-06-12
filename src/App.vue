@@ -6,6 +6,15 @@
 
 <script setup lang="ts">
 import { ElConfigProvider } from 'element-plus'
+import { onMounted } from 'vue'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+
+onMounted(() => {
+  // 加载存储的用户信息
+  userStore.loadUserInfo()
+})
 </script>
 
 <style>

@@ -10,7 +10,7 @@ interface ApiResponse<T> {
 
 // 定义请求参数类型
 interface LoginParams {
-  username?: string;
+  account?: string;
   password?: string;
   phone?: string;
   code?: string;
@@ -43,6 +43,12 @@ interface ResourceSummaryParams {
   resourceType?: string;
   startDate?: string;
   endDate?: string;
+}
+
+// 微信登录参数接口
+interface WxLoginParams {
+  code: string;
+  state: string;
 }
 
 const Api = {
@@ -110,13 +116,13 @@ export function GetUserCenterRegister(data: LoginParams) {
 // 发送注册验证码
 export function UserCenterPostSendCode(phone: string) {
   return request.post<ProjectListResult>({
-    url: `${Api.UserCenterPostSendCodeUrl}${phone}/code`,
+    url: `${Api.UserCenterPostSendCodeUrl}/${phone}/code`,
   });
 }
 
 // 登录(手机号/用户名+密码)
 export function UserCenterLogin(data: LoginParams) {
-  return request.post<ProjectListResult>({
+  return request.post<ApiResponse<any>>({
     url: Api.UserCenterLoginUrl,
     data,
   });
@@ -132,7 +138,7 @@ export function UserCenterCodeLogin(data: LoginParams) {
 
 // 登出
 export function UserLoginOut() {
-  return request.post<ProjectListResult>({
+  return request.post<ApiResponse<any>>({
     url: Api.UserLoginOutUrl,
   });
 }
@@ -349,6 +355,14 @@ export function UserCenterBuyScore(data: any) {
 export function UserCenterGetUserResourceSummarys(data: ResourceSummaryParams) {
   return request.post<ApiResponse<any>>({
     url: Api.UserCenterGetUserResourceSummarysUrl,
+    data,
+  });
+}
+
+// 微信扫码登录
+export function UserCenterWxLogin(data: WxLoginParams) {
+  return request.post<ApiResponse<any>>({
+    url: '/auth/wx-web/login',
     data,
   });
 }
