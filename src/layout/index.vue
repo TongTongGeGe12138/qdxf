@@ -12,11 +12,12 @@
             </div>
             <el-menu :default-active="route.path" class="el-menu-vertical" :collapse="isCollapse" router
                 :background-color="menuBgColor" :text-color="menuTextColor" :active-text-color="menuActiveTextColor" style="padding: 20px;">
-                <el-menu-item index="/dashboard">
+                <el-menu-item v-for="route in routes" :key="route.path" :index="route.path" v-if="route.meta?.title">
                     <img 
                         :src="getIconUrl(route.meta?.icon as string)"
                         :alt="route.meta?.title as string"
                         class="menu-icon"
+                        @click.stop
                     />
                     <span>{{ route.meta?.title }}</span>
                 </el-menu-item>
@@ -96,13 +97,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Fold, Expand, Moon, Sunny, UserFilled, Monitor } from '@element-plus/icons-vue'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import { isDark, toggleDark, applyTheme } from '../utils/theme'
 import ThemeTransition from '../components/ThemeTransition.vue'
 
 const route = useRoute()
+const router = useRouter()
 const isCollapse = ref(false)
 const themeTransitionRef = ref()
 
@@ -136,6 +138,12 @@ const themeButtonHoverBgColor = computed(() => darkMode.value ? '#1B2126' : '#FF
 const logoFilter = computed(() => darkMode.value ? 'brightness(0) invert(1)' : 'none')
 
 const dropdownBgColor = computed(() => isDark.value ? 'var(--el-bg-color)' : '#E8E9E4')
+
+// 获取路由配置中的菜单项
+const routes = computed(() => {
+    const mainRoute = router.options.routes.find(route => route.path === '/')
+    return mainRoute?.children || []
+})
 
 const toggleCollapse = () => {
     isCollapse.value = !isCollapse.value
@@ -376,9 +384,10 @@ onMounted(() => {
 }
 
 .menu-icon {
-    width: 21px;
-    height: 21px;
+    width: 24px;
+    height: 24px;
     margin-right: 8px;
+    pointer-events: none;  /* 禁止图标的点击事件 */
 }
 
 .dropdown-icon {

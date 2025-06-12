@@ -6,6 +6,10 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import { initTheme } from './utils/theme'
+
+// 初始化主题
+initTheme()
 
 const app = createApp(App)
 

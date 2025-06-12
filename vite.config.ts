@@ -25,7 +25,7 @@ export default defineConfig({
       [VITE_API_URL_PREFIX]: {
         target: 'http://192.168.15.200:9100',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '/api'),
+        // rewrite: (path) => path.replace(/^\/api/, ''),
       },
       [VITE_API_URL_PREFIX_LOG]: {
         target: 'http://api.dev.ifeng.com',

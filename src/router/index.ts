@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory  } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
 const routes: Array<RouteRecordRaw> = [
@@ -6,7 +6,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/',
     name: 'Layout',
     component: () => import('../layout/index.vue'),
-    redirect: '/dashboard',
+    redirect: '/login',
     children: [
       {
         path: '/dashboard',
@@ -15,6 +15,15 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           title: '智能应用',
           icon: 'smart_application'
+        }
+      },
+      {
+        path: '/desktop',
+        name: 'Desktop',
+        component: () => import('../views/desktop/index.vue'),
+        meta: {
+          title: '我的桌面',
+          icon: '左栏 - 我的桌面'
         }
       }
     ]
@@ -32,7 +41,7 @@ const routes: Array<RouteRecordRaw> = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory (),
   routes
 })
 

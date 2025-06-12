@@ -70,6 +70,16 @@ function updateCssVar(prop: string, value: string) {
 // 主题状态
 export const isDark = ref(false)
 
+// 初始化主题
+export function initTheme() {
+  // 从 localStorage 读取主题设置
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme) {
+    isDark.value = savedTheme === 'dark'
+    applyTheme()
+  }
+}
+
 // 应用主题
 export function applyTheme() {
   const theme = isDark.value ? darkTheme : lightTheme
@@ -79,6 +89,15 @@ export function applyTheme() {
   
   // 更新类名
   document.documentElement.classList.toggle('dark', isDark.value)
+  
+  // 保存主题设置
+  localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+  
+  // 强制触发重新渲染
+  document.body.style.backgroundColor = isDark.value ? '#141414' : 'rgba(231, 232, 235, 1)'
+  setTimeout(() => {
+    document.body.style.backgroundColor = ''
+  }, 0)
 }
 
 // 切换暗色/亮色主题

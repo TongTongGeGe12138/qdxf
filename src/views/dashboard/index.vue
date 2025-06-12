@@ -437,12 +437,6 @@ const handleConfirm = () => {
 
 // 在页面加载时检查是否需要显示弹框
 onMounted(() => {
-    // 检查并应用保存的主题
-    const savedTheme = localStorage.getItem('theme')
-    if (savedTheme) {
-        isDark.value = savedTheme === 'dark'
-    }
-    
     // 检查是否显示弹框
     const hideDialog = localStorage.getItem('hideStandardDialog')
     if (!hideDialog) {
@@ -461,8 +455,10 @@ const tags = [
 
 // 计算样式
 const menuTextColor = computed(() => isDark.value ?'#EDEDED' : '#13343C')
-const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#13343C')
+const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#A1A1A1')
+const vTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const borderColor = computed(() => isDark.value ? 'transparent' : 'rgba(228, 231, 237, 0.6)')
+const VborderColor = computed(() => isDark.value ? '#EDEDED' : 'rgba(228, 231, 237, 0.6)')
 const menuBgColor = computed(() => isDark.value ? '#000' : '#ffffff')
 const listheader = computed(() => isDark.value ? 'rgba(255, 255, 255, 0.3)' : 'rgba(51, 51, 51, 0.2980392156862745)')
 const menuHoverBgColor = computed(() => isDark.value ? '#2b2b2b' : '#f5f7fa')
@@ -931,7 +927,7 @@ const filteredSecondaryList = computed(() => {
     width: 100%;
 }
 
-@media screen and (max-width: 1440px) {
+@media screen and (max-width: 1439px) {
     .card-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -1050,7 +1046,7 @@ const filteredSecondaryList = computed(() => {
     font-size: 12px;
     margin-left: 8px;
     transform: rotate(90deg);
-    margin-right: 130px;
+    margin-right: 110px;
     display: flex;
     align-items: center;
     height: 12px;
@@ -1342,9 +1338,10 @@ const filteredSecondaryList = computed(() => {
     height: 40px;
     margin-top: 20px;
     padding: 0 24px;
-    font-size: 12px;
-    color: v-bind(subTextColor);
-    border-top: 1px solid v-bind(borderColor);
+    font-size: 14px;
+    font-weight: 400;
+    color: v-bind(vTextColor);
+    border-top: 1px solid v-bind(VborderColor);
     display: flex;
     align-items: center;
 }
