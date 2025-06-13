@@ -9,10 +9,12 @@
       </div>
       <div class="right">
         <div class="login-type-switch">
-          <div class="qrcode-switch" @click="loginType = loginType === 'account' ? 'qrcode' : 'account'">
-            <img src="@/assets/qrcode-scan.svg" alt="" class="QRcode" v-if="loginType === 'account'" />
-            <img src="@/assets/phone.svg" alt="" class="QRcode" v-else />
-          </div>
+          <el-tooltip :content="loginType === 'account' ? '扫码登录' : '手机登录'" placement="left" effect="dark" popper-class="custom-tooltip">
+            <div class="qrcode-switch" @click="loginType = loginType === 'account' ? 'qrcode' : 'account'">
+              <img src="@/assets/qrcode-scan.svg" alt="" class="QRcode" v-if="loginType === 'account'" />
+              <img src="@/assets/phone.svg" alt="" class="QRcode" v-else />
+            </div>
+          </el-tooltip>
         </div>
 
         <!-- 账号密码登录 -->
@@ -46,12 +48,14 @@
 
             <el-form-item>
               <el-checkbox v-model="loginForm.agreement" class="dark-checkbox">
-                我已阅读并同意 <el-link type="primary" class="yellow-link">用户协议</el-link> 和 <el-link type="primary"
-                  class="yellow-link">隐私政策</el-link>
+                <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
+                <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">用户协议</el-link>
+                <span style="font-size: 10px; color: #A1A1A1;">和</span>
+                <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">隐私政策</el-link>
               </el-checkbox>
             </el-form-item>
 
-            <el-button type="primary" class="login-button" :loading="loading" @click="handleLogin">
+            <el-button type="primary" class="login-button" :loading="loading" :disabled="!loginForm.agreement" @click="handleLogin" style="background-color: rgba(249, 222, 74, 1) !important; color: #000 !important; border: none !important; transition: background-color 0.3s;" @mouseover="$event.target.style.backgroundColor='rgba(255, 234, 101, 1)'" @mouseleave="$event.target.style.backgroundColor='rgba(249, 222, 74, 1)'">
               登录
             </el-button>
           </el-form>
@@ -67,9 +71,11 @@
             <div class="qrcode-box">
               <div id="login_container"></div>
             </div>
-            <el-checkbox v-model="loginForm.agreement" class="dark-checkbox" style="font-size: 10px;">
-              我已阅读并同意 <el-link type="primary" class="yellow-link">用户协议</el-link> 和 <el-link type="primary"
-                class="yellow-link">隐私政策</el-link>
+            <el-checkbox v-model="loginForm.agreement" class="dark-checkbox">
+              <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
+              <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">用户协议</el-link>
+              <span style="font-size: 10px; color: #A1A1A1;">和</span>
+              <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">隐私政策</el-link>
             </el-checkbox>
           </div>
         </template>
@@ -146,20 +152,24 @@
 
             <el-form-item>
               <el-checkbox v-model="registerForm.agreement" class="dark-checkbox">
-                我已阅读并同意BeesFPD的 <el-link type="primary" class="yellow-link">用户协议</el-link> 和 <el-link type="primary"
-                  class="yellow-link">隐私政策</el-link>
+                <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
+                <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">用户协议</el-link>
+                <span style="font-size: 10px; color: #A1A1A1;">和</span>
+                <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">隐私政策</el-link>
               </el-checkbox>
             </el-form-item>
 
-            <el-button type="primary" class="login-button" :disabled="!registerForm.agreement" @click="handleRegister(registerFormRef)">
+            <el-button type="primary" class="login-button" :disabled="!registerForm.agreement" @click="handleRegister(registerFormRef)" style="background-color: rgba(249, 222, 74, 1) !important; color: #000 !important; border: none !important; transition: background-color 0.3s;" @mouseover="$event.target.style.backgroundColor='rgba(255, 234, 101, 1)'" @mouseleave="$event.target.style.backgroundColor='rgba(249, 222, 74, 1)'">
               注册登录
             </el-button>
           </el-form>
         </template>
 
         <div class="login-footer">
-          <el-link class="dark-link" @click="loginType = 'register'" v-if="loginType != 'register'">没有账户？注册账号</el-link>
-          <el-link class="dark-link" @click="loginType = 'account'" v-else>已有账户？登录</el-link>
+          <el-link class="dark-link" @click="showForgotPasswordDialog = true" v-if="loginType === 'account'" style="font-size: 12px; color: #A1A1A1;">忘记密码？</el-link>
+          <br v-if="loginType === 'account'" />
+          <el-link class="dark-link" @click="loginType = 'register'" v-if="loginType != 'register'" style="margin-top: 10px;font-size: 12px; color: #A1A1A1;">没有账户？<span style="text-decoration: underline;">注册账号</span></el-link>
+          <el-link class="dark-link" @click="loginType = 'account'" v-else style="font-size: 12px; color: #A1A1A1;">已有账户？登录</el-link>
         </div>
       </div>
     </div>
@@ -169,8 +179,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import type { FormInstance, FormItemProp } from 'element-plus'
-import { User, Lock } from '@element-plus/icons-vue'
+import type { FormInstance } from 'element-plus'
 import { UserCenterLogin, UserCenterPostSendCode, GetUserCenterRegister } from '@/api/userCenter'
 import { getProfessionList } from '@/api/dict'
 import { ElMessage } from 'element-plus'
@@ -178,19 +187,64 @@ import { useUserStore } from '@/stores/user'
 
 declare const WxLogin: any;
 
+// 类型定义
+interface LoginForm {
+  account: string
+  password: string
+  agreement: boolean
+}
+
+interface RegisterForm {
+  mobile: string
+  password: string
+  confirmPassword: string
+  verifyCode: string
+  identity: string
+  description: string
+  agreement: boolean
+}
+
+interface ProfessionOption {
+  value: string
+  label: string
+}
+
+interface ErrorMessages {
+  account: string
+  password: string
+  username: string
+  confirmPassword: string
+  mobile: string
+  verifyCode: string
+}
+
+// 常量定义
+const COUNTDOWN_TIME = 120
+const MOBILE_REGEX = /^1[3-9]\d{9}$/
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,16}$/
+
+// 组件实例
 const router = useRouter()
 const userStore = useUserStore()
 const loginFormRef = ref<FormInstance>()
+const registerFormRef = ref<FormInstance>()
+
+// 响应式状态
 const loading = ref(false)
 const loginType = ref<'account' | 'qrcode' | 'register'>('account')
+const showForgotPasswordDialog = ref(false)
+const countdown = ref(0)
+const sendCodeText = ref('获取验证码')
+const professionOptions = ref<ProfessionOption[]>([])
 
-const loginForm = reactive({
+// 表单数据
+const loginForm = reactive<LoginForm>({
   account: '',
   password: '',
-  agreement: false
+  agreement: true
 })
 
-const registerForm = reactive({
+const registerForm = reactive<RegisterForm>({
   mobile: '',
   password: '',
   confirmPassword: '',
@@ -200,12 +254,7 @@ const registerForm = reactive({
   agreement: true
 })
 
-const registerFormRef = ref<FormInstance>()
-const countdown = ref(0)
-const sendCodeText = ref('获取验证码')
-let timer: NodeJS.Timeout | null = null
-
-const errorMessages = reactive({
+const errorMessages = reactive<ErrorMessages>({
   account: '',
   password: '',
   username: '',
@@ -214,31 +263,7 @@ const errorMessages = reactive({
   verifyCode: ''
 })
 
-// 专业身份选项
-const professionOptions = ref([])
-
-// 获取专业身份列表
-const loadProfessionList = async () => {
-  try {
-    console.log('开始获取专业身份列表')
-    const res = await getProfessionList()
-    console.log('专业身份列表返回结果：', res)
-    if (res.code === 200 && res.data) {
-      professionOptions.value = res.data
-    } else {
-      ElMessage.error('获取专业身份列表失败')
-    }
-  } catch (error) {
-    console.error('获取专业身份列表错误：', error)
-    ElMessage.error('获取专业身份列表失败')
-  }
-}
-
-// 组件挂载时获取专业身份列表
-onMounted(() => {
-  loadProfessionList()
-})
-
+// 表单验证规则
 const loginRules = {
   account: [{
     required: true,
@@ -253,7 +278,7 @@ const loginRules = {
     validateStatus: 'success'
   }],
   agreement: [{
-    validator: (rule: any, value: boolean, callback: any) => {
+    validator: (_: any, value: boolean, callback: any) => {
       if (!value) {
         callback(new Error('请阅读并同意用户协议和隐私政策'))
       } else {
@@ -268,18 +293,17 @@ const loginRules = {
 const registerRules = reactive({
   mobile: [
     { required: true, message: '请输入手机号', trigger: 'blur' },
-    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }
+    { pattern: MOBILE_REGEX, message: '请输入正确的手机号', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
     { min: 6, max: 16, message: '请输入6-16位包含字母大小写及数字密码', trigger: 'blur' },
-    { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,16}$/, message: '密码必须包含大小写字母和数字', trigger: 'blur' }
+    { pattern: PASSWORD_REGEX, message: '密码必须包含大小写字母和数字', trigger: 'blur' }
   ],
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },
     {
       validator: (rule: any, value: string, callback: Function) => {
-        console.log('验证确认密码：', value, registerForm.password)
         if (value !== registerForm.password) {
           callback(new Error('两次输入密码不一致'))
         } else {
@@ -298,9 +322,28 @@ const registerRules = reactive({
   ]
 })
 
+// 定时器
+let timer: NodeJS.Timeout | null = null
+
+// 方法定义
+const loadProfessionList = async () => {
+  try {
+    const res = await getProfessionList()
+    if (res.code === 200 && res.data) {
+      professionOptions.value = res.data.map((item: any) => ({
+        value: item.id,
+        label: item.name
+      }))
+    } else {
+      ElMessage.error('获取专业身份列表失败')
+    }
+  } catch (error) {
+    console.error('获取专业身份列表错误：', error)
+    ElMessage.error('获取专业身份列表失败')
+  }
+}
+
 const handleLogin = async () => {
-  console.log(99999999999);
-  
   loading.value = true
   const isValid = await validateForm(loginFormRef.value)
 
@@ -311,11 +354,7 @@ const handleLogin = async () => {
         password: loginForm.password
       })
 
-      // 输出登录响应日志
-      console.log('登录响应数据：', response)
-
       if (response.code === 200) {
-        // 存储用户信息
         userStore.setUserInfo({
           sessionId: response.data.sessionId,
           accessToken: response.data.accessToken,
@@ -339,81 +378,6 @@ const handleLogin = async () => {
   }
 }
 
-// 监听输入，清除对应的错误信息
-watch(() => loginForm.account, () => {
-  errorMessages.account = ''
-})
-
-watch(() => loginForm.password, () => {
-  errorMessages.password = ''
-})
-
-// 初始化微信登录二维码
-onMounted(() => {
-  if (loginType.value === 'qrcode') {
-    initWxLogin()
-  }
-})
-
-// 监听登录类型变化
-watch(loginType, (newType) => {
-  if (newType === 'qrcode') {
-    // 在下一个 tick 初始化二维码，确保容器已经渲染
-    nextTick(() => {
-      initWxLogin()
-    })
-  }
-})
-
-// 初始化微信登录
-const initWxLogin = () => {
-  const { hostname } = window.location;
-  let signinUrl = 'signin';
-  if (hostname === 'work-uat.gatherbee.cn') {
-    signinUrl += '-uat';
-  } else if (hostname === 'work.dev.ifeng.com') {
-    signinUrl += '-sit';
-  }
-  const redirectUri = `https://www.gatherbee.cn/${signinUrl}`;
-
-  new WxLogin({
-    self_redirect: false,
-    id: 'login_container',
-    appid: import.meta.env.VITE_BASE_APP_ID,
-    scope: 'snsapi_login',
-    redirect_uri: redirectUri,
-    state: 'from_wxweb',
-    style: 'black',
-    stylelite: 1,
-    href: 'data:text/css;base64,LmltcG93ZXJCb3ggLnRpdGxlIHtkaXNwbGF5OiBub25lO30uaW1wb3dlckJveCAucXJjb2RlIHtib3JkZXI6IG5vbmU7d2lkdGg6IDIwMHB4O2hlaWdodDogMjAwcHg7fS5pbXBvd2VyQm94IC5pbmZve3dpZHRoOiAyMDlweH0uaW1wb3dlckJveCAud3JwX2NvZGV7d2lkdGg6IDEwMCU7fS5pbXBvd2VyQm94IHt3aWR0aDogMjA5cHg7fS5pbXBvd2VyQm94IC5pY29uMzhfbXNnIHtkaXNwbGF5OiBub25lO3dpZHRoOiA0NHB4O2hlaWdodDogNDRweDtiYWNrZ3JvdW5kLXNpemU6IGNvdmVyO30uaW1wb3dlckJveCAuc3RhdHVzX3R4dCB7dGV4dC1hbGlnbjogY2VudGVyO30='
-  })
-
-  // 监听微信登录消息
-  window.addEventListener('message', handleWxLoginMessage, false)
-}
-
-// 处理微信登录消息
-const handleWxLoginMessage = (event: MessageEvent) => {
-  console.log('收到微信登录消息：', event)
-
-  // 判断消息来源
-  if (event.origin !== 'https://open.work.weixin.qq.com') return
-
-  // 解析消息数据
-  const loginData = event.data
-  if (loginData.wx_code) {
-    // TODO: 这里处理微信登录逻辑
-    console.log('微信登录成功，code:', loginData.wx_code)
-    // 可以调用您的登录接口
-    // await login(loginData.wx_code)
-  }
-}
-
-// 组件卸载时移除事件监听
-onUnmounted(() => {
-  window.removeEventListener('message', handleWxLoginMessage)
-})
-
 const validateForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return false
 
@@ -421,11 +385,9 @@ const validateForm = async (formEl: FormInstance | undefined) => {
     let isValid = false
     await formEl.validate((valid, fields) => {
       if (!valid && fields) {
-        // 清空之前的错误信息
         errorMessages.account = ''
         errorMessages.password = ''
 
-        // 设置新的错误信息
         Object.keys(fields).forEach(key => {
           if (key === 'account' || key === 'password') {
             const fieldErrors = fields[key]
@@ -443,13 +405,9 @@ const validateForm = async (formEl: FormInstance | undefined) => {
   }
 }
 
-// 发送验证码
 const sendVerifyCode = async () => {
-  console.log(99999999999999999999);
-  
   if (countdown.value > 0) return
   
-  // 验证手机号
   const mobileValid = await validateField(registerFormRef.value, 'mobile')
   if (!mobileValid) {
     ElMessage.warning('请输入手机号码')
@@ -457,28 +415,11 @@ const sendVerifyCode = async () => {
   }
 
   try {
-    console.log('开始发送验证码，手机号：', registerForm.mobile)
     const res = await UserCenterPostSendCode(registerForm.mobile)
-    console.log('验证码发送结果：', res)
     
     if (res.code === 200) {
       ElMessage.success('验证码发送成功')
-      
-      // 开始倒计时
-      countdown.value = 120
-      sendCodeText.value = `${countdown.value}s后重新获取`
-      
-      timer = setInterval(() => {
-        countdown.value--
-        sendCodeText.value = `${countdown.value}s后重新获取`
-        if (countdown.value <= 0) {
-          sendCodeText.value = '获取验证码'
-          if (timer) {
-            clearInterval(timer)
-            timer = null
-          }
-        }
-      }, 1000)
+      startCountdown()
     } else {
       ElMessage.error(res.message || '验证码发送失败')
     }
@@ -488,58 +429,40 @@ const sendVerifyCode = async () => {
   }
 }
 
-// 清理定时器
-onUnmounted(() => {
-  if (timer) {
-    clearInterval(timer)
-    timer = null
-  }
-})
+const startCountdown = () => {
+  countdown.value = COUNTDOWN_TIME
+  sendCodeText.value = `${countdown.value}s后重新获取`
+  
+  timer = setInterval(() => {
+    countdown.value--
+    sendCodeText.value = `${countdown.value}s后重新获取`
+    if (countdown.value <= 0) {
+      sendCodeText.value = '获取验证码'
+      if (timer) {
+        clearInterval(timer)
+        timer = null
+      }
+    }
+  }, 1000)
+}
 
-// 验证单个字段
 const validateField = async (formEl: FormInstance | undefined, field: string): Promise<boolean> => {
   if (!formEl) return false
   
   try {
-    console.log(`开始验证字段 ${field}`)
     await formEl.validateField(field)
-    console.log(`字段 ${field} 验证通过`)
     return true
   } catch (error) {
-    console.log(`字段 ${field} 验证失败:`, error)
     return false
   }
 }
 
-// 注册提交
 const handleRegister = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
   
-  console.log('开始验证注册表单数据：', registerForm)
   await formEl.validate(async (valid, fields) => {
-    console.log('表单验证结果：', valid)
-    if (fields) {
-      console.log('验证失败的字段：', fields)
-    }
     if (valid) {
       try {
-        console.log('开始调用注册接口，参数：', {
-          phone: registerForm.mobile,
-          code: registerForm.verifyCode,
-          password: registerForm.password,
-          utm: {
-            source: 'referral',
-            medium: 'offline',
-            campaign: '',
-            content: registerForm.description || 'dev',
-            term: registerForm.identity || ''
-          },
-          referrer: 'string',
-          wxOpen: {
-            code: 'string'
-          }
-        })
-
         const res = await GetUserCenterRegister({
           phone: registerForm.mobile,
           code: registerForm.verifyCode,
@@ -557,13 +480,9 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
           }
         })
 
-        console.log('注册接口返回结果：', res)
-
         if (res.code === 200) {
           ElMessage.success('注册成功')
-          // 注册成功后切换到登录状态
           loginType.value = 'account'
-          // 自动填充登录表单
           loginForm.account = registerForm.mobile
           loginForm.password = registerForm.password
         } else {
@@ -573,26 +492,106 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
         console.error('注册失败：', error)
         ElMessage.error('注册失败，请稍后重试')
       }
-    } else {
-      // 显示具体的验证错误信息
+    } else if (fields) {
       let errorMsg = '请检查以下字段：'
-      if (fields) {
-        Object.keys(fields).forEach(key => {
-          const fieldErrors = fields[key]
-          if (fieldErrors && fieldErrors.length > 0) {
-            errorMsg += `\n${key}: ${fieldErrors[0].message}`
-          }
-        })
-        console.log(errorMsg)
-        ElMessage.error(errorMsg)
-      }
+      Object.keys(fields).forEach(key => {
+        const fieldErrors = fields[key]
+        if (fieldErrors && fieldErrors.length > 0) {
+          errorMsg += `\n${key}: ${fieldErrors[0].message}`
+        }
+      })
+      ElMessage.error(errorMsg)
     }
   })
 }
 
+// 微信登录相关
+const initWxLogin = () => {
+  const { hostname } = window.location
+  let signinUrl = 'signin'
+  if (hostname === 'work-uat.gatherbee.cn') {
+    signinUrl += '-uat'
+  } else if (hostname === 'work.dev.ifeng.com') {
+    signinUrl += '-sit'
+  }
+  const redirectUri = `https://www.gatherbee.cn/${signinUrl}`
+
+  new WxLogin({
+    self_redirect: false,
+    id: 'login_container',
+    appid: import.meta.env.VITE_BASE_APP_ID,
+    scope: 'snsapi_login',
+    redirect_uri: redirectUri,
+    state: 'from_wxweb',
+    style: 'black',
+    stylelite: 1,
+    href: 'data:text/css;base64,LmltcG93ZXJCb3ggLnRpdGxlIHtkaXNwbGF5OiBub25lO30uaW1wb3dlckJveCAucXJjb2RlIHtib3JkZXI6IG5vbmU7d2lkdGg6IDIwMHB4O2hlaWdodDogMjAwcHg7fS5pbXBvd2VyQm94IC5pbmZve3dpZHRoOiAyMDlweH0uaW1wb3dlckJveCAud3JwX2NvZGV7d2lkdGg6IDEwMCU7fS5pbXBvd2VyQm94IHt3aWR0aDogMjA5cHg7fS5pbXBvd2VyQm94IC5pY29uMzhfbXNnIHtkaXNwbGF5OiBub25lO3dpZHRoOiA0NHB4O2hlaWdodDogNDRweDtiYWNrZ3JvdW5kLXNpemU6IGNvdmVyO30uaW1wb3dlckJveCAuc3RhdHVzX3R4dCB7dGV4dC1hbGlnbjogY2VudGVyO30='
+  })
+
+  window.addEventListener('message', handleWxLoginMessage, false)
+}
+
+const handleWxLoginMessage = (event: MessageEvent) => {
+  if (event.origin !== 'https://open.work.weixin.qq.com') return
+
+  const loginData = event.data
+  if (loginData.wx_code) {
+    console.log('微信登录成功，code:', loginData.wx_code)
+  }
+}
+
+// 监听器
+watch(() => loginForm.account, () => {
+  errorMessages.account = ''
+})
+
+watch(() => loginForm.password, () => {
+  errorMessages.password = ''
+})
+
+watch(loginType, (newType) => {
+  if (newType === 'qrcode') {
+    nextTick(() => {
+      initWxLogin()
+    })
+  }
+})
+
+// 生命周期钩子
+onMounted(() => {
+  loadProfessionList()
+  if (loginType.value === 'qrcode') {
+    initWxLogin()
+  }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('message', handleWxLoginMessage)
+  if (timer) {
+    clearInterval(timer)
+    timer = null
+  }
+})
 </script>
 
-<style scoped lang="less">
+<style lang="less" scoped>
+// 变量定义
+@primary-color: #FFBD33;
+@text-color: #FFFFFF;
+@bg-dark: #1a1a1a;
+@bg-darker: #2a2a2a;
+@text-gray: #999;
+@border-color: #333;
+@error-bg: #303133;
+@error-border: #797979;
+
+// 混入
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .login-container {
   height: 100vh;
   display: flex;
@@ -610,9 +609,7 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
     .left {
       width: 380px;
       height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      .flex-center();
       background: url('@/assets/banner.jpg') no-repeat center center;
       background-size: 100% 100%;
 
@@ -625,7 +622,7 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
         }
 
         h1 {
-          color: #fff;
+          color: @text-color;
           font-size: 32px;
           margin-top: 20px;
         }
@@ -635,7 +632,7 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
     .right {
       width: 385px;
       height: 100%;
-      background-color: #1a1a1a;
+      background-color: @bg-dark;
       padding: 50px 40px;
       box-sizing: border-box;
       position: relative;
@@ -648,55 +645,58 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
       }
 
       h2 {
-        color: #fff;
+        color: @text-color;
         font-size: 24px;
         margin: 0;
         text-align: center;
       }
 
-      p {
-        text-align: center;
-      }
-
       .subtitle {
-        color: #999;
+        color: @text-gray;
         font-size: 14px;
         margin: 10px 0 40px;
+        text-align: center;
       }
     }
   }
 
+  // 表单样式
   .el-form-item {
     margin-bottom: 10px;
     position: relative;
     height: 40px !important;
 
     :deep(.el-form-item__label) {
-      color: #fff;
+      color: @text-color;
       font-size: 14px;
       line-height: 40px;
       margin-bottom: 4px;
     }
+
+    :deep(.el-form-item__error) {
+      display: none;
+    }
   }
 
+  // 输入框样式
   :deep(.el-input) {
-    --el-input-bg-color: #2a2a2a;
+    --el-input-bg-color: @bg-darker;
     --el-input-border-color: transparent;
     --el-input-hover-border-color: transparent;
     --el-input-focus-border-color: transparent;
-    --el-input-text-color: #fff;
+    --el-input-text-color: @text-color;
     --el-input-placeholder-color: #666;
 
     .el-input__wrapper {
       box-shadow: none !important;
       height: 40px !important;
-      background-color: #2a2a2a !important;
+      background-color: @bg-darker !important;
 
-      &:hover {
+      &:hover, &.is-focus {
         box-shadow: none !important;
       }
 
-      &.is-focus {
+      &.is-error {
         box-shadow: none !important;
       }
     }
@@ -704,131 +704,7 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
     .el-input__inner {
       height: 40px !important;
       line-height: 40px !important;
-      color: #FFF !important;
-    }
-  }
-
-  :deep(.dark-checkbox) {
-    --el-checkbox-text-color: #999;
-    --el-checkbox-input-border-color: #666;
-    --el-checkbox-checked-bg-color: #ffd60a;
-    --el-checkbox-checked-text-color: #999;
-    --el-checkbox-checked-input-border-color: #ffd60a;
-
-    .el-checkbox__label {
-      color: #999;
-      font-size: 10px !important;
-    }
-  }
-
-  :deep(.dark-link) {
-    --el-link-text-color: #999;
-    --el-link-hover-text-color: #ffd60a;
-    font-size: 14px;
-  }
-
-  .login-button {
-    width: 100%;
-    height: 45px;
-    background-color: #ffd60a !important;
-    border: none;
-    font-size: 16px;
-    color: #000 !important;
-
-    &:hover {
-      background-color: #e6c009;
-    }
-
-    &:focus,
-    &:active {
-      background-color: #e6c009;
-    }
-  }
-
-  .login-footer {
-    text-align: center;
-
-    .el-divider {
-      background-color: #333;
-      margin: 0 10px;
-    }
-  }
-
-  .error-trigger {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 4px;
-    bottom: -4px;
-  }
-
-  :deep(.error-tooltip) {
-    --el-bg-color: #2a2a2a;
-    --el-border-color: #333;
-    --el-text-color-regular: #fff;
-    --el-box-shadow: none;
-
-    background: var(--el-bg-color) !important;
-    border-color: var(--el-border-color) !important;
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  :deep(.el-popper.error-tooltip) {
-    .el-popper__arrow {
-      width: 10px;
-      height: 10px;
-      z-index: 1;
-
-      &::before {
-        position: absolute;
-        width: 10px;
-        height: 10px;
-        background: var(--el-bg-color) !important;
-        border: 1px solid var(--el-border-color) !important;
-        transform: rotate(45deg);
-        z-index: -1;
-      }
-    }
-  }
-
-  :deep(.el-popper.error-tooltip[data-popper-placement^='bottom']) {
-    .el-popper__arrow {
-      top: -5px;
-
-      &::before {
-        border-bottom: none !important;
-        border-right: none !important;
-      }
-    }
-  }
-
-  :deep(.yellow-link) {
-    --el-link-text-color: #ffd60a !important;
-    --el-link-hover-text-color: #e6c009 !important;
-    font-size: 10px !important;
-    vertical-align: baseline;
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-
-    &:hover {
-      color: #e6c009 !important;
-    }
-  }
-
-  :deep(.el-popper.is-dark) {
-    background: var(--el-popup-menu-background-color) !important;
-    border-color: #333 !important;
-    color: #fff;
-  }
-
-  :deep(.el-popper__arrow) {
-    background: var(--el-popup-menu-background-color) !important;
-
-    &::before {
-      background: var(--el-popup-menu-background-color) !important;
-      border-color: #333 !important;
+      color: @text-color !important;
     }
   }
 
@@ -854,6 +730,112 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
     box-shadow: none !important;
   }
 
+  // 复选框样式
+  :deep(.dark-checkbox) {
+    .el-checkbox__input {
+      .el-checkbox__inner {
+        border-radius: 50%;
+        background-color: transparent;
+        border-color: rgb(249, 222, 74);
+        
+        &::after {
+          border-color: #000;
+        }
+      }
+      
+      &.is-checked {
+        .el-checkbox__inner {
+          background-color: rgb(249, 222, 74);
+          border-color: rgb(249, 222, 74);
+        }
+      }
+    }
+  }
+
+  // 链接样式
+  :deep(.yellow-link) {
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+
+  // 按钮样式
+  .login-button {
+    width: 100%;
+    height: 45px;
+    background-color: rgba(249, 222, 74, 1) !important;
+    border: none;
+    font-size: 16px;
+    color: #000 !important;
+
+    &:hover, &:focus, &:active {
+      background-color: rgba(255, 234, 101, 1) !important;
+    }
+  }
+
+  // 登录页脚
+  .login-footer {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  // 错误提示样式
+  .error-trigger {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 4px;
+    bottom: -4px;
+  }
+
+  :deep(.error-tooltip) {
+    --el-bg-color: @error-bg;
+    --el-border-color: @error-border;
+    --el-text-color-regular: @text-color;
+    --el-box-shadow: none;
+
+    background: var(--el-bg-color) !important;
+    border-color: var(--el-border-color) !important;
+    padding: 6px 12px;
+    font-size: 12px;
+
+    .el-popper__arrow {
+      &::before {
+        background: @error-bg !important;
+        border-color: @error-border !important;
+      }
+    }
+  }
+
+  :deep(.el-popper.error-tooltip) {
+    .el-popper__arrow {
+      width: 10px;
+      height: 10px;
+      z-index: 1;
+
+      &::before {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: @error-bg !important;
+        border: 1px solid @error-border !important;
+        transform: rotate(45deg);
+        z-index: -1;
+      }
+    }
+  }
+
+  :deep(.el-popper.error-tooltip[data-popper-placement^='bottom']) {
+    .el-popper__arrow {
+      top: -5px;
+
+      &::before {
+        border-bottom: none !important;
+        border-right: none !important;
+      }
+    }
+  }
+
+  // 登录类型切换
   .login-type-switch {
     position: absolute;
     top: 20px;
@@ -876,7 +858,7 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
         right: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(225deg, #ffd60a 50%, #2a2a2a 50%);
+        background: linear-gradient(225deg, @primary-color 50%, @bg-darker 50%);
         z-index: 0;
       }
 
@@ -898,6 +880,7 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
     }
   }
 
+  // 二维码容器
   .qrcode-container {
     text-align: center;
     padding: 20px 0;
@@ -912,13 +895,11 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
       height: 220px;
       margin: 20px auto 40px;
       padding: 0;
-      background: #fff;
+      background: @text-color;
       border-radius: 8px;
       position: relative;
       overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      .flex-center();
 
       &::after {
         content: '';
@@ -942,9 +923,7 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
           height: 100% !important;
           box-sizing: border-box;
           background: transparent !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
+          .flex-center();
 
           .qrcode {
             width: 220px !important;
@@ -974,6 +953,7 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
     }
   }
 
+  // 验证码输入框
   .verify-code-item {
     position: relative;
     
@@ -982,7 +962,7 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
       right: 10px;
       top: 50%;
       transform: translateY(-50%);
-      color: #ffd60a;
+      color: @primary-color;
       font-size: 14px;
       z-index: 2;
       border: none !important;
@@ -998,18 +978,20 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
       &:focus {
         background: none !important;
         border: none !important;
-        color: #e6c009;
+        color: darken(@primary-color, 5%);
       }
     }
   }
 
+  // 表单标题
   .form-title {
     font-size: 24px;
-    color: #fff;
+    color: @text-color;
     text-align: center;
     margin-bottom: 20px;
   }
 
+  // 下拉选择框
   :deep(.el-select) {
     width: 100%;
     
@@ -1018,15 +1000,15 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
     }
 
     .el-input__wrapper {
-      background-color: #2a2a2a !important;
+      background-color: @bg-darker !important;
     }
     
     .el-select__popper {
-      background-color: #1a1a1a !important;
-      border: 1px solid #333;
+      background-color: @bg-dark !important;
+      border: 1px solid @border-color;
       
       .el-select-dropdown__item {
-        color: #fff;
+        color: @text-color;
         height: 40px;
         line-height: 40px;
         
@@ -1035,11 +1017,131 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
         }
         
         &.selected {
-          background-color: #ffd60a;
+          background-color: @primary-color;
           color: #000;
         }
       }
     }
   }
+}
+</style>
+
+<style lang="less">
+// 错误提示框样式
+.el-popper.error-tooltip {
+  background-color: #303133 !important;
+  border: 1px solid #797979 !important;
+  color: #FFFFFF !important;
+  font-size: 12px !important;
+  padding: 6px 12px !important;
+
+  .el-popper__arrow {
+    &::before {
+      background-color: #303133 !important;
+      border: 1px solid #797979 !important;
+    }
+  }
+
+  &[data-popper-placement^='bottom'] {
+    .el-popper__arrow {
+      &::before {
+        border-bottom: none !important;
+        border-right: none !important;
+      }
+    }
+  }
+
+  &[data-popper-placement^='top'] {
+    .el-popper__arrow {
+      &::before {
+        border-top: none !important;
+        border-left: none !important;
+      }
+    }
+  }
+}
+
+// 右上角提示框样式
+.el-popper.custom-tooltip {
+  background-color: #FFBD33 !important;
+  font-size: 12px !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  padding: 0 !important;
+  width: 68px !important;
+  height: 35px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  .el-tooltip__content {
+    color: #FFFFFF !important;
+    line-height: 35px !important;
+  }
+
+  .el-popper__arrow {
+    &::before {
+      background-color: #FFBD33 !important;
+      border-right-color: #FFBD33 !important;
+    }
+  }
+}
+
+// 用户协议和隐私设置样式
+:deep(.el-link.yellow-link) {
+  color: #FFEA65 !important;
+  font-size: 12px !important;
+  text-decoration: none !important;
+  
+  &:hover {
+    color: #FFEA65 !important;
+    text-decoration: underline !important;
+  }
+}
+
+// 登录和注册按钮样式
+:deep(.el-button.login-button) {
+  color: #000 !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  width: 100% !important;
+  height: 40px !important;
+  background-color: rgba(249, 222, 74, 1) !important;
+  border: none !important;
+  
+  &:hover {
+    background-color: rgba(255, 234, 101, 1) !important;
+  }
+  
+  &:disabled {
+    background-color: #CCCCCC !important;
+    color: #FFFFFF !important;
+  }
+}
+
+// 复选框文字样式
+:deep(.dark-checkbox) {
+  .el-checkbox__label {
+    display: inline-flex !important;
+    align-items: center !important;
+    line-height: 1 !important;
+  }
+}
+
+// 链接样式
+:deep(.yellow-link) {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+// 覆盖全局样式
+:deep(.el-button--primary) {
+  background-color: #FFBD33 !important;
+  border-color: #FFBD33 !important;
+  color: #FFFFFF !important;
+}
+
+:deep(.el-link--primary) {
+  color: #FFEA65 !important;
 }
 </style>

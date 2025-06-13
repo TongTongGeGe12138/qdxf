@@ -88,7 +88,7 @@
                     </div>
                     <div class="list-items">
                         <div class="list-item" v-for="item in equipmentList" :key="item">
-                            {{ item }}
+                            <div class="dot"></div>{{ item }}
                         </div>
                         <div class="list-item more">更多选型 <el-icon class="double-arrow"><DArrowRight /></el-icon></div>
                     </div>
@@ -220,7 +220,7 @@
 </template>
 
 <script setup lang="ts">
-import { Search, Monitor, Setting, Shop, MoreFilled, ArrowRight, Timer, Warning, Notification, Operation, ScaleToOriginal, Switch, Aim, Cpu, Smoking, Connection, Link, Microphone, OfficeBuilding, House, Management, Right, DArrowRight } from '@element-plus/icons-vue'
+import { Search, Monitor, Setting, Shop, MoreFilled, ArrowRight, Timer, Warning, Notification, Operation, ScaleToOriginal, Switch, Aim, Cpu, Smoking, Connection, Link, Microphone, OfficeBuilding, House, Management, Right, DArrowRight, CircleCheck, CirclePlus, Star } from '@element-plus/icons-vue'
 import { computed, ref, onMounted, watch } from 'vue'
 import { isDark } from '../../utils/theme'
 import { getAigcPrimaryList, getAigcChildrenList } from '@/api/aigc'
@@ -1046,7 +1046,7 @@ const filteredSecondaryList = computed(() => {
     font-size: 12px;
     margin-left: 8px;
     transform: rotate(90deg);
-    margin-right: 110px;
+    margin-right: 130px;
     display: flex;
     align-items: center;
     height: 12px;
@@ -1461,5 +1461,14 @@ const filteredSecondaryList = computed(() => {
     width: 16px;
     height: 16px;
     opacity: 0.6;
+}
+
+.dot {
+    width: 4px;
+    height: 4px;
+    background-color: v-bind(subTextColor);
+    border-radius: 50%;
+    margin-right: 10px;
+    display: inline-block;
 }
 </style>

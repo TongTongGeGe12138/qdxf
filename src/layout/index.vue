@@ -282,12 +282,12 @@ onMounted(() => {
     background-color: v-bind(themeButtonBgColor);
     border: none;
     padding: 8px;
-    height: 40px;
-    width: 40px;
+    height: 30px;
+    width: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 5px;
+    border-radius: 5px !important;
     transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -296,8 +296,8 @@ onMounted(() => {
 }
 
 .theme-icon {
-    width: 24px;
-    height: 24px;
+    width: 14px;
+    height: 14px;
 }
 
 .el-main {
