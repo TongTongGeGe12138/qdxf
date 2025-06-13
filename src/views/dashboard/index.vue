@@ -1070,6 +1070,9 @@ const filteredSecondaryList = computed(() => {
     gap: 8px;
     cursor: pointer;
     transition: all 0.3s;
+    width: 101px;
+    height: 83px;
+    box-sizing: border-box;
 }
 
 .supplier-item:hover {
@@ -1078,9 +1081,10 @@ const filteredSecondaryList = computed(() => {
 }
 
 .supplier-item img {
-    width: 100%;
-    height: 32px;
-    object-fit: contain;
+    width: 96px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: 5px;
 }
 
 .supplier-item span {
