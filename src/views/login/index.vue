@@ -11,8 +11,8 @@
         <div class="login-type-switch">
           <el-tooltip :content="loginType === 'account' ? '扫码登录' : '手机登录'" placement="left" effect="dark" popper-class="custom-tooltip">
             <div class="qrcode-switch" @click="loginType = loginType === 'account' ? 'qrcode' : 'account'">
-              <img src="@/assets/qrcode-scan.svg" alt="" class="QRcode" v-if="loginType === 'account'" />
-              <img src="@/assets/phone.svg" alt="" class="QRcode" v-else />
+              <img src="/assets/qrcode-scan.svg" alt="" class="QRcode" v-if="loginType === 'account'" />
+              <img src="/assets/phone.svg" alt="" class="QRcode" v-else />
             </div>
           </el-tooltip>
         </div>
@@ -20,7 +20,7 @@
         <!-- 账号密码登录 -->
         <template v-if="loginType === 'account'">
           <div class="logo">
-            <img src="@/assets/sssss.svg" alt="BeesFPD" />
+            <img src="/assets/sssss.svg" alt="BeesFPD" />
           </div>
           <h2>欢迎回来</h2>
           <p class="subtitle">即刻登录使用智能测绘</p>
@@ -65,7 +65,7 @@
         <template v-else-if="loginType === 'qrcode'">
           <div class="qrcode-container">
             <div class="logo">
-              <img src="@/assets/sssss.svg" alt="BeesFPD" />
+              <img src="/assets/sssss.svg" alt="BeesFPD" />
             </div>
             <h2>请使用微信扫码登录</h2>
             <div class="qrcode-box">
@@ -83,7 +83,7 @@
         <!-- 注册表单 -->
         <template v-else-if="loginType === 'register'">
           <div class="logo">
-            <img src="@/assets/sssss.svg" alt="BeesFPD" />
+            <img src="/assets/sssss.svg" alt="BeesFPD" />
           </div>
           <h2 class="form-title">注册账号</h2>
           <el-form ref="registerFormRef" :model="registerForm" :rules="registerRules" class="login-form">
@@ -630,7 +630,7 @@ onUnmounted(() => {
     }
 
     .right {
-      width: 385px;
+      width: 520px;
       height: 100%;
       background-color: @bg-dark;
       padding: 50px 40px;
@@ -867,9 +867,10 @@ onUnmounted(() => {
         z-index: 1;
         width: 100%;
         height: 100%;
-        padding: 16px;
+        padding: 12px;
         filter: brightness(0) invert(1);
         transition: all 0.3s;
+        transform: translate(2px, -2px);
       }
 
       &:hover {
@@ -1088,7 +1089,7 @@ onUnmounted(() => {
 }
 
 // 用户协议和隐私设置样式
-:deep(.el-link.yellow-link) {
+.el-link.yellow-link {
   color: #FFEA65 !important;
   font-size: 12px !important;
   text-decoration: none !important;
@@ -1097,6 +1098,9 @@ onUnmounted(() => {
     color: #FFEA65 !important;
     text-decoration: underline !important;
   }
+}
+.el-link:hover:after{
+  border-color :#FFEA65 !important;
 }
 
 // 登录和注册按钮样式

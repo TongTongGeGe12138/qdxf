@@ -471,9 +471,9 @@ const tagHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#F9F9F9')
 const tagActiveBgColor = computed(() => isDark.value ? '#191919' : '#F2F2F2')
 const cardBgColor = computed(() => isDark.value ? 'rgb(10,10,10)' : 'rgba(255, 253, 246, 1)')
 const cardHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#FFF8CC')
-const plusIconBgColor = computed(() => isDark.value ? '#C5C3D2' : '#FFF8CC')
+const plusIconBgColor = computed(() => isDark.value ? '#C5C3D2' : '#c9c9c9')
 const plusIconBorderColor = computed(() => isDark.value ? '#C5C3D2' : '#000000')
-const plusIconColor = computed(() => isDark.value ? '#000' : '#000000')
+const plusIconColor = computed(() => isDark.value ? '#000' : '#ffff')
 
 const hvacCardList = [
     {
@@ -745,7 +745,7 @@ const filteredSecondaryList = computed(() => {
 });
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 .dashboard-container {
     /* padding: 20px; */
     width: 1200px;
@@ -900,7 +900,7 @@ const filteredSecondaryList = computed(() => {
     color: v-bind(tagTextColor);
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-    padding: 0 12px;
+    padding: 0 20px;
     height: 28px;
     display: flex;
     align-items: center;
@@ -1395,7 +1395,7 @@ const filteredSecondaryList = computed(() => {
     height: 20px;
     border-radius: 50%;
     background-color: v-bind(plusIconBgColor);
-    border: 1px solid v-bind(plusIconBorderColor);
+    /* border: 1px solid v-bind(plusIconBorderColor); */
     display: none;
     align-items: center;
     justify-content: center;
@@ -1474,5 +1474,162 @@ const filteredSecondaryList = computed(() => {
     border-radius: 50%;
     margin-right: 10px;
     display: inline-block;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 20px;
+
+  :deep(.el-link) {
+    color: #A1A1A1 !important;
+    text-decoration: none !important;
+    border-bottom: 1px solid #FFEA65 !important;
+    font-size: 12px !important;
+
+    &:hover {
+      color: #FFEA65 !important;
+      border-bottom: 1px solid #FFEA65 !important;
+    }
+
+    span {
+      color: #A1A1A1 !important;
+      text-decoration: none !important;
+      border-bottom: 1px solid #FFEA65 !important;
+
+      &:hover {
+        color: #FFEA65 !important;
+        border-bottom: 1px solid #FFEA65 !important;
+      }
+    }
+  }
+
+  :deep(.el-link--primary) {
+    color: #A1A1A1 !important;
+    text-decoration: none !important;
+    border-bottom: 1px solid #FFEA65 !important;
+
+    &:hover {
+      color: #FFEA65 !important;
+      border-bottom: 1px solid #FFEA65 !important;
+    }
+  }
+}
+
+// 错误提示框样式
+:deep(.el-popper.error-tooltip) {
+  background-color: #303133 !important;
+  border: 1px solid #797979 !important;
+  color: #FFFFFF !important;
+  font-size: 12px !important;
+  padding: 6px 12px !important;
+
+  .el-popper__arrow {
+    &::before {
+      background-color: #303133 !important;
+      border: 1px solid #797979 !important;
+    }
+  }
+
+  &[data-popper-placement^='bottom'] {
+    .el-popper__arrow {
+      &::before {
+        border-bottom: none !important;
+        border-right: none !important;
+      }
+    }
+  }
+
+  &[data-popper-placement^='top'] {
+    .el-popper__arrow {
+      &::before {
+        border-top: none !important;
+        border-left: none !important;
+      }
+    }
+  }
+}
+
+// 右上角提示框样式
+:deep(.el-popper.custom-tooltip) {
+  background-color: #FFBD33 !important;
+  font-size: 12px !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  padding: 0 !important;
+  width: 68px !important;
+  height: 35px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  .el-tooltip__content {
+    color: #FFFFFF !important;
+    line-height: 35px !important;
+  }
+
+  .el-popper__arrow {
+    &::before {
+      background-color: #FFBD33 !important;
+      border-right-color: #FFBD33 !important;
+    }
+  }
+}
+
+// 用户协议和隐私设置样式
+:deep(.el-link.yellow-link) {
+  color: #FFEA65 !important;
+  font-size: 12px !important;
+  text-decoration: none !important;
+  
+  &:hover {
+    color: #FFEA65 !important;
+    text-decoration: underline !important;
+  }
+}
+
+// 登录和注册按钮样式
+:deep(.el-button.login-button) {
+  color: #000 !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  width: 100% !important;
+  height: 40px !important;
+  background-color: rgba(249, 222, 74, 1) !important;
+  border: none !important;
+  
+  &:hover {
+    background-color: rgba(255, 234, 101, 1) !important;
+  }
+  
+  &:disabled {
+    background-color: #CCCCCC !important;
+    color: #FFFFFF !important;
+  }
+}
+
+// 复选框文字样式
+:deep(.dark-checkbox) {
+  .el-checkbox__label {
+    display: inline-flex !important;
+    align-items: center !important;
+    line-height: 1 !important;
+  }
+}
+
+// 链接样式
+:deep(.yellow-link) {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+// 覆盖全局样式
+:deep(.el-button--primary) {
+  background-color: #FFBD33 !important;
+  border-color: #FFBD33 !important;
+  color: #FFFFFF !important;
+}
+
+:deep(.el-link--primary) {
+  color: #FFEA65 !important;
 }
 </style>

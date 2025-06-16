@@ -26,30 +26,25 @@ export interface ListData<T> {
 
 // 项目项接口
 export interface ProjectItem {
-  id: string;
+  id: string | number;
   name: string;
-  value: string;
-  content?: string;
-  contentShow?: boolean;
-  description?: string;
-  status: number;
-  createTime: string;
-  updateTime: string;
-  extra?: {
-    version?: string;
-    url?: string;
-    tip?: string;
-    englishName?: string;
-    group?: string;
-    icon?: any;
-  };
+  type: 'folder' | 'file';
+  size?: string;
+  createTime?: string;
+  updateTime?: string;
+  preview?: string;
+  projectId?: string | number;
+  folderId?: string | number;
+  fileId?: string | number;
 }
 
 // 项目列表结果接口
 export interface ProjectListResult {
   code: number;
-  data: ProjectItem[];
-  message?: string;
+  data: {
+    data: ProjectItem[];
+  };
+  message: string;
 }
 
 // AIGC 模块组件接口
