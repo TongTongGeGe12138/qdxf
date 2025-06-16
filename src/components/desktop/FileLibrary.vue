@@ -42,7 +42,7 @@ import { useFileLibraryStore } from '@/store/modules/fileLibrary';
 import { Folder, Document } from '@element-plus/icons-vue'
 import { isDark } from '../../utils/theme'
 import { ElMessage } from 'element-plus'
-import { getProjectResource } from '@/api/project'
+import { getProjectResource, getProjectFile } from '@/api/project'
 
 interface FileItem {
   id: string | number;
@@ -143,44 +143,75 @@ const onPageChange = (page: number) => {
 
 // 处理文件或文件夹单击
 const handleFileClick = (item: FileItem) => {
-  if (item.type === 'back') {
-    handleGoBack();
-  } else {
-    selectedItem.value = item;
-    emit('fileSelected', item);
-  }
+  selectedItem.value = item;
+  emit('fileSelected', item);
 };
 
 // 处理文件或文件夹双击
 const handleFileDblClick = async (item: FileItem) => {
-  if (item.type === 'folder') {
-    // 检查是否有子文件夹
-    const hasSubFolders = fileLibraryStore.libraryList.some(folder => folder.name === item.name);
-    if (hasSubFolders) {
-      filePath.value = [...filePath.value, item.name];
-      selectedItem.value = null;
-      // 获取子文件夹内容
+  if (item.type === 'back') {
+    // 处理返回上级目录
+    const actualPath = filePath.value.slice(1);
+    if (actualPath.length > 0) {
+      filePath.value = filePath.value.slice(0, -1);
+      fileLibraryStore.setCurrentPath(filePath.value.slice(1));
+      selectedItem.value = null; // 清除选中的文件
+      emit('fileSelected', null); // 通知父组件清除选中状态
+      
+      // 根据路径层级获取列表
       try {
-        const res = await getProjectResource({
-          projectId: item.id,
-          page: 1,
-          pageSize: 20
-        });
-        if (res.code === 200) {
-          fileLibraryStore.libraryList = res.data.list;
+        if (filePath.value.length === 1) {
+          // 返回到根目录
+          const res = await getProjectFile({
+            page: 1,
+            pageSize: 20,
+            search: ''
+          });
+          if (res.code === 200) {
+            const list = res.data.data.map((item: any) => ({
+              ...item,
+              type: item.length === 0 ? 'folder' : 'file'
+            }));
+            fileLibraryStore.setLibraryList(list || []);
+          }
+        } else {
+          // 返回到上级目录
+          const parentFolder = fileLibraryStore.libraryList.find(folder => folder.name === filePath.value[filePath.value.length - 1]);
+          if (parentFolder?.id) {
+            const res = await getProjectResource({
+              projectId: parentFolder.id,
+              page: 1,
+              pageSize: 20
+            });
+            if (res.code === 200) {
+              fileLibraryStore.setLibraryList(res.data.data || []);
+            }
+          }
         }
       } catch (error) {
-        ElMessage.error('获取文件夹内容失败');
+        ElMessage.error('获取列表失败');
       }
     }
-  }
-};
-
-// 处理返回上级目录
-const handleGoBack = () => {
-  const actualPath = filePath.value.slice(1);
-  if (actualPath.length > 0) {
-    filePath.value = filePath.value.slice(0, -1);
+  } else if (item.type === 'folder') {
+    // 先更新路径
+    filePath.value = [...filePath.value, item.name];
+    fileLibraryStore.setCurrentPath(filePath.value.slice(1));
+    selectedItem.value = null;
+    emit('fileSelected', null); // 通知父组件清除选中状态
+    
+    // 获取子文件夹内容
+    try {
+      const res = await getProjectResource({
+        projectId: item.id,
+        page: 1,
+        pageSize: 20
+      });
+      if (res.code === 200) {
+        fileLibraryStore.libraryList = res.data.data;
+      }
+    } catch (error) {
+      ElMessage.error('获取文件夹内容失败');
+    }
   }
 };
 

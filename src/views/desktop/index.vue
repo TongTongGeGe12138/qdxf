@@ -7,9 +7,8 @@ import FileLibrary from '@/components/desktop/FileLibrary.vue';
 import { useFileLibraryStore } from '@/store/modules/fileLibrary';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { 
-  getProjectFolderList, 
+  getProjectFile, 
   addProjectFolder, 
-  getProjectResource, 
   editProjectFoldeInfo,
   downProjectResourceFile,
   editProjectResourceFile,
@@ -18,20 +17,23 @@ import {
   getTrashedList,
   deleteProjectFolder,
   deleteProjectResourceFile,
-  recoverFile
+  recoverFile,
+  addProjectResourceFile,
+  getProjectResourceFile
 } from '@/api/project';
+import { getResourceFiles } from '@/api/resource';
+import { getResourcesList } from '@/api/resource';
 
 interface FileItem {
   id: string | number;
   name: string;
   type: 'folder' | 'file';
-  size?: string;
-  createTime?: string;
-  updateTime?: string;
+  length?: number;
+  createdAt?: string;
   preview?: string;
-  projectId?: string | number;  // 项目ID
-  fileId?: string | number;     // 文件ID
-  folderId?: string | number;   // 文件夹ID
+  projectId?: string | number;
+  fileId?: string | number;
+  folderId?: string | number;
 }
 
 interface TabItem {
@@ -53,15 +55,38 @@ const defaultTabs = [
 const fileLibraryStore = useFileLibraryStore();
 
 const fileTabs = computed(() => {
+  // 如果没有选中文件，返回默认标签
+  if (!selectedFile.value) {
+    return defaultTabs;
+  }
+
+  // 回收站场景
   if (activeIndex.value === 2) {
-    // 在回收站中只显示删除和还原选项
     return [
-      { name: '还原', icon: View },
-      { name: '删除', icon: Delete }
+      { name: '还原', icon: Refresh },
+      { name: '彻底删除', icon: Delete }
+    ];
+  }
+  
+  // 我收藏的资源场景
+  if (activeIndex.value === 1) {
+    return [
+      { name: '通用规范', icon: Setting },
+      { name: '通用图库', icon: Setting },
+      { name: '供应商图库', icon: Setting },
+      { name: '样例模板', icon: Setting }
     ];
   }
 
-  // 不在回收站中显示常规操作选项
+  // 我的项目场景
+  // 如果是文件夹且当前路径不为空，显示上传和新建按钮
+  if (selectedFile.value.type === 'folder' && fileLibraryStore.currentPath.length > 0) {
+    return [
+      { name: '上传文件', icon: UploadFilled },
+      { name: '创建项目', icon: FolderAdd }
+    ];
+  }
+
   const baseTabs = [
     { name: '打开', icon: View },
     { name: '重命名', icon: Edit },
@@ -70,7 +95,7 @@ const fileTabs = computed(() => {
   ];
 
   // 如果是第一层级的文件夹，添加编辑项目选项
-  if (selectedFile.value?.type === 'folder' && fileLibraryStore.currentPath.length === 0) {
+  if (selectedFile.value.type === 'folder' && fileLibraryStore.currentPath.length === 0) {
     baseTabs.unshift({ name: '编辑项目', icon: Setting });
   }
 
@@ -87,11 +112,16 @@ const uploadLoading = ref(false)
 const uploadFile = ref<File | null>(null)
 const uploadProjectId = ref<string | number>('')
 
-// 添加重命名弹框相关的状态
-const renameDialogVisible = ref(false)
-const renameForm = ref({
-  name: ''
-})
+// 添加操作弹框相关的变量定义
+const operationDialogVisible = ref(false)
+const operationType = ref<'recover' | 'delete' | 'upload' | 'trash' | 'rename' | 'edit' | 'create'>('recover')
+const uploadForm = ref<{
+  file: File;
+  projectId: string;
+} | null>(null)
+
+// 添加重命名输入框的值
+const renameValue = ref('');
 
 // 添加获取回收站列表的方法
 const getTrashList = async () => {
@@ -108,6 +138,21 @@ const getTrashList = async () => {
   }
 }
 
+// 添加获取收藏资源列表的方法
+const getFavoriteList = async () => {
+  try {
+    const res = await getResourceFiles({
+      page: 1,
+      pageSize: 20
+    });
+    if (res.code === 200) {
+      fileLibraryStore.setLibraryList(res.data.data || []);
+    }
+  } catch (error) {
+    ElMessage.error('获取收藏资源列表失败');
+  }
+}
+
 // 监听 activeIndex 变化
 watch(activeIndex, (newIndex) => {
   selectedFile.value = null;
@@ -116,14 +161,23 @@ watch(activeIndex, (newIndex) => {
   
   switch (newIndex) {
     case 0: // 我的项目
-      getProjectFolderList().then(res => {
+      getProjectFile({
+        page: 1,
+        pageSize: 20,
+        search: ''
+      }).then(res => {
         if (res.code === 200) {
-          fileLibraryStore.setLibraryList(res.data.data || []);
+          // 根据 length 是否为 0 来判断类型
+          const list = res.data.data.map((item: any) => ({
+            ...item,
+            type: item.length === 0 ? 'folder' : 'file'
+          }));
+          fileLibraryStore.setLibraryList(list || []);
         }
       });
       break;
     case 1: // 我收藏的资源
-      // TODO: 实现收藏资源列表
+      getFavoriteList();
       break;
     case 2: // 回收站
       getTrashList();
@@ -133,12 +187,10 @@ watch(activeIndex, (newIndex) => {
 
 // 处理文件选中
 const handleFileSelected = (file: FileItem) => {
-  selectedFile.value = file
+  selectedFile.value = file;
   // 无论是文件夹还是文件，都切换到fileTabs
-  rightTabs.value = fileTabs.value
-  rightActiveTab.value = 0
-  // console.log(selectedFile.value, 9999999999);
-
+  rightTabs.value = fileTabs.value;
+  rightActiveTab.value = 0;
 }
 
 // 计算背景色
@@ -156,10 +208,12 @@ const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
   const fileGrid = document.querySelector('.file-grid')
   const rightTabsElement = document.querySelector('.right-tabs')
+  const operationDialog = document.querySelector('.el-dialog')
 
-  // 检查点击是否在文件网格内或操作按钮区域内
+  // 检查点击是否在文件网格内、操作按钮区域内或操作弹框内
   const isClickInside = (fileGrid && fileGrid.contains(target)) ||
-    (rightTabsElement && rightTabsElement.contains(target))
+    (rightTabsElement && rightTabsElement.contains(target)) ||
+    (operationDialog && operationDialog.contains(target))
 
   if (!isClickInside) {
     selectedFile.value = null
@@ -184,16 +238,60 @@ const handleUpload = async () => {
   try {
     const formData = new FormData()
     formData.append('file', uploadFile.value)
-    formData.append('projectId', String(uploadProjectId.value))
-
-    await addProjectFile(formData)
+    
+    // 根据当前路径层级选择不同的上传接口
+    if (fileLibraryStore.currentPath.length === 0) {
+      // 一级目录
+      formData.append('projectId', String(uploadProjectId.value))
+      await addProjectFile(formData)
+    } else {
+      // 二级及n级目录
+      const currentFolder = selectedFile.value
+      if (!currentFolder?.id) {
+        throw new Error('文件夹ID不存在')
+      }
+      await addProjectResourceFile({
+        projectId: currentFolder.id,
+        folderId: currentFolder.id,
+        file: uploadFile.value
+      })
+    }
+    
     ElMessage.success('上传成功')
     uploadDialogVisible.value = false
     
     // 刷新列表
-    const res = await getProjectFolderList()
-    if (res.code === 200) {
-      fileLibraryStore.setLibraryList(res.data.data || [])
+    if (fileLibraryStore.currentPath.length === 0) {
+      const res = await getProjectFile({
+        page: 1,
+        pageSize: 20,
+        search: ''
+      })
+      if (res.code === 200) {
+        const list = res.data.data.map((item: any) => ({
+          ...item,
+          type: item.length === 0 ? 'folder' : 'file'
+        }))
+        fileLibraryStore.setLibraryList(list || [])
+      }
+    } else {
+      const currentFolder = selectedFile.value
+      if (currentFolder?.id) {
+        const res = await getProjectResourceFile({
+          projectId: currentFolder.id,
+          folderId: currentFolder.id,
+          page: 1,
+          pageSize: 20,
+          search: ''
+        })
+        if (res.code === 200) {
+          const list = res.data.data.map((item: any) => ({
+            ...item,
+            type: item.length === 0 ? 'folder' : 'file'
+          }))
+          fileLibraryStore.setLibraryList(list || [])
+        }
+      }
     }
   } catch (error) {
     ElMessage.error('上传失败')
@@ -203,80 +301,37 @@ const handleUpload = async () => {
   }
 }
 
-// 处理重命名弹框的打开
-const handleRename = () => {
-  if (!selectedFile.value) return;
-  renameForm.value.name = selectedFile.value.name;
-  renameDialogVisible.value = true;
-}
-
-// 处理重命名提交
-const handleRenameSubmit = async () => {
-  if (!selectedFile.value) return;
-  
-  try {
-    if (selectedFile.value.type === 'folder') {
-      await editProjectFoldeInfo({
-        projectId: selectedFile.value.id,
-        name: renameForm.value.name
-      });
-    } else {
-      await editProjectResourceFile({
-        projectId: selectedFile.value.projectId,
-        fileId: selectedFile.value.fileId,
-        name: renameForm.value.name
-      });
-    }
-    ElMessage.success('重命名成功');
-    renameDialogVisible.value = false;
-    
-    // 刷新列表
-    if (activeIndex.value === 2) {
-      await getTrashList();
-    } else {
-      const res = await getProjectFolderList();
-      if (res.code === 200) {
-        fileLibraryStore.setLibraryList(res.data.data || []);
-      }
-    }
-  } catch (error) {
-    ElMessage.error('重命名失败');
-  }
-}
-
 // 修改文件操作处理函数
 const handleFileOperation = async (tab: TabItem) => {
   // 上传文件和创建项目不需要选择文件
   if (tab.name === '上传文件' || tab.name === '创建项目' || tab.name === '刷新列表') {
     switch (tab.name) {
       case '上传文件':
-        uploadDialogVisible.value = true
+        uploadDialogVisible.value = true;
         break;
       case '创建项目':
-        ElMessageBox.prompt('请输入项目名称', '创建项目', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-        }).then(async ({ value }) => {
-          try {
-            await addProjectFolder({
-              name: value
-            });
-            ElMessage.success('创建成功');
-            // 刷新列表
-            const res = await getProjectFolderList();
-            if (res.code === 200) {
-              fileLibraryStore.setLibraryList(res.data.data || []);
-            }
-          } catch (error) {
-            ElMessage.error('创建失败');
-          }
-        });
+        operationDialogVisible.value = true;
+        operationType.value = 'create';
+        renameValue.value = '';
         break;
       case '刷新列表':
         try {
-          const res = await getProjectFolderList();
-          if (res.code === 200) {
-            fileLibraryStore.setLibraryList(res.data.data || []);
+          if (activeIndex.value === 2) {
+            await getTrashList();
+          } else {
+            const res = await getProjectFile({
+              page: 1,
+              pageSize: 20,
+              search: ''
+            });
+            if (res.code === 200) {
+              // 根据 length 是否为 0 来判断类型
+              const list = res.data.data.map((item: any) => ({
+                ...item,
+                type: item.length === 0 ? 'folder' : 'file'
+              }));
+              fileLibraryStore.setLibraryList(list || []);
+            }
           }
         } catch (error) {
           ElMessage.error('刷新失败');
@@ -295,166 +350,279 @@ const handleFileOperation = async (tab: TabItem) => {
   const file = selectedFile.value;  // 保存引用以避免重复检查
 
   switch (tab.name) {
-    case '编辑项目':
-      if (file.type === 'folder') {
-        ElMessageBox.prompt('请输入新的项目名称', '编辑项目', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          inputValue: file.name,
-        }).then(async ({ value }) => {
-          try {
-            await editProjectFoldeInfo({
-              projectId: file.id,
-              name: value
-            });
-            ElMessage.success('修改成功');
-            // 刷新列表
-            const res = await getProjectFolderList();
-            if (res.code === 200) {
-              fileLibraryStore.setLibraryList(res.data.data || []);
-            }
-          } catch (error) {
-            ElMessage.error('修改失败');
-          }
-        });
+    case '还原':
+      if (activeIndex.value === 2) {
+        operationDialogVisible.value = true;
+        operationType.value = 'recover';
       }
       break;
-    case '打开':
-      if (file.type === 'folder') {
-        // 检查是否有子文件夹
-        const hasSubFolders = fileLibraryStore.libraryList.some(folder => folder.name === file.name);
-        if (hasSubFolders) {
-          fileLibraryStore.setCurrentPath([...fileLibraryStore.currentPath, file.name]);
-          // 获取子文件夹内容
-          const res = await getProjectResource({
-            projectId: file.id,
-            page: 1,
-            pageSize: 20
-          });
-          console.log('API响应:', res);
-          if (res.code === 200) {
-            console.log('响应数据:', res.data);
-            fileLibraryStore.setLibraryList(res.data.data || []);
-          }
-        }
-      } else {
-        // 打开文件
-        window.open(file.preview);
+    case '彻底删除':
+      if (activeIndex.value === 2) {
+        operationDialogVisible.value = true;
+        operationType.value = 'delete';
+      }
+      break;
+    case '删除':
+      if (activeIndex.value !== 2) {
+        operationDialogVisible.value = true;
+        operationType.value = 'trash';
       }
       break;
     case '重命名':
-      handleRename();
+      operationDialogVisible.value = true;
+      operationType.value = 'rename';
+      break;
+    case '编辑项目':
+      if (file.type === 'folder') {
+        operationDialogVisible.value = true;
+        operationType.value = 'edit';
+      } else {
+        operationDialogVisible.value = true;
+        operationType.value = 'rename';
+      }
       break;
     case '下载':
       try {
-        const response = await downProjectResourceFile({
-          projectId: file.projectId,
-          fileId: file.fileId
+        const res = await downProjectResourceFile({
+          projectId: file.id,
+          fileId: file.id
         });
-        const blob = new Blob([response.data]);
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = file.name;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        ElMessage.success('下载成功');
+        if (res.code === 200) {
+          window.open(res.data);
+        }
       } catch (error) {
         ElMessage.error('下载失败');
       }
       break;
-    case '删除':
-      ElMessageBox.confirm('确定要删除该文件吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      }).then(async () => {
-        try {
-          console.log('删除文件信息:', file);
-          if (activeIndex.value === 2) {
-            // 在回收站中，执行真正的删除
-            if (file.type === 'folder') {
-              if (!file.id) {
-                throw new Error('文件夹ID不存在');
-              }
-              await deleteProjectFolder(file.id);
-            } else {
-              if (!file.id) {
-                throw new Error('文件ID不存在');
-              }
-              await deleteProjectResourceFile({
-                projectId: file.id,
-                fileId: file.id
-              });
-            }
-            ElMessage.success('删除成功');
-          } else {
-            // 不在回收站中，放入回收站
-            if (file.type === 'folder') {
-              if (!file.id) {
-                throw new Error('文件夹ID不存在');
-              }
-              await transhFile({
-                projectId: file.id,
-                id: file.id
-              });
-            } else {
-              if (!file.id) {
-                throw new Error('文件ID不存在');
-              }
-              await transhFile({
-                projectId: file.id,
-                id: file.id
-              });
-            }
-            ElMessage.success('已放入回收站');
-          }
-          
-          // 刷新列表
-          const res = await getProjectFolderList();
-          if (res.code === 200) {
-            fileLibraryStore.setLibraryList(res.data.data || []);
-          }
-        } catch (error) {
-          console.error('删除失败:', error);
-          ElMessage.error(error instanceof Error ? error.message : '删除失败');
-        }
+  }
+};
+
+// 修改确认操作处理函数
+const handleConfirmOperation = async () => {
+  if (operationType.value === 'create') {
+    if (!renameValue.value) {
+      ElMessage.warning('请输入项目名称');
+      return;
+    }
+    try {
+      const res = await addProjectFolder({
+        name: renameValue.value
       });
-      break;
-    case '还原':
-      if (activeIndex.value === 2) {
-        try {
+      ElMessage.success('创建成功');
+      // 刷新列表
+      const listRes = await getProjectFile({
+        page: 1,
+        pageSize: 20,
+        search: ''
+      });
+      if (listRes.code === 200) {
+        // 找到新创建的项目并设置 type: 'folder'
+        const list = listRes.data.data.map((item: any) => {
+          if (item.name === renameValue.value) {
+            return {
+              ...item,
+              type: 'folder'
+            };
+          }
+          return item;
+        });
+        fileLibraryStore.setLibraryList(list || []);
+      }
+      operationDialogVisible.value = false;
+      renameValue.value = '';
+    } catch (error) {
+      ElMessage.error('创建失败');
+    }
+    return;
+  }
+
+  if (!selectedFile.value) {
+    ElMessage.warning('请先选择一个文件');
+    return;
+  }
+
+  const file = selectedFile.value;
+
+  try {
+    switch (operationType.value) {
+      case 'recover':
+        if (!file.id) {
+          throw new Error('文件ID不存在');
+        }
+        await recoverFile({
+          projectId: file.id,
+          id: file.id
+        });
+        ElMessage.success('还原成功');
+        // 刷新回收站列表
+        await getTrashList();
+        break;
+      case 'delete':
+        if (file.type === 'folder') {
+          if (!file.id) {
+            throw new Error('文件夹ID不存在');
+          }
+          await deleteProjectFolder(file.id);
+        } else {
           if (!file.id) {
             throw new Error('文件ID不存在');
           }
-          await recoverFile({
+          await deleteProjectResourceFile({
+            projectId: file.id,
+            fileId: file.id
+          });
+        }
+        ElMessage.success('删除成功');
+        // 刷新回收站列表
+        await getTrashList();
+        break;
+      case 'trash':
+        if (file.type === 'folder') {
+          if (!file.id) {
+            throw new Error('文件夹ID不存在');
+          }
+          await transhFile({
             projectId: file.id,
             id: file.id
           });
-          ElMessage.success('还原成功');
-          // 刷新回收站列表
-          await getTrashList();
-        } catch (error) {
-          console.error('还原失败:', error);
-          ElMessage.error(error instanceof Error ? error.message : '还原失败');
+        } else {
+          if (!file.id) {
+            throw new Error('文件ID不存在');
+          }
+          await transhFile({
+            projectId: file.id,
+            id: file.id
+          });
         }
-      }
-      break;
-    default:
-      break;
+        ElMessage.success('已放入回收站');
+        // 刷新列表
+        const res = await getProjectFile({
+          page: 1,
+          pageSize: 20,
+          search: ''
+        });
+        if (res.code === 200) {
+          // 根据 length 是否为 0 来判断类型
+          const list = res.data.data.map((item: any) => ({
+            ...item,
+            type: item.length === 0 ? 'folder' : 'file'
+          }));
+          fileLibraryStore.setLibraryList(list || []);
+        }
+        break;
+      case 'upload':
+        if (!uploadForm.value) {
+          throw new Error('请选择要上传的文件');
+        }
+        const formData = new FormData();
+        formData.append('file', uploadForm.value.file);
+        formData.append('projectId', uploadForm.value.projectId);
+        await addProjectFile(formData);
+        ElMessage.success('上传成功');
+        // 刷新列表
+        const res2 = await getProjectFile({
+          page: 1,
+          pageSize: 20,
+          search: ''
+        });
+        if (res2.code === 200) {
+          // 根据 length 是否为 0 来判断类型
+          const list = res2.data.data.map((item: any) => ({
+            ...item,
+            type: item.length === 0 ? 'folder' : 'file'
+          }));
+          fileLibraryStore.setLibraryList(list || []);
+        }
+        break;
+      case 'rename':
+        if (file.type === 'folder') {
+          await editProjectFoldeInfo({
+            id: file.id,
+            name: renameValue.value
+          });
+        } else {
+          await editProjectResourceFile({
+            id: file.id,
+            name: renameValue.value
+          });
+        }
+        ElMessage.success('重命名成功');
+        // 刷新列表
+        const res3 = await getProjectFile({
+          page: 1,
+          pageSize: 20,
+          search: ''
+        });
+        if (res3.code === 200) {
+          // 根据 length 是否为 0 来判断类型
+          const list = res3.data.data.map((item: any) => ({
+            ...item,
+            type: item.length === 0 ? 'folder' : 'file'
+          }));
+          fileLibraryStore.setLibraryList(list || []);
+        }
+        break;
+      case 'edit':
+        await editProjectFoldeInfo({
+          id: file.id,
+          name: renameValue.value
+        });
+        ElMessage.success('编辑成功');
+        // 刷新列表
+        const res4 = await getProjectFile({
+          page: 1,
+          pageSize: 20,
+          search: ''
+        });
+        if (res4.code === 200) {
+          // 根据 length 是否为 0 来判断类型
+          const list = res4.data.data.map((item: any) => ({
+            ...item,
+            type: item.length === 0 ? 'folder' : 'file'
+          }));
+          fileLibraryStore.setLibraryList(list || []);
+        }
+        break;
+    }
+    operationDialogVisible.value = false;
+    renameValue.value = '';
+  } catch (error) {
+    console.error('操作失败:', error);
+    ElMessage.error(error instanceof Error ? error.message : '操作失败');
   }
-}
+};
+
+// 监听操作类型变化
+watch(operationType, (newType) => {
+  if (newType === 'rename' || newType === 'edit') {
+    renameValue.value = selectedFile.value?.name || '';
+  }
+});
+
+// 添加文件大小转换函数
+const formatFileSize = (bytes: number) => {
+  if (!bytes || bytes === 0) return '0 MB';
+  const mb = bytes / (1024 * 1024);
+  return mb.toFixed(2) + ' MB';
+};
 
 // 初始化加载项目列表
 onMounted(async () => {
   try {
     if (activeIndex.value === 0) {
-      const res = await getProjectFolderList();
+      const res = await getProjectFile({
+        page: 1,
+        pageSize: 20,
+        search: ''
+      });
       console.log('初始化项目列表:', res);
       if (res.code === 200) {
-        fileLibraryStore.setLibraryList(res.data.data || []);
+        // 根据 length 是否为 0 来判断类型
+        const list = res.data.data.map((item: any) => ({
+          ...item,
+          type: item.length === 0 ? 'folder' : 'file'
+        }));
+        fileLibraryStore.setLibraryList(list || []);
       }
     } else if (activeIndex.value === 2) {
       await getTrashList();
@@ -522,17 +690,13 @@ onUnmounted(() => {
                   <span class="label">项目名称：</span>
                   <span class="value">{{ selectedFile.name }}</span>
                 </div>
-                <div class="info-item" v-if="selectedFile.size">
-                  <span class="label">大小：</span>
-                  <span class="value">{{ selectedFile.size }}</span>
-                </div>
-                <div class="info-item" v-if="selectedFile.createTime">
+                <div class="info-item" v-if="selectedFile.createdAt">
                   <span class="label">创建时间：</span>
-                  <span class="value">{{ selectedFile.createTime }}</span>
+                  <span class="value">{{ selectedFile.createdAt }}</span>
                 </div>
-                <div class="info-item" v-if="selectedFile.updateTime">
-                  <span class="label">更新时间：</span>
-                  <span class="value">{{ selectedFile.updateTime }}</span>
+                <div class="info-item" v-if="selectedFile.length">
+                  <span class="label">大小：</span>
+                  <span class="value">{{ formatFileSize(selectedFile.length) }}</span>
                 </div>
               </div>
             </div>
@@ -554,7 +718,7 @@ onUnmounted(() => {
       drag
       :auto-upload="false"
       :show-file-list="false"
-      :on-change="(file) => handleFileSelect(file)"
+      :on-change="handleFileSelect"
     >
       <el-icon class="el-icon--upload"><upload-filled /></el-icon>
       <div class="el-upload__text">
@@ -568,32 +732,40 @@ onUnmounted(() => {
     </el-upload>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="uploadDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleUpload" :loading="uploadLoading">
+        <div class="dialog-button cancel" @click="uploadDialogVisible = false">取消</div>
+        <div class="dialog-button confirm" @click="handleUpload" :loading="uploadLoading">
           上传
-        </el-button>
+        </div>
       </span>
     </template>
   </el-dialog>
 
-  <!-- 添加重命名弹框 -->
+  <!-- 操作确认弹框 -->
   <el-dialog
-    v-model="renameDialogVisible"
-    title="修改文件名"
-    width="502px"
+    v-model="operationDialogVisible"
+    :title="operationType === 'recover' ? '还原确认' : 
+           operationType === 'delete' ? '删除确认' : 
+           operationType === 'trash' ? '回收站确认' :
+           operationType === 'rename' ? '重命名' :
+           operationType === 'edit' ? '编辑项目' :
+           operationType === 'create' ? '创建项目' : ''"
+    width="30%"
     :close-on-click-modal="false"
   >
-    <el-form :model="renameForm" label-width="80px" class="rename-form">
-      <el-form-item label="文件名">
-        <el-input v-model="renameForm.name" placeholder="请输入新的名称" />
-      </el-form-item>
-    </el-form>
+    <template v-if="operationType === 'rename' || operationType === 'edit' || operationType === 'create'">
+      <el-input v-model="renameValue" :placeholder="operationType === 'create' ? '请输入项目名称' : 
+                operationType === 'rename' ? '请输入新的名称' : 
+                '请输入新的项目名称'" />
+    </template>
+    <template v-else>
+      <span>{{ operationType === 'recover' ? '确定要还原该文件吗？' : 
+              operationType === 'delete' ? '确定要彻底删除该文件吗？此操作不可恢复！' : 
+              '确定要删除文件吗？若删除文件，之后可以在回收站中还原。' }}</span>
+    </template>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="renameDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleRenameSubmit">
-          确定
-        </el-button>
+        <div class="dialog-button cancel" @click="operationDialogVisible = false">取消</div>
+        <div class="dialog-button confirm" @click="handleConfirmOperation">确定</div>
       </span>
     </template>
   </el-dialog>
@@ -821,11 +993,168 @@ onUnmounted(() => {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  margin-top: 20px;
+
+  .dialog-button {
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    margin-left: 12px;
+
+    &.cancel {
+      background-color: #F5F5F5;
+      color: #666666;
+      border: 1px solid #E4E4E4;
+
+      &:hover {
+        background-color: #E8E8E8;
+        border-color: #D4D4D4;
+      }
+    }
+
+    &.confirm {
+      background-color: rgba(249, 222, 74, 1);
+      color: #1B2126;
+
+      &:hover {
+        background-color: #B4B4C3;
+      }
+    }
+  }
 }
 
-.rename-form {
-  :deep(.el-form-item__label) {
-    padding-right: 38px;
+// 深色主题
+html.dark {
+  .dialog-button {
+    &.cancel {
+      background-color: #2B2B2B;
+      color: #C4C4D3;
+      border: 1px solid #3B3B3B;
+
+      &:hover {
+        background-color: #3B3B3B;
+        border-color: #4B4B4B;
+      }
+    }
+
+    &.confirm {
+      background-color: rgba(249, 222, 74, 1);
+      color: #1B2126;
+
+      &:hover {
+        background-color: #B4B4C3;
+      }
+    }
+  }
+}
+
+// 添加输入框样式
+:deep(.el-input) {
+  .el-input__wrapper {
+    background-color: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color);
+    box-shadow: none;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--el-color-primary);
+    }
+
+    &.is-focus {
+      border-color: var(--el-color-primary);
+    }
+  }
+
+  .el-input__inner {
+    color: var(--el-text-color-regular);
+  }
+}
+
+// 深色主题
+html.dark {
+  :deep(.el-input) {
+    .el-input__wrapper {
+      background-color: #1B2126;
+      border-color: #2B2B2B;
+
+      &:hover {
+        border-color: #C4C4D3;
+      }
+
+      &.is-focus {
+        border-color: #C4C4D3;
+      }
+    }
+
+    .el-input__inner {
+      color: #C4C4D3;
+    }
+  }
+}
+
+// 添加创建项目弹框的自定义样式
+:deep(.custom-message-box) {
+  .el-message-box__btns {
+    .el-button {
+      padding: 8px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+      margin-left: 12px;
+
+      &.el-button--default {
+        background-color: #F5F5F5;
+        color: #666666;
+        border: 1px solid #E4E4E4;
+
+        &:hover {
+          background-color: #E8E8E8;
+          border-color: #D4D4D4;
+        }
+      }
+
+      &.el-button--primary {
+        background-color: rgba(249, 222, 74, 1);
+        color: #1B2126;
+        border: none;
+
+        &:hover {
+          background-color: rgba(249, 222, 74, 0.8);
+        }
+      }
+    }
+  }
+}
+
+// 深色主题
+html.dark {
+  :deep(.custom-message-box) {
+    .el-message-box__btns {
+      .el-button {
+        &.el-button--default {
+          background-color: #2B2B2B;
+          color: #C4C4D3;
+          border: 1px solid #3B3B3B;
+
+          &:hover {
+            background-color: #3B3B3B;
+            border-color: #4B4B4B;
+          }
+        }
+
+        &.el-button--primary {
+          background-color: rgba(249, 222, 74, 1);
+          color: #1B2126;
+
+          &:hover {
+            background-color: rgba(249, 222, 74, 0.8);
+          }
+        }
+      }
+    }
   }
 }
 </style>
