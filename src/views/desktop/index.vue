@@ -24,7 +24,13 @@ import {
   editProjectResource
 } from '@/api/project';
 import { getResourceFiles } from '@/api/resource';
-import { getResourcesList } from '@/api/resource';
+import { getProvinceList, getCityList} from '@/api/location';
+
+interface AddressOption {
+  value: string | number;
+  label: string;
+  children?: AddressOption[];
+}
 
 interface FileItem {
   id: string | number;
@@ -36,6 +42,9 @@ interface FileItem {
   projectId?: string | number;
   fileId?: string | number;
   folderId?: string | number;
+  address?: string;
+  addressId?: string | number;
+  clientName?: string;
 }
 
 interface TabItem {
@@ -125,6 +134,69 @@ const uploadForm = ref<{
 
 // 添加重命名输入框的值
 const renameValue = ref('');
+
+// 添加项目表单数据
+const formDatassss = ref<any>({
+  address: '中国',
+  clientName: '',
+  name: '',
+  createdAt: '',
+  id: '',
+  url: '',
+  contentType: null,
+  locationId: null,
+  resourceId: null,
+});
+
+// 添加地址选项数据
+// const addressOptions = ref<AddressOption[]>([]);
+// const selectedAddress = ref<(string | number)[]>([]);
+
+// 地址选择相关
+const country = ref('中国');
+const selectedProvince = ref('');
+const selectedCity = ref('');
+const provinceOptions = ref<AddressOption[]>([]);
+const cityOptions = ref<AddressOption[]>([]);
+
+// 获取省份列表
+const getProvinceData = async () => {
+  try {
+    const res = await getProvinceList();
+    if (res.code === 200) {
+      provinceOptions.value = res.data.map((item: any) => ({
+        value: item.id,
+        label: item.name
+      }));
+    }
+  } catch (error) {
+    ElMessage.error('获取省份列表失败');
+  }
+};
+
+// 获取城市列表
+const getCityData = async (provinceId: string | number) => {
+  try {
+    const res = await getCityList(provinceId);
+    if (res.code === 200) {
+      cityOptions.value = res.data.map((item: any) => ({
+        value: item.id,
+        label: item.name
+      }));
+    } else {
+      cityOptions.value = [];
+    }
+  } catch (error) {
+    ElMessage.error('获取城市列表失败');
+    cityOptions.value = [];
+  }
+};
+
+// 省份变化时
+const onProvinceChange = async (provinceId: string | number) => {
+  selectedCity.value = '';
+  await getCityData(provinceId);
+};
 
 // 监听 activeIndex 变化
 watch(activeIndex, (newIndex) => {
@@ -382,12 +454,28 @@ const handleFileOperation = async (tab: TabItem) => {
       renameValue.value = selectedFile.value.name;
       break;
     case '编辑项目':
-      if (file.type === 'folder') {
+      if (file.type === 'folder' && fileLibraryStore.currentPath.length === 0) {
         operationDialogVisible.value = true;
         operationType.value = 'edit';
-      } else {
-        operationDialogVisible.value = true;
-        operationType.value = 'rename';
+        formDatassss.value = {
+          id: file.id,
+          name: file.name,
+          address: file.address || '',
+          clientName: file.clientName || '',
+          createdAt: file.createdAt || ''
+        };
+        // 这里可根据 file.address 进行省市初始化
+        // 假设 file.address 形如 "中国,省份,城市"
+        if (file.address) {
+          const arr = file.address.split(',');
+          if (arr.length >= 2) {
+            selectedProvince.value = arr[1];
+            getCityData(arr[1]);
+          }
+          if (arr.length >= 3) {
+            selectedCity.value = arr[2];
+          }
+        }
       }
       break;
     case '下载':
@@ -608,24 +696,14 @@ const handleConfirmOperation = async () => {
         break;
       case 'edit':
         await editProjectFoldeInfo({
-          id: file.id,
-          name: renameValue.value
+          projectId: formDatassss.value.id,
+          name: formDatassss.value.clientName,
+          address: [country.value, selectedProvince.value, selectedCity.value].filter(Boolean).join(','),
+          // clientName: formDatassss.value.clientName,
+          createdAt: formDatassss.value.createdAt
         });
         ElMessage.success('编辑成功');
-        // 刷新列表
-        const res4 = await getProjectFile({
-          page: 1,
-          pageSize: 20,
-          search: ''
-        });
-        if (res4.code === 200) {
-          // 根据 length 是否为 0 来判断类型
-          const list = res4.data.data.map((item: any) => ({
-            ...item,
-            type: item.length === 0 ? 'folder' : 'file'
-          }));
-          fileLibraryStore.setLibraryList(list || []);
-        }
+        await fileLibraryStore.refreshCurrentList();
         break;
     }
     operationDialogVisible.value = false;
@@ -675,6 +753,7 @@ onMounted(async () => {
   }
   // 使用捕获阶段监听点击事件
   document.addEventListener('click', handleClickOutside, true)
+  await getProvinceData();
 })
 
 onUnmounted(() => {
@@ -779,10 +858,49 @@ onUnmounted(() => {
         operationType === 'rename' ? '重命名' :
           operationType === 'edit' ? '编辑项目' :
             operationType === 'create' ? '创建项目' : ''" width="30%" :close-on-click-modal="false">
-    <template v-if="operationType === 'rename' || operationType === 'edit' || operationType === 'create'">
-      <el-input v-model="renameValue" :placeholder="operationType === 'create' ? '请输入项目名称' :
-        operationType === 'rename' ? '请输入新的名称' :
-          '请输入新的项目名称'" />
+    <template v-if="operationType === 'rename' || operationType === 'create'">
+      <el-input v-model="renameValue" :placeholder="operationType === 'create' ? '请输入项目名称' : '请输入新的名称'" />
+    </template>
+    <template v-else-if="operationType === 'edit'">
+      <el-form :model="formDatassss" label-width="130px">
+        <el-form-item label="项目地址">
+          <el-select v-model="country" style="width: 130px; margin-right: 10px;" disabled>
+            <el-option label="中国" value="中国" />
+          </el-select>
+          <el-select
+            v-model="selectedProvince"
+            placeholder="选择省份"
+            style="width: 130px; margin-right: 10px;"
+            @change="onProvinceChange"
+          >
+            <el-option
+              v-for="item in provinceOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+          <el-select
+            v-model="selectedCity"
+            placeholder="选择城市"
+            style="width: 130px;"
+            :disabled="!selectedProvince"
+          >
+            <el-option
+              v-for="item in cityOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="建设方/委托方">
+          <el-input v-model="formDatassss.clientName" />
+        </el-form-item>
+        <el-form-item label="创建日期">
+          <el-input v-model="formDatassss.createdAt" />
+        </el-form-item>
+      </el-form>
     </template>
     <template v-else>
       <span>{{ operationType === 'recover' ? '确定要还原该文件吗？' :
