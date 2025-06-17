@@ -6,9 +6,9 @@ import { Refresh, UploadFilled, FolderAdd, Search, View, Edit, Download, Delete,
 import FileLibrary from '@/components/desktop/FileLibrary.vue';
 import { useFileLibraryStore } from '@/store/modules/fileLibrary';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { 
-  getProjectFile, 
-  addProjectFolder, 
+import {
+  getProjectFile,
+  addProjectFolder,
   editProjectFoldeInfo,
   downProjectResourceFile,
   editProjectResourceFile,
@@ -20,7 +20,8 @@ import {
   recoverFile,
   addProjectResourceFile,
   getProjectResourceFile,
-  addProjectResource
+  addProjectResource,
+  editProjectResource
 } from '@/api/project';
 import { getResourceFiles } from '@/api/resource';
 import { getResourcesList } from '@/api/resource';
@@ -68,7 +69,7 @@ const fileTabs = computed(() => {
       { name: '彻底删除', icon: Delete }
     ];
   }
-  
+
   // 我收藏的资源场景
   if (activeIndex.value === 1) {
     return [
@@ -83,6 +84,7 @@ const fileTabs = computed(() => {
   // 如果是文件夹且当前路径不为空，显示上传和新建按钮
   if (selectedFile.value.type === 'folder' && fileLibraryStore.currentPath.length > 0) {
     return [
+      { name: '重命名', icon: Edit },
       { name: '上传文件', icon: UploadFilled },
       { name: '创建项目', icon: FolderAdd }
     ];
@@ -131,7 +133,7 @@ watch(activeIndex, (newIndex) => {
   rightActiveTab.value = 0;
   // 重置文件路径
   fileLibraryStore.clearCurrentPath();
-  
+
   switch (newIndex) {
     case 0: // 我的项目
       getProjectFile({
@@ -248,7 +250,7 @@ const handleUpload = async () => {
   try {
     const formData = new FormData()
     formData.append('file', uploadFile.value)
-    
+
     // 根据当前路径层级选择不同的上传接口
     if (fileLibraryStore.currentPath.length === 0) {
       // 一级目录
@@ -266,10 +268,10 @@ const handleUpload = async () => {
         file: uploadFile.value
       })
     }
-    
+
     ElMessage.success('上传成功')
     uploadDialogVisible.value = false
-    
+
     // 刷新列表
     if (fileLibraryStore.currentPath.length === 0) {
       const res = await getProjectFile({
@@ -377,6 +379,7 @@ const handleFileOperation = async (tab: TabItem) => {
     case '重命名':
       operationDialogVisible.value = true;
       operationType.value = 'rename';
+      renameValue.value = selectedFile.value.name;
       break;
     case '编辑项目':
       if (file.type === 'folder') {
@@ -578,31 +581,30 @@ const handleConfirmOperation = async () => {
         break;
       case 'rename':
         if (file.type === 'folder') {
-          await editProjectFoldeInfo({
-            id: file.id,
-            name: renameValue.value
-          });
+          // 如果是第一层文件夹（项目），使用 editProjectFoldeInfo
+          if (fileLibraryStore.currentPath.length === 0) {
+            await editProjectFoldeInfo({
+              id: file.id,
+              name: renameValue.value
+            });
+          } else {
+            // 如果是子文件夹，使用 editProjectResource
+            await editProjectResource({
+              projectId: fileLibraryStore.projectId,
+              folderId: file.id,
+              name: renameValue.value
+            });
+          }
         } else {
-          await editProjectResourceFile({
-            id: file.id,
+          await editProjectResource({
+            projectId: fileLibraryStore.projectId,
+            folderId: fileLibraryStore.folderPath[fileLibraryStore.folderPath.length - 1]?.id,
             name: renameValue.value
           });
         }
         ElMessage.success('重命名成功');
         // 刷新列表
-        const res3 = await getProjectFile({
-          page: 1,
-          pageSize: 20,
-          search: ''
-        });
-        if (res3.code === 200) {
-          // 根据 length 是否为 0 来判断类型
-          const list = res3.data.data.map((item: any) => ({
-            ...item,
-            type: item.length === 0 ? 'folder' : 'file'
-          }));
-          fileLibraryStore.setLibraryList(list || []);
-        }
+        await fileLibraryStore.refreshCurrentList();
         break;
       case 'edit':
         await editProjectFoldeInfo({
@@ -748,19 +750,8 @@ onUnmounted(() => {
   </div>
 
   <!-- 添加文件上传对话框 -->
-  <el-dialog
-    v-model="uploadDialogVisible"
-    title="上传文件"
-    width="400px"
-    :close-on-click-modal="false"
-  >
-    <el-upload
-      class="upload-demo"
-      drag
-      :auto-upload="false"
-      :show-file-list="false"
-      :on-change="handleFileSelect"
-    >
+  <el-dialog v-model="uploadDialogVisible" title="上传文件" width="400px" :close-on-click-modal="false">
+    <el-upload class="upload-demo" drag :auto-upload="false" :show-file-list="false" :on-change="handleFileSelect">
       <el-icon class="el-icon--upload"><upload-filled /></el-icon>
       <div class="el-upload__text">
         将文件拖到此处，或<em>点击上传</em>
@@ -782,26 +773,21 @@ onUnmounted(() => {
   </el-dialog>
 
   <!-- 操作确认弹框 -->
-  <el-dialog
-    v-model="operationDialogVisible"
-    :title="operationType === 'recover' ? '还原确认' : 
-           operationType === 'delete' ? '删除确认' : 
-           operationType === 'trash' ? '回收站确认' :
-           operationType === 'rename' ? '重命名' :
-           operationType === 'edit' ? '编辑项目' :
-           operationType === 'create' ? '创建项目' : ''"
-    width="30%"
-    :close-on-click-modal="false"
-  >
+  <el-dialog v-model="operationDialogVisible" :title="operationType === 'recover' ? '还原确认' :
+    operationType === 'delete' ? '删除确认' :
+      operationType === 'trash' ? '回收站确认' :
+        operationType === 'rename' ? '重命名' :
+          operationType === 'edit' ? '编辑项目' :
+            operationType === 'create' ? '创建项目' : ''" width="30%" :close-on-click-modal="false">
     <template v-if="operationType === 'rename' || operationType === 'edit' || operationType === 'create'">
-      <el-input v-model="renameValue" :placeholder="operationType === 'create' ? '请输入项目名称' : 
-                operationType === 'rename' ? '请输入新的名称' : 
-                '请输入新的项目名称'" />
+      <el-input v-model="renameValue" :placeholder="operationType === 'create' ? '请输入项目名称' :
+        operationType === 'rename' ? '请输入新的名称' :
+          '请输入新的项目名称'" />
     </template>
     <template v-else>
-      <span>{{ operationType === 'recover' ? '确定要还原该文件吗？' : 
-              operationType === 'delete' ? '确定要彻底删除该文件吗？此操作不可恢复！' : 
-              '确定要删除文件吗？若删除文件，之后可以在回收站中还原。' }}</span>
+      <span>{{ operationType === 'recover' ? '确定要还原该文件吗？' :
+        operationType === 'delete' ? '确定要彻底删除该文件吗？此操作不可恢复！' :
+          '确定要删除文件吗？若删除文件，之后可以在回收站中还原。' }}</span>
     </template>
     <template #footer>
       <span class="dialog-footer">
@@ -1020,11 +1006,11 @@ onUnmounted(() => {
 
 .upload-demo {
   width: 100%;
-  
+
   :deep(.el-upload) {
     width: 100%;
   }
-  
+
   :deep(.el-upload-dragger) {
     width: 100%;
   }
