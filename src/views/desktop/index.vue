@@ -19,7 +19,8 @@ import {
   deleteProjectResourceFile,
   recoverFile,
   addProjectResourceFile,
-  getProjectResourceFile
+  getProjectResourceFile,
+  addProjectResource
 } from '@/api/project';
 import { getResourceFiles } from '@/api/resource';
 import { getResourcesList } from '@/api/resource';
@@ -123,41 +124,13 @@ const uploadForm = ref<{
 // 添加重命名输入框的值
 const renameValue = ref('');
 
-// 添加获取回收站列表的方法
-const getTrashList = async () => {
-  try {
-    const res = await getTrashedList({
-      page: 1,
-      pageSize: 20
-    });
-    if (res.code === 200) {
-      fileLibraryStore.setLibraryList(res.data.data || []);
-    }
-  } catch (error) {
-    ElMessage.error('获取回收站列表失败');
-  }
-}
-
-// 添加获取收藏资源列表的方法
-const getFavoriteList = async () => {
-  try {
-    const res = await getResourceFiles({
-      page: 1,
-      pageSize: 20
-    });
-    if (res.code === 200) {
-      fileLibraryStore.setLibraryList(res.data.data || []);
-    }
-  } catch (error) {
-    ElMessage.error('获取收藏资源列表失败');
-  }
-}
-
 // 监听 activeIndex 变化
 watch(activeIndex, (newIndex) => {
   selectedFile.value = null;
   rightTabs.value = defaultTabs;
   rightActiveTab.value = 0;
+  // 重置文件路径
+  fileLibraryStore.clearCurrentPath();
   
   switch (newIndex) {
     case 0: // 我的项目
@@ -167,7 +140,6 @@ watch(activeIndex, (newIndex) => {
         search: ''
       }).then(res => {
         if (res.code === 200) {
-          // 根据 length 是否为 0 来判断类型
           const list = res.data.data.map((item: any) => ({
             ...item,
             type: item.length === 0 ? 'folder' : 'file'
@@ -184,6 +156,44 @@ watch(activeIndex, (newIndex) => {
       break;
   }
 });
+
+// 添加获取回收站列表的方法
+const getTrashList = async () => {
+  try {
+    const res = await getTrashedList({
+      page: 1,
+      pageSize: 20
+    });
+    if (res.code === 200) {
+      const list = res.data.data.map((item: any) => ({
+        ...item,
+        type: item.length === 0 ? 'folder' : 'file'
+      }));
+      fileLibraryStore.setLibraryList(list || []);
+    }
+  } catch (error) {
+    ElMessage.error('获取回收站列表失败');
+  }
+}
+
+// 添加获取收藏资源列表的方法
+const getFavoriteList = async () => {
+  try {
+    const res = await getResourceFiles({
+      page: 1,
+      pageSize: 20
+    });
+    if (res.code === 200) {
+      const list = res.data.data.map((item: any) => ({
+        ...item,
+        type: item.length === 0 ? 'folder' : 'file'
+      }));
+      fileLibraryStore.setLibraryList(list || []);
+    }
+  } catch (error) {
+    ElMessage.error('获取收藏资源列表失败');
+  }
+}
 
 // 处理文件选中
 const handleFileSelected = (file: FileItem) => {
@@ -325,7 +335,6 @@ const handleFileOperation = async (tab: TabItem) => {
               search: ''
             });
             if (res.code === 200) {
-              // 根据 length 是否为 0 来判断类型
               const list = res.data.data.map((item: any) => ({
                 ...item,
                 type: item.length === 0 ? 'folder' : 'file'
@@ -405,28 +414,64 @@ const handleConfirmOperation = async () => {
       return;
     }
     try {
-      const res = await addProjectFolder({
-        name: renameValue.value
-      });
-      ElMessage.success('创建成功');
-      // 刷新列表
-      const listRes = await getProjectFile({
-        page: 1,
-        pageSize: 20,
-        search: ''
-      });
-      if (listRes.code === 200) {
-        // 找到新创建的项目并设置 type: 'folder'
-        const list = listRes.data.data.map((item: any) => {
-          if (item.name === renameValue.value) {
+      // 根据当前路径层级选择不同的创建接口
+      if (fileLibraryStore.currentPath.length === 0) {
+        // 一级目录创建项目
+        const res = await addProjectFolder({
+          name: renameValue.value
+        });
+        ElMessage.success('创建成功');
+        // 刷新列表
+        const listRes = await getProjectFile({
+          page: 1,
+          pageSize: 20,
+          search: ''
+        });
+        if (listRes.code === 200) {
+          const list = listRes.data.data.map((item: any) => ({
+            ...item,
+            type: item.length === 0 ? 'folder' : 'file'
+          }));
+          fileLibraryStore.setLibraryList(list || []);
+        }
+      } else {
+        // 二级及n级目录创建项目
+        const currentFolder = selectedFile.value;
+        if (!currentFolder?.id) {
+          throw new Error('文件夹ID不存在');
+        }
+        // 使用addProjectResource接口创建文件夹
+        await addProjectResource({
+          projectId: currentFolder.id,
+          name: renameValue.value
+        });
+        ElMessage.success('创建成功');
+        // 刷新列表
+        const res = await getProjectResourceFile({
+          projectId: currentFolder.id,
+          folderId: currentFolder.id,
+          page: 1,
+          pageSize: 20,
+          search: ''
+        });
+        if (res.code === 200) {
+          // 确保新创建的文件夹length为0
+          const list = res.data.data.map((item: any) => {
+            // 如果是新创建的文件夹，设置length为0
+            if (item.name === renameValue.value) {
+              return {
+                ...item,
+                length: 0,
+                type: 'folder'
+              };
+            }
             return {
               ...item,
-              type: 'folder'
+              type: item.length === 0 ? 'folder' : 'file'
             };
-          }
-          return item;
-        });
-        fileLibraryStore.setLibraryList(list || []);
+          });
+          fileLibraryStore.setLibraryList(list || []);
+        }
       }
       operationDialogVisible.value = false;
       renameValue.value = '';
@@ -617,7 +662,6 @@ onMounted(async () => {
       });
       console.log('初始化项目列表:', res);
       if (res.code === 200) {
-        // 根据 length 是否为 0 来判断类型
         const list = res.data.data.map((item: any) => ({
           ...item,
           type: item.length === 0 ? 'folder' : 'file'

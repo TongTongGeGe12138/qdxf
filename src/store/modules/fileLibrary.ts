@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia';
+import { getProjectResource, getProjectFile } from '@/api/project';
+import { ElMessage } from 'element-plus';
 
 interface FileItem {
   id: string | number;
@@ -21,17 +23,62 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
   actions: {
     setCurrentPath(path: string[]) {
       this.currentPath = path;
-      console.log(this.currentPath,777777);
-      
     },
     clearCurrentPath() {
       this.currentPath = [];
-      console.log(this.currentPath,888888);
     },
     setLibraryList(list: FileItem[]) {
-      console.log('设置文件列表:', list);
       this.libraryList = list;
-      console.log(this.libraryList,999999);
+    },
+    async navigateUp() {
+      if (this.currentPath.length > 0) {
+        this.currentPath = this.currentPath.slice(0, -1);
+        await this.refreshCurrentList();
+      }
+    },
+    async navigateToFolder(folder: FileItem) {
+      this.currentPath = [...this.currentPath, folder.name];
+      await this.refreshCurrentList();
+    },
+    async navigateToPath(index: number) {
+      this.currentPath = this.currentPath.slice(0, index + 1);
+      await this.refreshCurrentList();
+    },
+    async refreshCurrentList() {
+      try {
+        if (this.currentPath.length === 0) {
+          const res = await getProjectFile({
+            page: 1,
+            pageSize: 20,
+            search: ''
+          });
+          if (res.code === 200) {
+            const list = res.data.data.map((item: any) => ({
+              ...item,
+              type: item.length === 0 ? 'folder' : 'file'
+            }));
+            this.setLibraryList(list || []);
+          }
+        } else {
+          const currentFolder = this.libraryList.find(folder => folder.name === this.currentPath[this.currentPath.length - 1]);
+          if (currentFolder?.id) {
+            const res = await getProjectResource({
+              projectId: currentFolder.id,
+              page: 1,
+              pageSize: 20
+            });
+            if (res.code === 200) {
+              const list = res.data.data.map((item: any) => ({
+                ...item,
+                type: item.length === 0 ? 'folder' : 'file'
+              }));
+              this.setLibraryList(list || []);
+            }
+          }
+        }
+      } catch (error) {
+        ElMessage.error('获取列表失败');
+      }
     }
   }
 }); 
