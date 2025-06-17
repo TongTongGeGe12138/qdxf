@@ -261,8 +261,8 @@ const handleUpload = async () => {
         throw new Error('文件夹ID不存在')
       }
       await addProjectResourceFile({
-        projectId: currentFolder.id,
-        folderId: currentFolder.id,
+        projectId: fileLibraryStore.projectId,
+        folderId: fileLibraryStore.folderPath[fileLibraryStore.folderPath.length - 1]?.id,
         file: uploadFile.value
       })
     }
@@ -285,22 +285,19 @@ const handleUpload = async () => {
         fileLibraryStore.setLibraryList(list || [])
       }
     } else {
-      const currentFolder = selectedFile.value
-      if (currentFolder?.id) {
-        const res = await getProjectResourceFile({
-          projectId: currentFolder.id,
-          folderId: currentFolder.id,
-          page: 1,
-          pageSize: 20,
-          search: ''
-        })
-        if (res.code === 200) {
-          const list = res.data.data.map((item: any) => ({
-            ...item,
-            type: item.length === 0 ? 'folder' : 'file'
-          }))
-          fileLibraryStore.setLibraryList(list || [])
-        }
+      const res = await getProjectResourceFile({
+        projectId: fileLibraryStore.projectId,
+        folderId: fileLibraryStore.folderPath[fileLibraryStore.folderPath.length - 1]?.id,
+        page: 1,
+        pageSize: 20,
+        search: ''
+      })
+      if (res.code === 200) {
+        const list = res.data.data.map((item: any) => ({
+          ...item,
+          type: item.length === 0 ? 'folder' : 'file'
+        }))
+        fileLibraryStore.setLibraryList(list || [])
       }
     }
   } catch (error) {
