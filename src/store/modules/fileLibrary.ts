@@ -13,6 +13,7 @@ interface FileItem {
   projectId?: string | number;
   fileId?: string | number;
   folderId?: string | number;
+  contentType?: number;
 }
 
 interface FolderInfo {

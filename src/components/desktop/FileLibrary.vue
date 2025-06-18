@@ -120,7 +120,7 @@ const showPagination = computed(() => {
 });
 
 // 计算属性：根据当前路径层级决定显示内容
-const files = computed(() => {
+const files = computed<FileItem[]>(() => {
   const actualPath = filePath.value?.slice(1) || [];
   const showBackButton = actualPath.length > 0;
   const currentList = fileLibraryStore.libraryList || [];
@@ -426,8 +426,8 @@ onUnmounted(() => {
           padding: 12px;
 
           img {
-            width: 35px;
-            height: 35px;
+            width: 72px;
+            height: 72px;
             object-fit: contain;
           }
 
