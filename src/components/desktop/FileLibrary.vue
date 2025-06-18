@@ -26,6 +26,15 @@
       </div>
     </div>
 
+    <!-- CAD查看器 -->
+    <div v-if="showCadViewer" class="cad-viewer">
+      <div class="cad-header">
+        <span class="title">CAD查看器</span>
+        <el-icon class="close-btn" @click="closeCadViewer"><Close /></el-icon>
+      </div>
+      <div id="ibp-2d-container"></div>
+    </div>
+
     <!-- 分页 -->
     <div v-if="showPagination" class="pagination">
       <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total"
@@ -35,14 +44,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onUnmounted, watch } from 'vue';
+import { ref, computed, onUnmounted, watch, onMounted, nextTick } from 'vue';
 import folder from '@/assets/wjj.svg?component';
 import { useFileLibraryStore } from '@/store/modules/fileLibrary';
+import { getProjectResourceFileInfo } from '@/api/project';
+import { getP2d } from '@/api/cad';
+import { ElMessage } from 'element-plus';
+import { EngineContext } from '@/vendor/CadEngine/EngineContext.js';
+import { Close } from '@element-plus/icons-vue';
 
 interface FileItem {
   id: string | number;
   name: string;
   type: 'folder' | 'file' | 'back';
+  url?: string;
+  data?: any[];
 }
 
 const fileLibraryStore = useFileLibraryStore();
@@ -52,6 +68,7 @@ const filePath = ref(['我的桌面']);
 const currentPage = ref(1);
 const pageSize = ref(20);
 const selectedItem = ref<FileItem | null>(null);
+const showCadViewer = ref(false);
 
 // 路径变化时重置面包屑和分页
 watch(() => fileLibraryStore.currentPath, (newPath) => {
@@ -110,7 +127,9 @@ const handleFileClick = (item: FileItem) => {
 };
 
 // 双击进入文件夹或返回上级
-const handleFileDblClick = (item: FileItem) => {
+const handleFileDblClick = async (item: FileItem) => {
+  console.log('双击文件/文件夹:', item);
+  
   if (item.type === 'back') {
     fileLibraryStore.navigateUp();
   } else if (item.type === 'folder') {
@@ -119,6 +138,104 @@ const handleFileDblClick = (item: FileItem) => {
       name: item.name,
       type: 'folder'
     });
+  } else {
+    // 处理文件双击
+    try {
+      // 显示CAD查看器
+      showCadViewer.value = true;
+      await nextTick();
+      const container = document.getElementById('ibp-2d-container');
+      if (container) {
+        EngineContext.AttachContainer(container);
+      }
+
+      // 判断是否在第一层目录
+      const isFirstLevel = fileLibraryStore.currentPath.length === 0;
+      const params = isFirstLevel ? {
+        projectId: item.id,
+        fileId: item.id
+      } : {
+        projectId: fileLibraryStore.projectId,
+        fileId: item.id
+      };
+      
+      console.log('获取文件信息, 参数:', params);
+      const res = await getProjectResourceFileInfo(params);
+      console.log('文件信息响应:', res);
+      if (res.code === 200) {
+        // 更新选中文件的信息
+        const updatedFile = {
+          ...item,
+          ...res.data
+        };
+        console.log('更新后的文件信息:', updatedFile);
+        selectedItem.value = updatedFile;
+        emit('fileSelected', updatedFile);
+
+        // 如果有 url，获取 P2D 文件
+        if (updatedFile.url) {
+          console.log('开始获取P2D文件, URL:', updatedFile.url);
+          try {
+            console.log('获取P2D文件, 参数:', { DwgUrl: updatedFile.url });
+            const p2dRes = await getP2d({ DwgUrl: updatedFile.url });
+            console.log('P2D文件响应:', p2dRes);
+            if (p2dRes.Code === 0) {
+              console.log('开始加载P2D文件到CAD引擎');
+              const loading = ref(true);
+              const finish = (e: any) => {
+                console.log('CAD引擎加载完成事件:', e);
+                if (e.isComplete === false) {
+                  console.error('CAD引擎加载失败:', e);
+                  ElMessage.error('该路径无法打开');
+                  loading.value = false;
+                  return;
+                }
+                if (e.isComplete === true) {
+                  console.log('CAD引擎加载成功，执行ZoomToFit');
+                  EngineContext.ViewManager.ZoomToFit();
+                  EngineContext.LoadManager.removeEventListener('finish', finish);
+                  loading.value = false;
+                  EngineContext.init();
+                }
+              };
+              console.log('添加CAD引擎加载完成事件监听器');
+              EngineContext.LoadManager.addEventListener('finish', finish);
+              console.log('开始调用LoadModel加载文件:', {
+                url: p2dRes.Data,
+                type: 'p2d'
+              });
+              EngineContext.LoadManager.LoadModel({
+                url: p2dRes.Data,
+                type: 'p2d',
+              });
+              ElMessage.success('获取P2D文件成功');
+            } else {
+              console.error('P2D文件响应错误:', p2dRes);
+              ElMessage.error(p2dRes.Msg || '获取P2D文件失败');
+              // 如果是dwg地址错误，尝试直接加载dwg文件
+              if (p2dRes.Msg === 'dwg地址错误' && updatedFile.url) {
+                console.log('尝试直接加载DWG文件:', updatedFile.url);
+                EngineContext.LoadManager.LoadModel({
+                  url: updatedFile.url,
+                  type: 'p2d',
+                });
+              }
+            }
+          } catch (error) {
+            console.error('获取P2D文件失败:', error);
+            ElMessage.error('获取P2D文件失败');
+          }
+        } else {
+          console.log('文件没有URL，跳过P2D文件获取');
+        }
+      } else {
+        console.error('获取文件信息失败:', res);
+        ElMessage.error('获取文件信息失败');
+      }
+    } catch (error) {
+      console.error('获取文件信息失败:', error);
+      ElMessage.error('获取文件信息失败');
+    }
   }
 };
 
@@ -131,9 +248,27 @@ const handleBreadcrumbClick = (index: number) => {
   }
 };
 
+// 关闭CAD查看器
+const closeCadViewer = () => {
+  showCadViewer.value = false;
+  if (EngineContext.Container) {
+    EngineContext.Container.style.display = 'none';
+  }
+};
+
+// 组件挂载时初始化EngineContext
+onMounted(async () => {
+  nextTick(() => {
+    EngineContext.init();
+  });
+});
+
 // 卸载时清理
 onUnmounted(() => {
   fileLibraryStore.clearCurrentPath();
+  if (EngineContext.Container) {
+    EngineContext.Container.style.display = 'none';
+  }
 });
 </script>
 
@@ -142,14 +277,59 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  // padding: 20px;
+  position: relative;
+
+  .cad-viewer {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
+    z-index: 1000;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+
+    .cad-header {
+      height: 40px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #eee;
+
+      .title {
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+      }
+
+      .close-btn {
+        font-size: 20px;
+        color: #909399;
+        cursor: pointer;
+        transition: color 0.3s;
+
+        &:hover {
+          color: #409EFF;
+        }
+      }
+    }
+
+    #ibp-2d-container {
+      flex: 1;
+      overflow: hidden;
+    }
+  }
 
   .file-section {
     width: 100%;
     border-radius: 20px;
 
     .section-header {
-      // padding: 16px 20px;
       padding-left: 10px;
 
       :deep(.el-breadcrumb) {

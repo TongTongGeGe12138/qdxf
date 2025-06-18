@@ -25,6 +25,41 @@ const routes: Array<RouteRecordRaw> = [
           title: '我的桌面',
           icon: '左栏 - 我的桌面'
         }
+      },
+      {
+        path: '/collaboration',
+        name: 'Collaboration',
+        component: () => import('../views/collaboration/index.vue'),
+        meta: {
+          title: '协同空间',
+          icon: '左栏 - 我的桌面'
+        },
+        children: [
+          {
+            path: 'members',
+            name: 'Members',
+            component: () => import('../views/collaboration/members/index.vue'),
+            meta: {
+              title: '人员管理'
+            }
+          },
+          {
+            path: 'tasks',
+            name: 'Tasks',
+            component: () => import('../views/collaboration/tasks/index.vue'),
+            meta: {
+              title: '任务管理'
+            }
+          },
+          {
+            path: 'board',
+            name: 'Board',
+            component: () => import('../views/collaboration/board/index.vue'),
+            meta: {
+              title: '进度看板'
+            }
+          }
+        ]
       }
     ]
   },

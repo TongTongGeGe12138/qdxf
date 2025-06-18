@@ -41,10 +41,9 @@ export interface ProjectItem {
 // 项目列表结果接口
 export interface ProjectListResult {
   code: number;
-  data: {
-    data: ProjectItem[];
-  };
-  message: string;
+  msg: string;
+  data: any;
+  time: number;
 }
 
 // AIGC 模块组件接口

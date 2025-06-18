@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeesFPD - AI智能建筑设计平台</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            background: #000000;
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 0;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(-20px);
+            border-bottom: 1px solid rgba(249, 222, 74, 0.2);
+        }
+
+        .header.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #F9DE4A;
+        }
+
+        .logo i {
+            margin-right: 8px;
+            font-size: 28px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 40px;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #e2e8f0;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-menu a:hover {
+            color: #F9DE4A;
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 50%;
+            background: #F9DE4A;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-menu a:hover::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-login {
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            background: rgba(249, 222, 74, 0.1);
+            color: #F9DE4A;
+        }
+
+        .btn-trial {
+            background: linear-gradient(135deg, #F9DE4A, #f1c40f);
+            color: #1a1a2e;
+            text-decoration: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(249, 222, 74, 0.3);
+        }
+
+        .btn-trial:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(249, 222, 74, 0.4);
+        }
+
+        /* Main Content */
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 100px 20px 50px;
+            background: #000000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                /* 主网格 */
+                linear-gradient(rgba(249, 222, 74, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(249, 222, 74, 0.15) 1px, transparent 1px),
+                /* 辅助网格 */
+                linear-gradient(rgba(249, 222, 74, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(249, 222, 74, 0.05) 1px, transparent 1px);
+            background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+            animation: cadGrid 30s linear infinite;
+        }
+
+        .main-container::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80%;
+            height: 80%;
+            transform: translate(-50%, -50%);
+            border: 1px solid rgba(249, 222, 74, 0.3);
+            border-radius: 10px;
+            pointer-events: none;
+        }
+
+        /* CAD装饰元素 */
+        .cad-decorations {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .cad-corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(249, 222, 74, 0.4);
+        }
+
+        .cad-corner.top-left {
+            top: 10%;
+            left: 10%;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .cad-corner.top-right {
+            top: 10%;
+            right: 10%;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .cad-corner.bottom-left {
+            bottom: 10%;
+            left: 10%;
+            border-right: none;
+            border-top: none;
+        }
+
+        .cad-corner.bottom-right {
+            bottom: 10%;
+            right: 10%;
+            border-left: none;
+            border-top: none;
+        }
+
+        .dimension-line {
+            position: absolute;
+            height: 1px;
+            background: rgba(249, 222, 74, 0.3);
+        }
+
+        .dimension-line.horizontal {
+            width: 200px;
+            top: 15%;
+            left: 15%;
+        }
+
+        .dimension-line.horizontal::before,
+        .dimension-line.horizontal::after {
+            content: '';
+            position: absolute;
+            width: 1px;
+            height: 10px;
+            background: rgba(249, 222, 74, 0.3);
+            top: -5px;
+        }
+
+        .dimension-line.horizontal::before {
+            left: 0;
+        }
+
+        .dimension-line.horizontal::after {
+            right: 0;
+        }
+
+        .crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+        }
+
+        .crosshair::before,
+        .crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(249, 222, 74, 0.2);
+        }
+
+        .crosshair::before {
+            width: 100%;
+            height: 1px;
+            top: 50%;
+            left: 0;
+        }
+
+        .crosshair::after {
+            width: 1px;
+            height: 100%;
+            top: 0;
+            left: 50%;
+        }
+
+        /* 坐标轴指示器 */
+        .axis-indicator {
+            position: absolute;
+            color: rgba(249, 222, 74, 0.6);
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        .axis-x {
+            bottom: 5%;
+            right: 5%;
+        }
+
+        .axis-y {
+            top: 5%;
+            left: 5%;
+        }
+
+        /* 技术标注 */
+        .tech-annotation {
+            position: absolute;
+            color: rgba(249, 222, 74, 0.4);
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .tech-annotation.top {
+            top: 12%;
+            right: 15%;
+        }
+
+        .tech-annotation.bottom {
+            bottom: 12%;
+            left: 15%;
+        }
+
+        /* 圆弧指示器 */
+        .arc-indicator {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 1px solid rgba(249, 222, 74, 0.3);
+            border-radius: 50%;
+            border-left: none;
+            border-bottom: none;
+            top: 20%;
+            right: 20%;
+            transform: rotate(-45deg);
+        }
+
+        @keyframes cadGrid {
+            0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+            100% { background-position: 100px 100px, 100px 100px, 20px 20px, 20px 20px; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-10px) rotate(1deg); }
+            66% { transform: translateY(5px) rotate(-1deg); }
+        }
+
+        .content-wrapper {
+            max-width: 900px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .main-title {
+            font-size: 64px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideInUp 1s ease 0.5s forwards;
+        }
+
+        .sub-title {
+            font-size: 64px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #F9DE4A, #f1c40f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideInUp 1s ease 0.8s forwards;
+        }
+
+        .sub-description {
+            font-size: 18px;
+            color: #94a3b8;
+            margin-bottom: 60px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideInUp 1s ease 1.1s forwards;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideInUp 1s ease 1.4s forwards;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #F9DE4A, #f1c40f);
+            color: #1a1a2e;
+            text-decoration: none;
+            padding: 15px 35px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(249, 222, 74, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(249, 222, 74, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(0, 0, 0, 0.8);
+            color: #e2e8f0;
+            text-decoration: none;
+            padding: 15px 35px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(249, 222, 74, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(15, 15, 15, 0.9);
+            border-color: rgba(249, 222, 74, 0.6);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(249, 222, 74, 0.2);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            animation: fadeInBounce 2s ease 2s forwards;
+        }
+
+        .scroll-arrow {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #F9DE4A;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounce 2s infinite;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .scroll-arrow i {
+            color: #F9DE4A;
+            font-size: 14px;
+        }
+
+        /* Animations */
+        @keyframes slideInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInBounce {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-5px);
+            }
+            60% {
+                transform: translateY(-3px);
+            }
+        }
+
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            background: rgba(249, 222, 74, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatParticle linear infinite;
+        }
+
+        @keyframes floatParticle {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+            
+            .main-title, .sub-title {
+                font-size: 36px;
+            }
+            
+            .description {
+                font-size: 18px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-container {
+                padding: 0 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <div class="logo">
+                <i class="fas fa-cube"></i>
+                BeesFPD
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#products">产品功能</a></li>
+                <li><a href="#advantages">技术优势</a></li>
+                <li><a href="#security">安全保障</a></li>
+                <li><a href="#resources">资源中心</a></li>
+                <li><a href="#cooperation">合作入口</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="#login" class="btn-login">登录</a>
+                <a href="#trial" class="btn-trial">免费试用</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- CAD装饰元素 -->
+        <div class="cad-decorations">
+            <div class="cad-corner top-left"></div>
+            <div class="cad-corner top-right"></div>
+            <div class="cad-corner bottom-left"></div>
+            <div class="cad-corner bottom-right"></div>
+            <div class="dimension-line horizontal"></div>
+            <div class="crosshair"></div>
+            <div class="axis-indicator axis-x">X: 1920</div>
+            <div class="axis-indicator axis-y">Y: 1080</div>
+            <div class="tech-annotation top">DWG: v2025.1</div>
+            <div class="tech-annotation bottom">SCALE: 1:100</div>
+            <div class="arc-indicator"></div>
+        </div>
+        
+        <div class="content-wrapper">
+            <h1 class="main-title">让消防建筑设计</h1>
+            <h2 class="sub-title">以分钟为单位</h2>
+            
+            <p class="sub-description">解放2000万设计师的重复劳动</p>
+            
+            <div class="action-buttons">
+                <a href="#experience" class="btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                    立即体验
+                </a>
+                <a href="#demo" class="btn-secondary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    观看演示视频
+                </a>
+            </div>
+        </div>
+        
+        <div class="scroll-indicator">
+            <div class="scroll-arrow">
+                <i class="fas fa-chevron-down"></i>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Header animation on load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                document.querySelector('.header').classList.add('visible');
+            }, 100);
+        });
+
+        // Create floating particles (CAD style nodes)
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            const size = Math.random() * 2 + 1; // 更小的粒子，像CAD节点
+            particle.style.width = particle.style.height = size + 'px';
+            particle.style.animationDuration = Math.random() * 15 + 10 + 's'; // 更慢的移动
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            particle.style.borderRadius = '1px'; // 方形节点，更像CAD
+            
+            document.querySelector('.main-container').appendChild(particle);
+            
+            setTimeout(() => {
+                particle.remove();
+            }, 25000);
+        }
+
+        // Generate particles periodically (slower for CAD style)
+        setInterval(createParticle, 2000);
+
+        // Smooth scroll for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add hover effects to buttons
+        document.querySelectorAll('.btn-primary, .btn-secondary').forEach(btn => {
+            btn.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px) scale(1.02)';
+            });
+            
+            btn.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 50) {
+                header.style.background = 'rgba(0, 0, 0, 0.98)';
+                header.style.boxShadow = '0 2px 20px rgba(249, 222, 74, 0.1)';
+            } else {
+                header.style.background = 'rgba(0, 0, 0, 0.95)';
+                header.style.boxShadow = 'none';
+            }
+        });
+
+        // Add click animation to buttons
+        document.querySelectorAll('button, .btn-primary, .btn-secondary, .btn-trial').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.style.position = 'absolute';
+                ripple.style.borderRadius = '50%';
+                ripple.style.background = 'rgba(255, 255, 255, 0.6)';
+                ripple.style.transform = 'scale(0)';
+                ripple.style.animation = 'ripple 0.6s linear';
+                ripple.style.pointerEvents = 'none';
+                
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Add ripple animation CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

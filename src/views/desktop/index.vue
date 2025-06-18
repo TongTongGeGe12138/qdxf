@@ -5,7 +5,7 @@ import { computed } from 'vue'
 import { Refresh, UploadFilled, FolderAdd, Search, View, Edit, Download, Delete, Setting } from '@element-plus/icons-vue'
 import FileLibrary from '@/components/desktop/FileLibrary.vue';
 import { useFileLibraryStore } from '@/store/modules/fileLibrary';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage,  } from 'element-plus';
 import {
   getProjectFile,
   addProjectFolder,
@@ -278,7 +278,7 @@ const handleFileSelected = (file: FileItem) => {
 }
 
 // 计算背景色
-const cardBgColor = computed(() => isDark.value ? 'var(--el-bg-color-overlay)' : '#ffffff')
+const cardBgColor = computed(() => isDark.value ? '#000' : '#ffffff')
 const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 // const navTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const desktopBboder = computed(() => isDark.value ? 'rgba(231,231,224,.3)' : '#D7D7D7')
@@ -918,7 +918,7 @@ onUnmounted(() => {
 
 <style scoped lang="less">
 .desktop-container {
-  padding: 20px;
+  // padding: 20px;
   height: 100%;
   background-color: var(--theme-background);
 }

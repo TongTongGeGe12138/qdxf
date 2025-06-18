@@ -1,6 +1,15 @@
-import axios from 'axios';
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { ElMessage } from 'element-plus';
+import { VAxios } from './axios';
+import { CreateAxiosOptions } from './axiosTransform';
+import { ContentTypeEnum } from './httpEnum';
+import { merge } from 'lodash-es';
+import { transform } from './axiosTransform';
+
+// 环境变量
+const host = import.meta.env.VITE_API_BASE_URL || '/api';
+const externalhost = import.meta.env.VITE_EXTERNAL_API_BASE_URL;
+const cadhost = import.meta.env.VITE_CAD_API_BASE_URL;
 
 // 创建 axios 实例
 const service: AxiosInstance = axios.create({
@@ -97,4 +106,44 @@ export const request = {
   delete<T = any>(config: AxiosRequestConfig): Promise<T> {
     return service({ ...config, method: 'delete' });
   }
-}; 
+};
+
+function createAxiosCad(opt?: Partial<CreateAxiosOptions>) {
+  return new VAxios(
+    merge(
+      <CreateAxiosOptions>{
+        authenticationScheme: 'Bearer',
+        timeout: 10 * 1000,
+        withCredentials: true,
+        headers: {
+          'Content-Type': ContentTypeEnum.Json,
+        },
+        transform,
+        requestOptions: {
+          apiUrl: host,
+          aigcApiBaseUrl: externalhost,
+          cadApiBaseUrl: cadhost,
+          isJoinPrefix: true,
+          urlPrefix: import.meta.env.VITE_API_URL_PREFIX,
+          externalUrlPrefix: import.meta.env.VITE_API_URL_PREFIX_LOG,
+          externalUrlPrefixCad: import.meta.env.VITE_API_URL_PREFIX_CAD,
+          isReturnNativeResponse: false,
+          isTransformResponse: false,
+          joinParamsToUrl: false,
+          formatDate: true,
+          joinTime: true,
+          ignoreCancelToken: true,
+          withToken: true,
+          externalUrlStatus: 0,
+          retry: {
+            count: 3,
+            delay: 1000,
+          },
+        },
+      },
+      opt || {},
+    ),
+  );
+}
+
+export const requestCad = createAxiosCad(); 
