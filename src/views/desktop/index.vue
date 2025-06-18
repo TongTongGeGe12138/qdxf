@@ -382,7 +382,8 @@ const handleUpload = async () => {
   }
 }
 
-// 修改文件操作处理函数
+const fileLibraryRef = ref();
+
 const handleFileOperation = async (tab: TabItem) => {
   // 上传文件和创建项目不需要选择文件
   if (tab.name === '上传文件' || tab.name === '创建项目' || tab.name === '刷新列表') {
@@ -430,6 +431,12 @@ const handleFileOperation = async (tab: TabItem) => {
   const file = selectedFile.value;  // 保存引用以避免重复检查
 
   switch (tab.name) {
+    case '打开':
+      // 使用 FileLibrary 组件的 openFile 方法
+      if (fileLibraryRef.value) {
+        await fileLibraryRef.value.openFile(file);
+      }
+      break;
     case '还原':
       if (activeIndex.value === 2) {
         operationDialogVisible.value = true;
@@ -795,7 +802,7 @@ onUnmounted(() => {
         </div>
         <div class="dcontent-cont">
           <div class="dcontent-cont-left">
-            <FileLibrary @fileSelected="handleFileSelected" />
+            <FileLibrary ref="fileLibraryRef" @fileSelected="handleFileSelected" />
           </div>
           <div class="dcontent-cont-right" v-if="selectedFile">
             <div class="file-detail">
@@ -920,7 +927,7 @@ onUnmounted(() => {
 .desktop-container {
   // padding: 20px;
   height: 100%;
-  background-color: var(--theme-background);
+  // background-color: var(--theme-background);
 }
 
 .box-card {

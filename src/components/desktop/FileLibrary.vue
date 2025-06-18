@@ -32,7 +32,7 @@
         <span class="title">CAD查看器</span>
         <el-icon class="close-btn" @click="closeCadViewer"><Close /></el-icon>
       </div>
-      <div id="ibp-2d-container"></div>
+      <div id="ibp-2d-container" v-loading="cadLoading" element-loading-text="CAD文件加载中..."></div>
     </div>
 
     <!-- 分页 -->
@@ -70,13 +70,14 @@ interface FileItem {
 }
 
 const fileLibraryStore = useFileLibraryStore();
-const emit = defineEmits(['fileSelected']);
+const emit = defineEmits(['fileSelected', 'openFile']);
 
 const filePath = ref(['我的桌面']);
 const currentPage = ref(1);
 const pageSize = ref(20);
 const selectedItem = ref<FileItem | null>(null);
 const showCadViewer = ref(false);
+const cadLoading = ref(false);
 
 // 导入所有文件图标
 const fileIcons = {
@@ -201,6 +202,7 @@ const handleFileDblClick = async (item: FileItem) => {
         if (updatedFile.contentType === 141) {  // DWG 文件
           // 显示CAD查看器
           showCadViewer.value = true;
+          cadLoading.value = true;
           await nextTick();
           const container = document.getElementById('ibp-2d-container');
           if (container) {
@@ -223,6 +225,7 @@ const handleFileDblClick = async (item: FileItem) => {
                     console.error('CAD引擎加载失败:', e);
                     ElMessage.error('该路径无法打开');
                     loading.value = false;
+                    cadLoading.value = false;
                     return;
                   }
                   if (e.isComplete === true) {
@@ -230,6 +233,7 @@ const handleFileDblClick = async (item: FileItem) => {
                     EngineContext.ViewManager.ZoomToFit();
                     EngineContext.LoadManager.removeEventListener('finish', finish);
                     loading.value = false;
+                    cadLoading.value = false;
                     EngineContext.init();
                   }
                 };
@@ -294,6 +298,7 @@ const handleBreadcrumbClick = (index: number) => {
 // 关闭CAD查看器
 const closeCadViewer = () => {
   showCadViewer.value = false;
+  cadLoading.value = false;
   if (EngineContext.Container) {
     EngineContext.Container.style.display = 'none';
   }
@@ -313,6 +318,16 @@ onUnmounted(() => {
     EngineContext.Container.style.display = 'none';
   }
 });
+
+// 添加一个公开的方法来处理文件打开
+const openFile = async (item: FileItem) => {
+  await handleFileDblClick(item);
+};
+
+// 暴露方法给父组件
+defineExpose({
+  openFile
+});
 </script>
 
 <style lang="less" scoped>
@@ -330,34 +345,39 @@ onUnmounted(() => {
     width: 80%;
     height: 80%;
     z-index: 1000;
-    background: #fff;
-    border-radius: 8px;
+    background: var(--el-bg-color);
+    border-radius: 12px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
+    border: 1px solid var(--el-border-color-light);
 
     .cad-header {
-      height: 40px;
-      padding: 0 16px;
+      height: 48px;
+      padding: 0 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--el-border-color-light);
+      background-color: var(--el-bg-color-overlay);
 
       .title {
         font-size: 16px;
         font-weight: 500;
-        color: #333;
+        color: var(--el-text-color-primary);
       }
 
       .close-btn {
         font-size: 20px;
-        color: #909399;
+        color: var(--el-text-color-secondary);
         cursor: pointer;
         transition: color 0.3s;
+        padding: 4px;
+        border-radius: 4px;
 
         &:hover {
-          color: #409EFF;
+          color: var(--el-color-primary);
+          background-color: var(--el-fill-color-light);
         }
       }
     }
@@ -365,6 +385,8 @@ onUnmounted(() => {
     #ibp-2d-container {
       flex: 1;
       overflow: hidden;
+      background-color: var(--el-bg-color);
+      border-radius: 0 0 12px 12px;
     }
   }
 
