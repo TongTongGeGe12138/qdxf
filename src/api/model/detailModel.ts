@@ -36,14 +36,25 @@ export interface ProjectItem {
   projectId?: string | number;
   folderId?: string | number;
   fileId?: string | number;
+  value?: string;
+  content?: string;
+  contentShow?: boolean;
+  description?: string;
+  extra?: {
+    version?: string;
+    url?: string;
+    tip?: string;
+    englishName?: string;
+    group?: string;
+    icon?: any;
+  };
 }
 
 // 项目列表结果接口
 export interface ProjectListResult {
   code: number;
-  msg: string;
+  message: string;
   data: any;
-  time: number;
 }
 
 // AIGC 模块组件接口

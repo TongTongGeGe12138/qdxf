@@ -38,7 +38,7 @@ interface UserProfileParams {
 
 interface PasswordParams {
   oldPassword?: string;
-  newPassword: string;
+  password: string;
   code?: string;
   phone?: string;
 }

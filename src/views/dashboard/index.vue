@@ -1,10 +1,10 @@
 <template>
     <div class="dashboard-container">
-        <div class="title">👋 欢迎使用 BeesFQD</div>
+        <div class="title">👋 欢迎使用 BeesFPD</div>
         <div class="container">
             <div class="container-left">
                 <div class="left-title">
-                    <div class="main-title">智能测绘</div>
+                    <div class="main-title">智能绘制</div>
                     <div class="sub-title">用智能设计重新定义消防工程，五分钟解决消防点线布置</div>
                 </div>
                 <div class="search-section">
@@ -20,7 +20,7 @@
                             v-for="tag in tags"
                             :key="tag.name"
                             :class="{ 'is-active': activeTag === tag.name }"
-                            @click="activeTag = tag.name"
+                            @click="handleTagClick(tag.name)"
                         >
                             {{ tag.name }}
                         </el-tag>
@@ -43,7 +43,7 @@
                         </div>
                         <div class="card-content">
                             <div class="card-title">{{ item.name }}</div>
-                            <div class="card-desc">{{ item.value }}</div>
+                            <div class="card-desc">{{ item.extra?.englishName }}</div>
                         </div>
                         <div class="circle-icon">
                             <el-icon>
@@ -325,58 +325,44 @@ const aigcModuleSkuList = [
 // 获取数据的方法
 const fetchData = async () => {
     try {
-        // 获取主分类数据
         const primaryRes = await getAigcPrimaryList();
-        console.log('主分类响应数据:', primaryRes);
         
         if (primaryRes?.code !== 200 || !Array.isArray(primaryRes?.data)) {
             throw new Error('获取主分类数据失败');
         }
 
         const list = primaryRes.data;
-        console.log('主分类列表:', list);
         
-        // 合并所有消防相关组件
         const componentsList = [
             ...aigcModuleSkuList[2].components,
             ...aigcModuleSkuList[3].components,
             ...aigcModuleSkuList[4].components
         ];
-        console.log('合并后的组件列表:', componentsList);
 
-        // 处理数据
         if (Array.isArray(aigcList.value)) {
             handleAigcListData(list, componentsList);
         }
 
         allList.value = list;
-        console.log('更新后的 allList:', allList.value);
         
-        // 处理智能消防应用
         await handleFireApplication(list, componentsList);
 
     } catch (error) {
-        console.error('获取数据失败:', error);
         ElMessage.error(error instanceof Error ? error.message : '获取数据失败');
     }
 };
 
 // 处理 AIGC 列表数据
 const handleAigcListData = (list: ProjectItem[], componentsList: AigcModuleComponent[]) => {
-    console.log('当前 aigcList:', aigcList.value);
-    
     for (const element of aigcList.value) {
         for (const key of list) {
             if (element.name !== key.name) continue;
 
             key.content = element.content;
-            console.log(`匹配到项目 ${key.name}, icon:`, key.extra?.icon);
-
             updateFireList(key.name);
             
             if (fireList.value.length === componentsList.length && key.name === AIGC_MODULES.FIRE) {
                 key.content = 'AigcCmpPkgFirefighting';
-                console.log('设置智能消防 content:', key);
             }
         }
     }
@@ -387,15 +373,12 @@ const updateFireList = (moduleName: string) => {
     switch (moduleName) {
         case AIGC_MODULES.WATER:
             fireList.value = [...aigcModuleSkuList[2].components, ...fireList.value];
-            console.log('更新给排水 fireList:', fireList.value);
             break;
         case AIGC_MODULES.HVAC:
             fireList.value = [...aigcModuleSkuList[3].components, ...fireList.value];
-            console.log('更新暖通 fireList:', fireList.value);
             break;
         case AIGC_MODULES.ELECTRIC:
             fireList.value = [...aigcModuleSkuList[4].components, ...fireList.value];
-            console.log('更新电气 fireList:', fireList.value);
             break;
     }
 };
@@ -404,7 +387,6 @@ const updateFireList = (moduleName: string) => {
 const handleFireApplication = async (list: ProjectItem[], componentsList: AigcModuleComponent[]) => {
   const fireApps = list.filter((item: ProjectItem) => item.name === '智能消防');
   applicationList.value = fireApps;
-  console.log('智能消防应用列表:', fireApps);
   
   const fireApp = fireApps[0];
   if (!fireApp?.value) return;
@@ -417,7 +399,6 @@ const handleFireApplication = async (list: ProjectItem[], componentsList: AigcMo
       secondary.value = childrenData[0].value;
       const processedData = getAigcCadStatus(childrenData);
       secondaryList.value = processedData;
-      console.log('processedData', secondaryList.value);
       threeStatus.value = true;
     }
   }
@@ -554,19 +535,6 @@ const currentCard = ref<any>(null)
 // 添加卡片点击事件处理函数
 const handleCardClick = (item: ProjectItemExtended) => {
     currentCard.value = item;
-    console.log('当前卡片数据:', {
-        名称: item.name,
-        值: item.value,
-        描述: item.description,
-        额外信息: {
-            版本: item.extra?.version,
-            链接: item.extra?.url,
-            提示: item.extra?.tip,
-            英文名: item.extra?.englishName,
-            分组: item.extra?.group
-        },
-        显示状态: item.contentShow
-    });
     cardDialogVisible.value = true;
 };
 
@@ -579,107 +547,117 @@ const closeHoverColor = computed(() => isDark.value ? '#f3cc2e' : '#409eff')
 // 获取并处理子分类数据
 const getAigcChildren = async (val: any) => {
   try {
-    console.log('开始获取子分类数据，参数:', val);
     const { data, code } = await getAigcChildrenList(val.value);
-    console.log('子分类接口返回的原始数据:', data);
     
     if (code === 200) {
       current.value = val.value;
       if (Array.isArray(data) && data.length > 0) {
-        // 先过滤有 version 的数据
         const uniqueData = unique(data);
-        console.log('unique 过滤后的数据:', uniqueData);
-        
         secondary.value = uniqueData[0]?.value || '';
-        
-        // 处理数据状态
         const processedData = getAigcCadStatus(uniqueData);
-        console.log('CAD状态处理后的数据:', processedData);
-        
         secondaryList.value = processedData;
         threeStatus.value = true;
-      } else {
-        console.warn('接口返回的数据为空或不是数组');
       }
-    } else {
-      console.warn('接口返回非200状态码:', code);
     }
   } catch (error) {
-    console.error('获取子分类数据失败:', error);
     ElMessage.error(error instanceof Error ? error.message : '获取子分类数据失败');
   }
 };
 
 // 处理 CAD 状态
 const getAigcCadStatus = (data: ProjectItem[]) => {
-  console.log('进入 getAigcCadStatus 函数，原始数据:', data);
-  
-  const val = allList.value.filter((key: any) => key.value === current.value)[0];
-  console.log('找到的当前项:', val);
-  
-  if (!val) {
-    console.warn('未找到匹配的当前项，返回原始数据');
-    return data;
-  }
-  
-  // 首先过滤掉没有 version 的项目
-  const filteredData = data.filter(item => item.extra && item.extra.version);
-  console.log('过滤后的数据:', filteredData);
+    console.log('进入 getAigcCadStatus 函数，原始数据:', data);
+    
+    const val = allList.value.filter((key: any) => key.value === current.value)[0];
+    console.log('找到的当前项:', val);
+    
+    if (!val) {
+        console.warn('未找到匹配的当前项，返回原始数据');
+        return data;
+    }
+    
+    // 首先过滤掉没有 version 的项目
+    const filteredData = data.filter(item => item.extra && item.extra.version);
+    console.log('过滤后的数据:', filteredData);
 
-  // 定义图标映射
-  const iconMap: { [key: string]: any } = {
-    'sprinkler': Timer,
-    'firehose_extinguisher': Warning,
-    'extinguishing': Cpu,
-    'watermist': Operation,
-    'rain_water_curtain': ScaleToOriginal,
-    'foam': Switch,
-    'deluge': Aim,
-    'firemonitor': Monitor,
-    'firealarm': Notification,
-    'lighting_evacuation': Operation,
-    'firedoor_monitoring': Switch,
-    'firepump_monitoring': Connection,
-    'pressurization': Smoking,
-    'ventilation_pressurization': Link,
-    'smoke_control': Smoking
-  };
-  
-  const result = filteredData.map((item: ProjectItem) => {
-    const newItem = { ...item };
-    if (val.name === '智能消防' || val.name === '装饰消防') {
-      newItem.contentShow = fireList.value.some(fireItem => fireItem.title === item.name);
-    } else {
-      newItem.contentShow = !!val.content;
-    }
-    // 添加图标
-    if (newItem.extra) {
-      newItem.extra.icon = iconMap[item.value] || Monitor; // 如果没有匹配的图标，使用默认的 Monitor 图标
-    }
-    return newItem;
-  });
-  
-  console.log('最终处理后的数据:', result);
-  return result;
+    // 定义图标映射
+    const iconMap: { [key: string]: any } = {
+        'sprinkler': Timer,
+        'firehose_extinguisher': Warning,
+        'extinguishing': Cpu,
+        'watermist': Operation,
+        'rain_water_curtain': ScaleToOriginal,
+        'foam': Switch,
+        'deluge': Aim,
+        'firemonitor': Monitor,
+        'firealarm': Notification,
+        'lighting_evacuation': Operation,
+        'firedoor_monitoring': Switch,
+        'firepump_monitoring': Connection,
+        'pressurization': Smoking,
+        'ventilation_pressurization': Link,
+        'smoke_control': Smoking
+    };
+
+    // 定义组件分组
+    const groupMap: { [key: string]: string } = {
+        'sprinkler': '智能给排水',
+        'firehose_extinguisher': '智能给排水',
+        'extinguishing': '智能给排水',
+        'watermist': '智能给排水',
+        'rain_water_curtain': '智能给排水',
+        'foam': '智能给排水',
+        'deluge': '智能给排水',
+        'firemonitor': '智能给排水',
+        'firealarm': '智能电气',
+        'lighting_evacuation': '智能电气',
+        'firedoor_monitoring': '智能电气',
+        'firepump_monitoring': '智能电气',
+        'pressurization': '智能暖通',
+        'ventilation_pressurization': '智能暖通',
+        'smoke_control': '智能暖通'
+    };
+    
+    const result = filteredData.map((item: any) => {
+        const newItem = { ...item };
+        if (val.name === '智能消防' || val.name === '装饰消防') {
+            newItem.contentShow = fireList.value.some(fireItem => fireItem.title === item.name);
+        } else {
+            newItem.contentShow = !!val.content;
+        }
+        if (newItem.extra) {
+            newItem.extra.icon = iconMap[item.value] || Monitor;
+            newItem.extra.group = groupMap[item.value] || '';
+            console.log('设置项目分组:', {
+                name: newItem.name,
+                value: newItem.value,
+                group: newItem.extra.group
+            });
+        }
+        return newItem;
+    });
+    
+    console.log('最终处理后的数据:', result);
+    return result;
 };
 
 function unique(arr: any) {
-  console.log('进入 unique 函数，原始数据:', arr);
-  const list = [];
-  for (let i = 0; i < arr.length; i++) {
-    const element = arr[i];
-    console.log('检查数据项:', {
-      name: element.name,
-      hasExtra: !!element.extra,
-      hasVersion: element.extra?.version,
-      version: element.extra?.version
-    });
-    if (element.extra?.version) {
-      list.push(element);
+    console.log('进入 unique 函数，原始数据:', arr);
+    const list = [];
+    for (let i = 0; i < arr.length; i++) {
+        const element = arr[i];
+        console.log('检查数据项:', {
+            name: element.name,
+            hasExtra: !!element.extra,
+            hasVersion: element.extra?.version,
+            version: element.extra?.version
+        });
+        if (element.extra?.version) {
+            list.push(element);
+        }
     }
-  }
-  console.log('unique 函数处理后的数据:', list);
-  return list;
+    console.log('unique 函数处理后的数据:', list);
+    return list;
 }
 
 // 添加启动应用点击处理函数
@@ -732,17 +710,49 @@ onMounted(() => {
 });
 
 // 添加计算属性来过滤secondaryList
+type TagGroupKey = '智能给排水' | '智能电气' | '智能暖通';
+
+const tagGroups: Record<TagGroupKey, string[]> = {
+    '智能给排水': ['sprinkler', 'firehose_extinguisher', 'extinguishing', 'watermist', 'rain_water_curtain', 'firemonitor', 'waterspray', 'foam', 'deluge'],
+    '智能电气': ['firealarm', 'lighting_evacuation', 'firedoor_monitoring', 'firepump_monitoring'],
+    '智能暖通': ['pressurization', 'ventilation_pressurization', 'smoke_control']
+};
+
 const filteredSecondaryList = computed(() => {
-    if (!searchText.value) {
-        return secondaryList.value;
+    let filtered = secondaryList.value;
+    console.log('原始列表数据:', filtered);
+
+    // 标签筛选
+    if (activeTag.value !== '所有') {
+        filtered = filtered.filter(item => {
+            console.log('检查项目:', {
+                name: item.name,
+                value: item.value,
+                group: item.extra?.group
+            });
+            return item.extra?.group === activeTag.value;
+        });
     }
-    const searchLower = searchText.value.toLowerCase();
-    return secondaryList.value.filter(item => {
-        return item.name.toLowerCase().includes(searchLower) ||
-               (item.description && item.description.toLowerCase().includes(searchLower)) ||
-               (item.value && item.value.toLowerCase().includes(searchLower));
-    });
+
+    // 搜索文本筛选
+    if (searchText.value) {
+        const searchLower = searchText.value.toLowerCase();
+        filtered = filtered.filter(item => {
+            return item.name.toLowerCase().includes(searchLower) ||
+                   (item.description && item.description.toLowerCase().includes(searchLower)) ||
+                   (item.value && item.value.toLowerCase().includes(searchLower));
+        });
+    }
+
+    console.log('筛选后的列表:', filtered);
+    return filtered;
 });
+
+const handleTagClick = (tagName: string) => {
+    console.log('标签点击:', tagName);
+    activeTag.value = tagName;
+    console.log('当前筛选后的列表:', filteredSecondaryList.value);
+};
 </script>
 
 <style lang="less" scoped>

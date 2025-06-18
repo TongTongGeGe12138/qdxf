@@ -57,10 +57,10 @@ service.interceptors.response.use(
         ElMessage.error('请求的资源不存在');
         break;
       default:
-        ElMessage.error(res.message || '请求失败');
+        ElMessage.error(res.msg || '请求失败');
     }
 
-    return Promise.reject(new Error(res.message || '请求失败'));
+    return Promise.reject(new Error(res.msg || '请求失败'));
   },
   (error) => {
     console.error('Response error:', error);

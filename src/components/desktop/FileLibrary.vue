@@ -162,8 +162,6 @@ const handleFileClick = (item: FileItem) => {
 
 // 双击进入文件夹或返回上级
 const handleFileDblClick = async (item: FileItem) => {
-  console.log('双击文件/文件夹:', item);
-  
   if (item.type === 'back') {
     fileLibraryStore.navigateUp();
   } else if (item.type === 'folder') {
@@ -185,16 +183,13 @@ const handleFileDblClick = async (item: FileItem) => {
         fileId: item.id
       };
       
-      console.log('获取文件信息, 参数:', params);
       const res = await getProjectResourceFileInfo(params);
-      console.log('文件信息响应:', res);
       if (res.code === 200) {
         // 更新选中文件的信息
         const updatedFile = {
           ...item,
           ...res.data
         };
-        console.log('更新后的文件信息:', updatedFile);
         selectedItem.value = updatedFile;
         emit('fileSelected', updatedFile);
 
@@ -211,25 +206,18 @@ const handleFileDblClick = async (item: FileItem) => {
 
           // 如果有 url，获取 P2D 文件
           if (updatedFile.url) {
-            console.log('开始获取P2D文件, URL:', updatedFile.url);
             try {
-              console.log('获取P2D文件, 参数:', { DwgUrl: updatedFile.url });
               const p2dRes = await getP2d({ DwgUrl: updatedFile.url });
-              console.log('P2D文件响应:', p2dRes);
               if (p2dRes.Code === 0) {
-                console.log('开始加载P2D文件到CAD引擎');
                 const loading = ref(true);
                 const finish = (e: any) => {
-                  console.log('CAD引擎加载完成事件:', e);
                   if (e.isComplete === false) {
-                    console.error('CAD引擎加载失败:', e);
                     ElMessage.error('该路径无法打开');
                     loading.value = false;
                     cadLoading.value = false;
                     return;
                   }
                   if (e.isComplete === true) {
-                    console.log('CAD引擎加载成功，执行ZoomToFit');
                     EngineContext.ViewManager.ZoomToFit();
                     EngineContext.LoadManager.removeEventListener('finish', finish);
                     loading.value = false;
@@ -237,23 +225,16 @@ const handleFileDblClick = async (item: FileItem) => {
                     EngineContext.init();
                   }
                 };
-                console.log('添加CAD引擎加载完成事件监听器');
                 EngineContext.LoadManager.addEventListener('finish', finish);
-                console.log('开始调用LoadModel加载文件:', {
-                  url: p2dRes.Data,
-                  type: 'p2d'
-                });
                 EngineContext.LoadManager.LoadModel({
                   url: p2dRes.Data,
                   type: 'p2d',
                 });
                 ElMessage.success('获取P2D文件成功');
               } else {
-                console.error('P2D文件响应错误:', p2dRes);
                 ElMessage.error(p2dRes.Msg || '获取P2D文件失败');
                 // 如果是dwg地址错误，尝试直接加载dwg文件
                 if (p2dRes.Msg === 'dwg地址错误' && updatedFile.url) {
-                  console.log('尝试直接加载DWG文件:', updatedFile.url);
                   EngineContext.LoadManager.LoadModel({
                     url: updatedFile.url,
                     type: 'p2d',
@@ -261,11 +242,8 @@ const handleFileDblClick = async (item: FileItem) => {
                 }
               }
             } catch (error) {
-              console.error('获取P2D文件失败:', error);
               ElMessage.error('获取P2D文件失败');
             }
-          } else {
-            console.log('文件没有URL，跳过P2D文件获取');
           }
         } else {  // 非 DWG 文件
           // 在新窗口打开文件
@@ -276,11 +254,9 @@ const handleFileDblClick = async (item: FileItem) => {
           }
         }
       } else {
-        console.error('获取文件信息失败:', res);
         ElMessage.error('获取文件信息失败');
       }
     } catch (error) {
-      console.error('获取文件信息失败:', error);
       ElMessage.error('获取文件信息失败');
     }
   }

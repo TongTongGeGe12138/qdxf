@@ -139,6 +139,8 @@ const logoFilter = computed(() => darkMode.value ? 'brightness(0) invert(1)' : '
 
 const dropdownBgColor = computed(() => isDark.value ? 'var(--el-bg-color)' : '#E8E9E4')
 
+const menuIconFilter = computed(() => isDark.value ? 'brightness(0) invert(1)' : 'none')
+
 // 获取路由配置中的菜单项
 const routes = computed(() => {
     const mainRoute = router.options.routes.find(route => route.path === '/')
@@ -388,6 +390,7 @@ onMounted(() => {
     height: 24px;
     margin-right: 8px;
     pointer-events: none;  /* 禁止图标的点击事件 */
+    filter: v-bind(menuIconFilter);
 }
 
 .dropdown-icon {

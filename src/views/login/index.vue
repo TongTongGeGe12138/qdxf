@@ -82,7 +82,7 @@
 
         <!-- 注册表单 -->
         <template v-else-if="loginType === 'register'">
-          <div class="logo">
+          <div class="logo" >
             <img src="/assets/sssss.svg" alt="BeesFPD" />
           </div>
           <h2 class="form-title">注册账号</h2>
@@ -130,12 +130,14 @@
               </el-tooltip>
             </el-form-item>
 
-            <el-form-item prop="identity" label="您是尊贵的">
+            <el-form-item prop="identity" >
               <el-select
                 v-model="registerForm.identity"
-                placeholder="请选择专业身份"
+                placeholder="您是尊贵的"
                 class="identity-select"
                 filterable
+                popper-class="dark-select-dropdown"
+                clearable
               >
                 <el-option
                   v-for="item in professionOptions"
@@ -150,7 +152,7 @@
               <el-input v-model="registerForm.description" placeholder="若有分享码，请填写" />
             </el-form-item>
 
-            <el-form-item>
+            <el-form-item >
               <el-checkbox v-model="registerForm.agreement" class="dark-checkbox">
                 <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
                 <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">用户协议</el-link>
@@ -165,8 +167,64 @@
           </el-form>
         </template>
 
-        <div class="login-footer">
-          <el-link class="dark-link" @click="showForgotPasswordDialog = true" v-if="loginType === 'account'" style="font-size: 12px; color: #A1A1A1;">忘记密码？</el-link>
+        <!-- 忘记密码表单 -->
+        <template v-else-if="loginType === 'forgot'">
+          <div class="logo">
+            <img src="/assets/sssss.svg" alt="BeesFPD" />
+          </div>
+          <h2 class="form-title" style="margin-bottom: 20px;">找回密码</h2>
+          <el-form ref="forgotFormRef" :model="forgotForm" :rules="forgotRules" class="login-form" >
+            <el-form-item prop="mobile">
+              <el-input v-model="forgotForm.mobile" placeholder="输入手机号" 
+                :class="{ 'error-input': errorMessages.mobile }" />
+              <el-tooltip v-if="errorMessages.mobile" :content="errorMessages.mobile" placement="bottom" effect="dark"
+                :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
+                popper-class="error-tooltip">
+                <div class="error-trigger"></div>
+              </el-tooltip>
+            </el-form-item>
+
+            <el-form-item prop="verifyCode" class="verify-code-item">
+              <el-input v-model="forgotForm.verifyCode" placeholder="输入验证码" 
+                :class="{ 'error-input': errorMessages.verifyCode }" />
+              <el-button type="text" class="get-code-btn" :disabled="countdown > 0" @click="sendForgotVerifyCode">
+                {{ sendCodeText }}
+              </el-button>
+              <el-tooltip v-if="errorMessages.verifyCode" :content="errorMessages.verifyCode" placement="bottom" effect="dark"
+                :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
+                popper-class="error-tooltip">
+                <div class="error-trigger"></div>
+              </el-tooltip>
+            </el-form-item>
+
+            <el-form-item prop="newPassword">
+              <el-input v-model="forgotForm.newPassword" type="password" placeholder="请输入新密码"
+                show-password :class="{ 'error-input': errorMessages.password }" />
+              <el-tooltip v-if="errorMessages.password" :content="errorMessages.password" placement="bottom" effect="dark"
+                :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
+                popper-class="error-tooltip">
+                <div class="error-trigger"></div>
+              </el-tooltip>
+            </el-form-item>
+
+            <el-form-item prop="confirmPassword">
+              <el-input v-model="forgotForm.confirmPassword" type="password" placeholder="确认新密码" show-password 
+                :class="{ 'error-input': errorMessages.confirmPassword }" />
+              <el-tooltip v-if="errorMessages.confirmPassword" :content="errorMessages.confirmPassword" placement="bottom" effect="dark"
+                :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
+                popper-class="error-tooltip">
+                <div class="error-trigger"></div>
+              </el-tooltip>
+            </el-form-item>
+
+            <el-button type="primary" class="login-button" @click="handleResetPassword(forgotFormRef)" style="background-color: rgba(249, 222, 74, 1) !important; color: #000 !important; border: none !important; transition: background-color 0.3s;" @mouseover="$event.target.style.backgroundColor='rgba(255, 234, 101, 1)'" @mouseleave="$event.target.style.backgroundColor='rgba(249, 222, 74, 1)'">
+              重置密码
+            </el-button>
+          </el-form>
+        </template>
+
+        <div class="login-footer" v-if="loginType !== 'forgot'" style="margin-top: 20px;">
+          <el-link class="dark-link" @click="loginType = 'forgot'" v-if="loginType === 'account'" style="font-size: 12px; color: #A1A1A1;">忘记密码？</el-link>
           <br v-if="loginType === 'account'" />
           <el-link class="dark-link" @click="loginType = 'register'" v-if="loginType != 'register'" style="margin-top: 10px;font-size: 12px; color: #A1A1A1;">没有账户？<span style="text-decoration: underline;">注册账号</span></el-link>
           <el-link class="dark-link" @click="loginType = 'account'" v-else style="font-size: 12px; color: #A1A1A1;">已有账户？登录</el-link>
@@ -180,7 +238,7 @@
 import { ref, reactive, watch, onMounted, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import type { FormInstance } from 'element-plus'
-import { UserCenterLogin, UserCenterPostSendCode, GetUserCenterRegister } from '@/api/userCenter'
+import { UserCenterLogin, UserCenterPostSendCode, GetUserCenterRegister, passwordEditSandCode, passwordEdit } from '@/api/userCenter'
 import { getProfessionList } from '@/api/dict'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
@@ -218,6 +276,24 @@ interface ErrorMessages {
   verifyCode: string
 }
 
+interface ForgotForm {
+  mobile: string
+  verifyCode: string
+  newPassword: string
+  confirmPassword: string
+}
+
+interface ApiResponse<T> {
+  code: number
+  data: T
+  msg: string
+  time: number
+}
+
+interface LoginError {
+  password?: string[]
+}
+
 // 常量定义
 const COUNTDOWN_TIME = 120
 const MOBILE_REGEX = /^1[3-9]\d{9}$/
@@ -228,11 +304,11 @@ const router = useRouter()
 const userStore = useUserStore()
 const loginFormRef = ref<FormInstance>()
 const registerFormRef = ref<FormInstance>()
+const forgotFormRef = ref<FormInstance>()
 
 // 响应式状态
 const loading = ref(false)
-const loginType = ref<'account' | 'qrcode' | 'register'>('account')
-const showForgotPasswordDialog = ref(false)
+const loginType = ref<'account' | 'qrcode' | 'register' | 'forgot'>('account')
 const countdown = ref(0)
 const sendCodeText = ref('获取验证码')
 const professionOptions = ref<ProfessionOption[]>([])
@@ -252,6 +328,13 @@ const registerForm = reactive<RegisterForm>({
   identity: '',
   description: '',
   agreement: true
+})
+
+const forgotForm = reactive<ForgotForm>({
+  mobile: '',
+  verifyCode: '',
+  newPassword: '',
+  confirmPassword: ''
 })
 
 const errorMessages = reactive<ErrorMessages>({
@@ -322,6 +405,35 @@ const registerRules = reactive({
   ]
 })
 
+const forgotRules = reactive({
+  mobile: [
+    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { pattern: MOBILE_REGEX, message: '请输入正确的手机号', trigger: 'blur' }
+  ],
+  verifyCode: [
+    { required: true, message: '请输入验证码', trigger: 'blur' },
+    { len: 4, message: '验证码长度应为4位', trigger: 'blur' }
+  ],
+  newPassword: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, max: 16, message: '请输入6-16位包含字母大小写及数字密码', trigger: 'blur' },
+    { pattern: PASSWORD_REGEX, message: '密码必须包含大小写字母和数字', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, message: '请确认新密码', trigger: 'blur' },
+    {
+      validator: (rule: any, value: string, callback: Function) => {
+        if (value !== forgotForm.newPassword) {
+          callback(new Error('两次输入密码不一致'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
+  ]
+})
+
 // 定时器
 let timer: NodeJS.Timeout | null = null
 
@@ -331,7 +443,7 @@ const loadProfessionList = async () => {
     const res = await getProfessionList()
     if (res.code === 200 && res.data) {
       professionOptions.value = res.data.map((item: any) => ({
-        value: item.id,
+        value: item.value,
         label: item.name
       }))
     } else {
@@ -365,11 +477,24 @@ const handleLogin = async () => {
         ElMessage.success('登录成功')
         router.push('/dashboard')
       } else {
-        ElMessage.error(response.data.message || '登录失败，请检查账户名和密码')
+        if (response.data && (response.data as LoginError).password) {
+          errorMessages.password = (response.data as LoginError).password![0]
+        } else {
+          ElMessage.error(response.msg || '登录失败')
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('登录错误：', error)
-      ElMessage.error('登录失败，请稍后重试')
+      if (error.response && error.response.data) {
+        const { data } = error.response
+        if ((data as LoginError).password) {
+          errorMessages.password = (data as LoginError).password![0]
+        } else {
+          ElMessage.error(data.msg || '登录失败，请稍后重试')
+        }
+      } else {
+        // ElMessage.error('登录失败，请稍后重试')
+      }
     } finally {
       loading.value = false
     }
@@ -383,20 +508,7 @@ const validateForm = async (formEl: FormInstance | undefined) => {
 
   try {
     let isValid = false
-    await formEl.validate((valid, fields) => {
-      if (!valid && fields) {
-        errorMessages.account = ''
-        errorMessages.password = ''
-
-        Object.keys(fields).forEach(key => {
-          if (key === 'account' || key === 'password') {
-            const fieldErrors = fields[key]
-            if (fieldErrors && fieldErrors.length > 0) {
-              errorMessages[key as keyof typeof errorMessages] = fieldErrors[0].message || ''
-            }
-          }
-        })
-      }
+    await formEl.validate((valid) => {
       isValid = valid
     })
     return isValid
@@ -572,6 +684,64 @@ onUnmounted(() => {
     timer = null
   }
 })
+
+const sendForgotVerifyCode = async () => {
+  if (countdown.value > 0) return
+  
+  const mobileValid = await validateField(forgotFormRef.value, 'mobile')
+  if (!mobileValid) {
+    ElMessage.warning('请输入手机号码')
+    return
+  }
+
+  try {
+    const res = await passwordEditSandCode(forgotForm.mobile)
+    
+    if (res.code === 200) {
+      ElMessage.success('验证码发送成功')
+      startCountdown()
+    } else {
+      ElMessage.error(res.message || '验证码发送失败')
+    }
+  } catch (error) {
+    ElMessage.error('验证码发送失败，请稍后重试')
+  }
+}
+
+const handleResetPassword = async (formEl: FormInstance | undefined) => {
+  if (!formEl) return
+  
+  await formEl.validate(async (valid, fields) => {
+    if (valid) {
+      try {
+        const res = await passwordEdit({
+          phone: forgotForm.mobile,
+          code: forgotForm.verifyCode,
+          password: forgotForm.newPassword
+        })
+
+        if (res.code === 200) {
+          ElMessage.success('密码重置成功')
+          loginType.value = 'account'
+          loginForm.account = forgotForm.mobile
+        } else {
+          ElMessage.error(res.message || '密码重置失败')
+        }
+      } catch (error) {
+        ElMessage.error('密码重置失败，请稍后重试')
+      }
+    } else if (fields) {
+      let errorMsg = '请检查以下字段：'
+      Object.keys(fields).forEach(key => {
+        const fieldErrors = fields[key]
+        if (fieldErrors && fieldErrors.length > 0) {
+          errorMsg += `\n${key}: ${fieldErrors[0].message}`
+        }
+      })
+      ElMessage.error(errorMsg)
+    }
+  })
+}
 </script>
 
 <style lang="less" scoped>
@@ -615,6 +785,7 @@ onUnmounted(() => {
 
       .logo {
         text-align: center;
+        margin-top: 15px;
 
         img {
           width: 120px;
@@ -633,9 +804,22 @@ onUnmounted(() => {
       width: 520px;
       height: 100%;
       background-color: @bg-dark;
-      padding: 50px 40px;
+      padding: 20px 40px;
       box-sizing: border-box;
       position: relative;
+
+      .logo {
+        text-align: center;
+        width: 263px;
+        height: 64px;
+        margin: 0 auto;
+        
+        img {
+          width: 263px;
+          height: 64px;
+          object-fit: contain;
+        }
+      }
 
       .QRcode {
         z-index: 0;
@@ -645,10 +829,12 @@ onUnmounted(() => {
       }
 
       h2 {
+        margin-top: 25px;
         color: @text-color;
         font-size: 24px;
         margin: 0;
         text-align: center;
+        margin-bottom: 10px;
       }
 
       .subtitle {
@@ -1000,29 +1186,46 @@ onUnmounted(() => {
       width: 100%;
     }
 
-    .el-input__wrapper {
+    .el-select__wrapper {
       background-color: @bg-darker !important;
-    }
-    
-    .el-select__popper {
-      background-color: @bg-dark !important;
-      border: 1px solid @border-color;
-      
-      .el-select-dropdown__item {
-        color: @text-color;
-        height: 40px;
-        line-height: 40px;
-        
-        &:hover {
-          background-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        &.selected {
-          background-color: @primary-color;
-          color: #000;
-        }
+      box-shadow: none !important;
+      height: 40px !important;
+
+      &:hover, &.is-focus {
+        box-shadow: none !important;
       }
     }
+
+    .el-input__inner {
+      height: 40px !important;
+      line-height: 40px !important;
+      color: @text-color !important;
+    }
+  }
+
+  :deep(.dark-select-dropdown) {
+    background-color: @bg-dark !important;
+    border: 1px solid @border-color !important;
+    
+    .el-select-dropdown__item {
+      color: @text-color!important;
+      height: 40px!important;
+      line-height: 40px!important;
+      
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1)!important;
+      }
+      
+      &.selected {
+        background-color: @primary-color !important;
+        color: #000 !important;
+      }
+    }
+  }
+
+  // 添加选择框占位符样式
+  :deep(.el-select .el-input__inner::placeholder) {
+    color: #666;
   }
 }
 </style>
