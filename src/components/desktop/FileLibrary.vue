@@ -72,7 +72,7 @@ interface FileItem {
 const fileLibraryStore = useFileLibraryStore();
 const emit = defineEmits(['fileSelected', 'openFile']);
 
-const filePath = ref(['我的桌面']);
+const filePath = computed(() => ['我的桌面', ...fileLibraryStore.currentPath]);
 const currentPage = ref(1);
 const pageSize = ref(20);
 const selectedItem = ref<FileItem | null>(null);
@@ -105,10 +105,10 @@ const getFileIcon = (contentType?: number) => {
 };
 
 // 路径变化时重置面包屑和分页
-watch(() => fileLibraryStore.currentPath, (newPath) => {
-  filePath.value = ['我的桌面', ...newPath];
-  currentPage.value = 1;
-}, { immediate: true });
+// watch(() => fileLibraryStore.currentPath, (newPath) => {
+//   filePath.value = ['我的桌面', ...newPath];
+//   currentPage.value = 1;
+// }, { immediate: true });
 
 // 文件列表变化时重置分页
 watch(() => fileLibraryStore.libraryList, () => {
@@ -263,12 +263,15 @@ const handleFileDblClick = async (item: FileItem) => {
 };
 
 // 面包屑点击
-const handleBreadcrumbClick = (index: number) => {
+const handleBreadcrumbClick = async (index: number) => {
   if (index === 0) {
-    fileLibraryStore.clearCurrentPath();
+    await fileLibraryStore.clearCurrentPath(); // ✅ 等待加载完成
   } else {
-    fileLibraryStore.navigateToPath(index - 1);
+    await fileLibraryStore.navigateToPath(index - 1); // ✅ 正确跳转层级
   }
+
+  selectedItem.value = null;
+  currentPage.value = 1;
 };
 
 // 关闭CAD查看器
@@ -279,6 +282,9 @@ const closeCadViewer = () => {
     EngineContext.Container.style.display = 'none';
   }
 };
+watch(() => fileLibraryStore.currentPath, (val) => {
+  console.log('当前路径变化:', val);
+});
 
 // 组件挂载时初始化EngineContext
 onMounted(async () => {
@@ -378,7 +384,7 @@ defineExpose({
           .el-breadcrumb__inner {
             color: var(--el-text-color-primary);
             font-size: 14px;
-            sor: pointer;
+            cursor: pointer;
             transition: color 0.3s ease;
           }
         }

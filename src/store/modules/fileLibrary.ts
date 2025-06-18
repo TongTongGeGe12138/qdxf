@@ -32,10 +32,11 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
     setCurrentPath(path: string[]) {
       this.currentPath = path;
     },
-    clearCurrentPath() {
+    async  clearCurrentPath() {
       this.currentPath = [];
       this.projectId = null;
       this.folderPath = [];
+      await this.refreshCurrentList(); // ✅ 修复关键
     },
     setLibraryList(list: FileItem[]) {
       this.libraryList = list;
@@ -92,39 +93,65 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
       await this.refreshCurrentList();
     },
     async navigateToPath(index: number) {
-      this.currentPath = this.currentPath.slice(0, index + 1);
-      this.folderPath = this.folderPath.slice(0, index + 1);
-      
-      if (index === 0) {
-        this.projectId = null;
-        this.folderPath = [];
-        const res = await getProjectFile({
-          page: 1,
-          pageSize: 20,
-          search: ''
-        });
-        if (res.code === 200) {
-          const list = res.data.data.map((item: any) => ({
-            ...item,
-            type: item.length === 0 ? 'folder' : 'file'
-          }));
-          this.setLibraryList(list || []);
+      try {
+        // 先清空当前列表，避免显示旧数据
+        this.setLibraryList([]);
+        
+        // 更新路径
+        this.currentPath = this.currentPath.slice(0, index + 1);
+        this.folderPath = this.folderPath.slice(0, index + 1);
+        
+        // 如果是根目录
+        if (index === -1) {
+          this.projectId = null;
+          this.folderPath = [];
+          const res = await getProjectFile({
+            page: 1,
+            pageSize: 20,
+            search: ''
+          });
+          if (res.code === 200) {
+            const list = res.data.data.map((item: any) => ({
+              ...item,
+              type: item.length === 0 ? 'folder' : 'file'
+            }));
+            this.setLibraryList(list || []);
+          } else {
+            throw new Error(res.message || '获取根目录数据失败');
+          }
+        } else {
+          // 确保有projectId
+          if (!this.projectId) {
+            throw new Error('项目ID不存在');
+          }
+          
+          // 获取目标文件夹
+          const targetFolder = this.folderPath[index];
+          if (!targetFolder) {
+            throw new Error('目标文件夹不存在');
+          }
+          
+          const res = await getProjectResourceFile({
+            projectId: this.projectId,
+            folderId: targetFolder.id,
+            page: 1,
+            pageSize: 20
+          });
+          
+          if (res.code === 200) {
+            const list = res.data.data.map((item: any) => ({
+              ...item,
+              type: item.length === 0 ? 'folder' : 'file'
+            }));
+            this.setLibraryList(list || []);
+          } else {
+            throw new Error(res.message || '获取文件夹数据失败');
+          }
         }
-      } else {
-        const targetFolder = this.folderPath[index - 1];
-        const res = await getProjectResourceFile({
-          projectId: this.projectId,
-          folderId: targetFolder.id,
-          page: 1,
-          pageSize: 20
-        });
-        if (res.code === 200) {
-          const list = res.data.data.map((item: any) => ({
-            ...item,
-            type: item.length === 0 ? 'folder' : 'file'
-          }));
-          this.setLibraryList(list || []);
-        }
+      } catch (error: any) {
+        ElMessage.error(error.message || '导航失败');
+        // 发生错误时回退到上一个状态
+        this.refreshCurrentList();
       }
     },
     async refreshCurrentList() {
@@ -141,25 +168,41 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
               type: item.length === 0 ? 'folder' : 'file'
             }));
             this.setLibraryList(list || []);
+          } else {
+            throw new Error(res.message || '获取根目录数据失败');
           }
         } else {
+          // 确保有projectId和当前文件夹
+          if (!this.projectId) {
+            throw new Error('项目ID不存在');
+          }
+          
           const currentFolder = this.folderPath[this.folderPath.length - 1];
+          if (!currentFolder) {
+            throw new Error('当前文件夹不存在');
+          }
+          
           const res = await getProjectResourceFile({
             projectId: this.projectId,
             folderId: currentFolder.id,
             page: 1,
             pageSize: 20
           });
+          
           if (res.code === 200) {
             const list = res.data.data.map((item: any) => ({
               ...item,
               type: item.length === 0 ? 'folder' : 'file'
             }));
             this.setLibraryList(list || []);
+          } else {
+            throw new Error(res.message || '获取文件夹数据失败');
           }
         }
-      } catch (error) {
-        ElMessage.error('获取列表失败');
+      } catch (error: any) {
+        ElMessage.error(error.message || '获取列表失败');
+        // 发生错误时清空列表
+        this.setLibraryList([]);
       }
     }
   }

@@ -11,8 +11,7 @@
         <div class="login-type-switch">
           <el-tooltip :content="loginType === 'account' ? '扫码登录' : '手机登录'" placement="left" effect="dark" popper-class="custom-tooltip">
             <div class="qrcode-switch" @click="loginType = loginType === 'account' ? 'qrcode' : 'account'">
-              <img src="/assets/qrcode-scan.svg" alt="" class="QRcode" v-if="loginType === 'account'" />
-              <img src="/assets/phone.svg" alt="" class="QRcode" v-else />
+              <img :src="loginType === 'account' ? qrcodeIcon : phoneIcon" alt="" class="QRcode" />
             </div>
           </el-tooltip>
         </div>
@@ -20,7 +19,7 @@
         <!-- 账号密码登录 -->
         <template v-if="loginType === 'account'">
           <div class="logo">
-            <img src="/assets/sssss.svg" alt="BeesFPD" />
+            <img :src=ssss alt="BeesFPD" />
           </div>
           <h2>欢迎回来</h2>
           <p class="subtitle">即刻登录使用智能测绘</p>
@@ -65,7 +64,7 @@
         <template v-else-if="loginType === 'qrcode'">
           <div class="qrcode-container">
             <div class="logo">
-              <img src="/assets/sssss.svg" alt="BeesFPD" />
+              <img :src=ssss alt="BeesFPD" />
             </div>
             <h2>请使用微信扫码登录</h2>
             <div class="qrcode-box">
@@ -242,6 +241,9 @@ import { UserCenterLogin, UserCenterPostSendCode, GetUserCenterRegister, passwor
 import { getProfessionList } from '@/api/dict'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import qrcodeIcon from '@/assets/qrcode-scan.svg?url';
+import phoneIcon from '@/assets/phone.svg?url';
+import ssss from '@/assets/sssss.svg?url';
 
 declare const WxLogin: any;
 
@@ -775,13 +777,16 @@ const handleResetPassword = async (formEl: FormInstance | undefined) => {
     display: flex;
     border-radius: 10px;
     overflow: hidden;
+    box-sizing: border-box;
 
     .left {
       width: 380px;
+      min-width: 380px;
       height: 100%;
       .flex-center();
       background: url('@/assets/banner.jpg') no-repeat center center;
       background-size: 100% 100%;
+      box-sizing: border-box;
 
       .logo {
         text-align: center;

@@ -240,6 +240,7 @@ onMounted(() => {
 
 .el-menu {
     padding-top: 17.5px !important;
+    padding-left: 20px !important;
     border-right: none !important;
     height: calc(100% - 60px);
     background-color: v-bind(menuBgColor) !important;
@@ -319,13 +320,16 @@ onMounted(() => {
 :deep(.el-menu-item) {
     border-radius: 10px;
     height: 30px;
-    /* margin-left: 20px; */
+    width: 150px;
+    margin: 0 auto;
     background-color: v-bind(menuBgColor) !important;
     color: v-bind(menuTextColor) !important;
     border-right: none !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     display: flex;
     align-items: center;
+    justify-content: flex-start;
+    /* padding-left: 20px; */
 
     &.is-active {
         background-color: rgba(255, 189, 51, 1) !important;

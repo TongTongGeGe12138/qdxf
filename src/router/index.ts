@@ -32,7 +32,7 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/collaboration/index.vue'),
         meta: {
           title: '协同空间',
-          icon: '左栏 - 我的桌面'
+          icon: '左栏 - 智能应用'
         },
         children: [
           {

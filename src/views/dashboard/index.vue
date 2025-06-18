@@ -192,14 +192,18 @@
     >
         <div class="app-dialog-content">
             <div class="app-header">
-                <div class="app-icon">
-                    <el-icon :size="32">
-                        <Monitor />
-                    </el-icon>
+                <div class="app-icon fire-icon-container" :class="isDark ? 'dark-mode' : 'light-mode'">
+                    <img 
+                        v-if="currentCard?.value"
+                        :src="getIconUrl(currentCard.value)"
+                        :alt="currentCard.name"
+                        class="fire-icon"
+                        @error="console.log('Failed to load image:', currentCard.value)"
+                    />
                 </div>
                 <div class="app-title">
                     <div class="name">{{ currentCard?.name }}</div>
-                    <div class="desc">{{ currentCard?.description }}</div>
+                    <div class="desc">{{ currentCard?.extra?.englishName }}</div>
                 </div>
                 <el-button type="primary" class="launch-btn" @click="handleLaunchClick">启动应用</el-button>
             </div>
@@ -226,6 +230,10 @@ import { isDark } from '../../utils/theme'
 import { getAigcPrimaryList, getAigcChildrenList } from '@/api/aigc'
 import type { ProjectItem } from '@/api/model/detailModel'
 import { ElMessage } from 'element-plus'
+import { stashToken } from '@/api/userCenter'
+import { useUserStore } from '@/stores/user'
+import { RC4Encrypt } from '../../utils/crypto'
+import { logPost } from '../../utils/log'
 
 // 获取所有svg图标
 const getIconUrl = (name: string) => {
@@ -238,6 +246,9 @@ const getIconUrl = (name: string) => {
         return '';
     }
 }
+
+// 初始化 userStore
+const userStore = useUserStore()
 
 // 类型定义
 interface ProjectItemExtended extends ProjectItem {
@@ -435,6 +446,7 @@ const tags = [
 ]
 
 // 计算样式
+const searchInputBorderColor = computed(() => isDark.value ? 'rgba(34, 34, 34, 0.3)' : 'rgba(51, 51, 51, 0.3)');
 const menuTextColor = computed(() => isDark.value ?'#EDEDED' : '#13343C')
 const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#A1A1A1')
 const vTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
@@ -661,28 +673,56 @@ function unique(arr: any) {
 }
 
 // 添加启动应用点击处理函数
-const handleLaunchClick = () => {
-    console.log('启动应用数据:', {
-        名称: currentCard.value?.name,
-        值: currentCard.value?.value,
-        描述: currentCard.value?.description,
-        额外信息: {
-            版本: currentCard.value?.extra?.version,
-            链接: currentCard.value?.extra?.url,
-            提示: currentCard.value?.extra?.tip,
-            英文名: currentCard.value?.extra?.englishName,
-            分组: currentCard.value?.extra?.group
-        },
-        显示状态: currentCard.value?.contentShow
-    });
-    if (currentCard.value?.extra?.url) {
-        const baseUrl = 'http://cloud.dev.ifeng.com';
-        const fullUrl = `${baseUrl}${currentCard.value.extra.url}`;
-        window.open(fullUrl, '_blank', 'noopener,noreferrer');
-    } else {
-        ElMessage.info('未配置跳转链接');
-    }
+const handleLaunchClick = async () => {
+  const card = currentCard.value;
+  console.log('启动应用数据:', {
+    名称: card?.name,
+    值: card?.value,
+    描述: card?.description,
+    额外信息: {
+      版本: card?.extra?.version,
+      链接: card?.extra?.url,
+      提示: card?.extra?.tip,
+      英文名: card?.extra?.englishName,
+      分组: card?.extra?.group
+    },
+    显示状态: card?.contentShow
+  });
+
+  if (!card?.extra?.url) {
+    ElMessage.info('未配置跳转链接');
     cardDialogVisible.value = false;
+    return;
+  }
+
+  try {
+    const { data, code } = await stashToken({
+      accessToken: userStore.accessToken,
+      refreshToken: userStore.refreshToken,
+    });
+
+    if (code === 200) {
+      const path = `${card.extra.group || ''}/${card.extra.englishName || ''}`;
+      const extraQuery = card.extra.url.split('?')[1];
+      const query = `id=${data}&path=${path}${extraQuery ? `&${extraQuery}` : ''}`;
+      const encodedQuery = `sign=${encodeURIComponent(RC4Encrypt(query))}`;
+
+      const baseUrl = 'http://cloud.dev.ifeng.com';
+      const basePath = card.extra.url.split('?')[0] || card.extra.url;
+      const fullUrl = `${baseUrl}${basePath}#/UploadFiles?${encodedQuery}`;
+
+      logPost({ event: 'APP_LAUNCH_CLICK', category: path });
+
+      window.open(fullUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      ElMessage.error('获取身份凭证失败');
+    }
+  } catch (error) {
+    ElMessage.error('跳转失败');
+    console.error(error);
+  }
+
+  cardDialogVisible.value = false;
 };
 
 const dashboardBgColor = computed(() => isDark.value ? '#000' : 'transparent')
@@ -753,6 +793,8 @@ const handleTagClick = (tagName: string) => {
     activeTag.value = tagName;
     console.log('当前筛选后的列表:', filteredSecondaryList.value);
 };
+
+// 在计算属性部分添加
 </script>
 
 <style lang="less" scoped>
@@ -872,7 +914,7 @@ const handleTagClick = (tagName: string) => {
 
 .search-input :deep(.el-input__wrapper) {
     background-color: v-bind(menuBgColor);
-    border: 1px solid v-bind(borderColor);
+    border: 1px solid v-bind(searchInputBorderColor) !important;
     border-radius: 5px;
     padding: 0 12px;
     height: 40px;
@@ -894,7 +936,7 @@ const handleTagClick = (tagName: string) => {
     flex-wrap: wrap;
     width: 400px;
     flex-shrink: 0;
-    border: 1px solid v-bind(tagsBorderColor);
+    border: 1px solid v-bind(searchInputBorderColor);
     border-radius: 5px;
     padding: 0 8px;
     height: 40px;
@@ -1267,13 +1309,31 @@ const handleTagClick = (tagName: string) => {
 .app-icon {
     width: 48px;
     height: 48px;
-    border-radius: 8px;
-    background-color: v-bind(iconBgColor);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: v-bind(iconColor);
     flex-shrink: 0;
+}
+
+.app-icon.fire-icon-container {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.app-icon.fire-icon-container.light-mode {
+    background-color: #E8E9E4;
+}
+
+.app-icon.fire-icon-container.dark-mode {
+    background-color: #191919;
+}
+
+.app-icon .fire-icon {
+    width: 21px;
+    height: 21px;
+    display: block;
 }
 
 .app-title {
@@ -1297,24 +1357,33 @@ const handleTagClick = (tagName: string) => {
     width: 120px;
     height: 40px;
     background: inherit;
-    background-color: rgba(249, 222, 74, 1);
+    background-color: rgba(249, 222, 74, 1) !important;
     box-sizing: border-box;
     border: none;
     border-radius: 5px;
     filter: drop-shadow(none);
-    transition: none;
+    transition: all 0.3s ease;
     font-family: "PingFangHK-Semibold", "PingFang HK Semibold", "PingFang HK", sans-serif;
     font-weight: 650;
     font-style: normal;
-    color: #000;
+    color: #000 !important;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
 }
 
 .launch-btn:hover {
     background-color: rgba(249, 222, 74, 0.8);
     color: #000;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(249, 222, 74, 0.3);
+}
+
+.launch-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
 
 .app-desc {
@@ -1632,12 +1701,12 @@ const handleTagClick = (tagName: string) => {
   align-items: center !important;
 }
 
-// 覆盖全局样式
-:deep(.el-button--primary) {
-  background-color: #FFBD33 !important;
-  border-color: #FFBD33 !important;
-  color: #FFFFFF !important;
-}
+// // 覆盖全局样式
+// :deep(.el-button--primary) {
+//   background-color: #FFBD33 !important;
+//   border-color: #FFBD33 !important;
+//   color: #FFFFFF !important;
+// }
 
 :deep(.el-link--primary) {
   color: #FFEA65 !important;

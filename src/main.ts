@@ -7,7 +7,8 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import { initTheme } from './utils/theme'
-
+import { gsap } from 'gsap'
+window.gsap = gsap
 // 初始化主题
 initTheme()
 

@@ -23,7 +23,8 @@ export default defineConfig({
             name: 'preset-default',
             params: {
               overrides: {
-                convertPathData: false
+                convertPathData: false,
+                removeViewBox: false
               }
             }
           }
