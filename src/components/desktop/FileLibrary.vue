@@ -18,7 +18,7 @@
               <folder />
             </template>
             <template v-else>
-              <img src="@/assets/doc-preview.png" alt="文件预览" />
+              <img :src="getFileIcon(item.contentType)" :alt="item.name" />
             </template>
           </div>
           <div class="file-name">{{ item.name }}</div>
@@ -59,6 +59,14 @@ interface FileItem {
   type: 'folder' | 'file' | 'back';
   url?: string;
   data?: any[];
+  contentType?: number;
+  size?: string;
+  createTime?: string;
+  updateTime?: string;
+  preview?: string;
+  projectId?: string | number;
+  fileId?: string | number;
+  folderId?: string | number;
 }
 
 const fileLibraryStore = useFileLibraryStore();
@@ -69,6 +77,31 @@ const currentPage = ref(1);
 const pageSize = ref(20);
 const selectedItem = ref<FileItem | null>(null);
 const showCadViewer = ref(false);
+
+// 导入所有文件图标
+const fileIcons = {
+  42: new URL('@/assets/file-icons/DOC.png', import.meta.url).href,
+  141: new URL('@/assets/file-icons/DWG.png', import.meta.url).href,
+  142: new URL('@/assets/file-icons/DXF.png', import.meta.url).href,
+  164: new URL('@/assets/file-icons/IFG.png', import.meta.url).href,
+  61: new URL('@/assets/file-icons/JPG.png', import.meta.url).href,
+  41: new URL('@/assets/file-icons/PDF.png', import.meta.url).href,
+  62: new URL('@/assets/file-icons/PNG.png', import.meta.url).href,
+  45: new URL('@/assets/file-icons/PPT.png', import.meta.url).href,
+  162: new URL('@/assets/file-icons/RFA.png', import.meta.url).href,
+  163: new URL('@/assets/file-icons/RTE.png', import.meta.url).href,
+  161: new URL('@/assets/file-icons/RVT.png', import.meta.url).href,
+  21: new URL('@/assets/file-icons/TXT.png', import.meta.url).href,
+  43: new URL('@/assets/file-icons/XLSX.png', import.meta.url).href,
+  121: new URL('@/assets/file-icons/ZIP.png', import.meta.url).href,
+  122: new URL('@/assets/file-icons/RAR.png', import.meta.url).href,
+} as const;
+
+// 获取文件图标
+const getFileIcon = (contentType?: number) => {
+  if (!contentType) return new URL('@/assets/doc-preview.png', import.meta.url).href;
+  return fileIcons[contentType as keyof typeof fileIcons] || new URL('@/assets/doc-preview.png', import.meta.url).href;
+};
 
 // 路径变化时重置面包屑和分页
 watch(() => fileLibraryStore.currentPath, (newPath) => {
@@ -141,14 +174,6 @@ const handleFileDblClick = async (item: FileItem) => {
   } else {
     // 处理文件双击
     try {
-      // 显示CAD查看器
-      showCadViewer.value = true;
-      await nextTick();
-      const container = document.getElementById('ibp-2d-container');
-      if (container) {
-        EngineContext.AttachContainer(container);
-      }
-
       // 判断是否在第一层目录
       const isFirstLevel = fileLibraryStore.currentPath.length === 0;
       const params = isFirstLevel ? {
@@ -172,61 +197,79 @@ const handleFileDblClick = async (item: FileItem) => {
         selectedItem.value = updatedFile;
         emit('fileSelected', updatedFile);
 
-        // 如果有 url，获取 P2D 文件
-        if (updatedFile.url) {
-          console.log('开始获取P2D文件, URL:', updatedFile.url);
-          try {
-            console.log('获取P2D文件, 参数:', { DwgUrl: updatedFile.url });
-            const p2dRes = await getP2d({ DwgUrl: updatedFile.url });
-            console.log('P2D文件响应:', p2dRes);
-            if (p2dRes.Code === 0) {
-              console.log('开始加载P2D文件到CAD引擎');
-              const loading = ref(true);
-              const finish = (e: any) => {
-                console.log('CAD引擎加载完成事件:', e);
-                if (e.isComplete === false) {
-                  console.error('CAD引擎加载失败:', e);
-                  ElMessage.error('该路径无法打开');
-                  loading.value = false;
-                  return;
-                }
-                if (e.isComplete === true) {
-                  console.log('CAD引擎加载成功，执行ZoomToFit');
-                  EngineContext.ViewManager.ZoomToFit();
-                  EngineContext.LoadManager.removeEventListener('finish', finish);
-                  loading.value = false;
-                  EngineContext.init();
-                }
-              };
-              console.log('添加CAD引擎加载完成事件监听器');
-              EngineContext.LoadManager.addEventListener('finish', finish);
-              console.log('开始调用LoadModel加载文件:', {
-                url: p2dRes.Data,
-                type: 'p2d'
-              });
-              EngineContext.LoadManager.LoadModel({
-                url: p2dRes.Data,
-                type: 'p2d',
-              });
-              ElMessage.success('获取P2D文件成功');
-            } else {
-              console.error('P2D文件响应错误:', p2dRes);
-              ElMessage.error(p2dRes.Msg || '获取P2D文件失败');
-              // 如果是dwg地址错误，尝试直接加载dwg文件
-              if (p2dRes.Msg === 'dwg地址错误' && updatedFile.url) {
-                console.log('尝试直接加载DWG文件:', updatedFile.url);
+        // 根据文件类型处理
+        if (updatedFile.contentType === 141) {  // DWG 文件
+          // 显示CAD查看器
+          showCadViewer.value = true;
+          await nextTick();
+          const container = document.getElementById('ibp-2d-container');
+          if (container) {
+            EngineContext.AttachContainer(container);
+          }
+
+          // 如果有 url，获取 P2D 文件
+          if (updatedFile.url) {
+            console.log('开始获取P2D文件, URL:', updatedFile.url);
+            try {
+              console.log('获取P2D文件, 参数:', { DwgUrl: updatedFile.url });
+              const p2dRes = await getP2d({ DwgUrl: updatedFile.url });
+              console.log('P2D文件响应:', p2dRes);
+              if (p2dRes.Code === 0) {
+                console.log('开始加载P2D文件到CAD引擎');
+                const loading = ref(true);
+                const finish = (e: any) => {
+                  console.log('CAD引擎加载完成事件:', e);
+                  if (e.isComplete === false) {
+                    console.error('CAD引擎加载失败:', e);
+                    ElMessage.error('该路径无法打开');
+                    loading.value = false;
+                    return;
+                  }
+                  if (e.isComplete === true) {
+                    console.log('CAD引擎加载成功，执行ZoomToFit');
+                    EngineContext.ViewManager.ZoomToFit();
+                    EngineContext.LoadManager.removeEventListener('finish', finish);
+                    loading.value = false;
+                    EngineContext.init();
+                  }
+                };
+                console.log('添加CAD引擎加载完成事件监听器');
+                EngineContext.LoadManager.addEventListener('finish', finish);
+                console.log('开始调用LoadModel加载文件:', {
+                  url: p2dRes.Data,
+                  type: 'p2d'
+                });
                 EngineContext.LoadManager.LoadModel({
-                  url: updatedFile.url,
+                  url: p2dRes.Data,
                   type: 'p2d',
                 });
+                ElMessage.success('获取P2D文件成功');
+              } else {
+                console.error('P2D文件响应错误:', p2dRes);
+                ElMessage.error(p2dRes.Msg || '获取P2D文件失败');
+                // 如果是dwg地址错误，尝试直接加载dwg文件
+                if (p2dRes.Msg === 'dwg地址错误' && updatedFile.url) {
+                  console.log('尝试直接加载DWG文件:', updatedFile.url);
+                  EngineContext.LoadManager.LoadModel({
+                    url: updatedFile.url,
+                    type: 'p2d',
+                  });
+                }
               }
+            } catch (error) {
+              console.error('获取P2D文件失败:', error);
+              ElMessage.error('获取P2D文件失败');
             }
-          } catch (error) {
-            console.error('获取P2D文件失败:', error);
-            ElMessage.error('获取P2D文件失败');
+          } else {
+            console.log('文件没有URL，跳过P2D文件获取');
           }
-        } else {
-          console.log('文件没有URL，跳过P2D文件获取');
+        } else {  // 非 DWG 文件
+          // 在新窗口打开文件
+          if (updatedFile.url) {
+            window.open(updatedFile.url, '_blank');
+          } else {
+            ElMessage.warning('文件URL不存在，无法预览');
+          }
         }
       } else {
         console.error('获取文件信息失败:', res);
@@ -383,8 +426,8 @@ onUnmounted(() => {
           padding: 12px;
 
           img {
-            width: 100%;
-            height: 100%;
+            width: 35px;
+            height: 35px;
             object-fit: contain;
           }
 

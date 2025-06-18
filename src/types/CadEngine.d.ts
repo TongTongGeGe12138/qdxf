@@ -15,16 +15,18 @@ declare class CadEngine {
   DrawManager: any;
 }
 
-export declare class CadContext {
-  init(): Promise<void>;
-  AttachContainer(container: HTMLElement): void;
+declare class CadContext {
   Container: HTMLElement;
-  ViewManager: CadEngine['ViewManager'];
-  LoadManager: CadEngine['LoadManager'];
-  SelectionManager: CadEngine['SelectionManager'];
-  ModelManager: CadEngine['ModelManager'];
-  SceneManager: CadEngine['SceneManager'];
-  DrawManager: CadEngine['DrawManager'];
+  ViewManager: {
+    ZoomToFit(): void;
+  };
+  LoadManager: {
+    LoadModel(params: { url: string; type: string }): void;
+    addEventListener(event: string, callback: (e: any) => void): void;
+    removeEventListener(event: string, callback: (e: any) => void): void;
+  };
+  AttachContainer(container: HTMLElement): void;
+  init(): void;
 }
 
 declare const EngineContext: CadContext;

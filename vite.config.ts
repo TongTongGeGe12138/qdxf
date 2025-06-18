@@ -36,9 +36,29 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: ['vue', 'vue-router']
+  },
+  build: {
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
+      }
+    }
+  },
   server: {
-    port: 3002,
+    port: 3003,
     host: '0.0.0.0',
+    strictPort: true,
+    hmr: {
+      port: 3003,
+      clientPort: 3003
+    },
     proxy: {
       [VITE_API_URL_PREFIX]: {
         target: 'http://192.168.15.200:9100',
