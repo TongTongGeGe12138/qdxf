@@ -211,7 +211,7 @@ watch(activeIndex, (newIndex) => {
       getProjectFile({
         page: 1,
         pageSize: 20,
-        search: ''
+        search: searchValue.value
       }).then(res => {
         if (res.code === 200) {
           const list = res.data.data.map((item: any) => ({
@@ -223,20 +223,21 @@ watch(activeIndex, (newIndex) => {
       });
       break;
     case 1: // 我收藏的资源
-      getFavoriteList();
+      getFavoriteList(searchValue.value);
       break;
     case 2: // 回收站
-      getTrashList();
+      getTrashList(searchValue.value);
       break;
   }
 });
 
 // 添加获取回收站列表的方法
-const getTrashList = async () => {
+const getTrashList = async (search = '') => {
   try {
     const res = await getTrashedList({
       page: 1,
-      pageSize: 20
+      pageSize: 20,
+      search
     });
     if (res.code === 200) {
       const list = res.data.data.map((item: any) => ({
@@ -251,11 +252,12 @@ const getTrashList = async () => {
 }
 
 // 添加获取收藏资源列表的方法
-const getFavoriteList = async () => {
+const getFavoriteList = async (search = '') => {
   try {
     const res = await getResourceFiles({
       page: 1,
-      pageSize: 20
+      pageSize: 20,
+      search
     });
     if (res.code === 200) {
       const list = res.data.data.map((item: any) => ({
@@ -278,7 +280,7 @@ const handleFileSelected = (file: FileItem) => {
 }
 
 // 计算背景色
-const cardBgColor = computed(() => isDark.value ? '#000' : '#ffffff')
+const cardBgColor = computed(() => isDark.value ? '#000' : 'transparent')
 const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 // const navTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const desktopBboder = computed(() => isDark.value ? 'rgba(231,231,224,.3)' : '#D7D7D7')
@@ -399,12 +401,12 @@ const handleFileOperation = async (tab: TabItem) => {
       case '刷新列表':
         try {
           if (activeIndex.value === 2) {
-            await getTrashList();
+            await getTrashList(searchValue.value);
           } else {
             const res = await getProjectFile({
               page: 1,
               pageSize: 20,
-              search: ''
+              search: searchValue.value
             });
             if (res.code === 200) {
               const list = res.data.data.map((item: any) => ({
@@ -520,7 +522,7 @@ const handleConfirmOperation = async () => {
         const listRes = await getProjectFile({
           page: 1,
           pageSize: 20,
-          search: ''
+          search: searchValue.value
         });
         if (listRes.code === 200) {
           const list = listRes.data.data.map((item: any) => ({
@@ -547,7 +549,7 @@ const handleConfirmOperation = async () => {
           folderId: currentFolder.id,
           page: 1,
           pageSize: 20,
-          search: ''
+          search: searchValue.value
         });
         if (res.code === 200) {
           // 确保新创建的文件夹length为0
@@ -595,7 +597,7 @@ const handleConfirmOperation = async () => {
         });
         ElMessage.success('还原成功');
         // 刷新回收站列表
-        await getTrashList();
+        await getTrashList(searchValue.value);
         break;
       case 'delete':
         if (file.type === 'folder') {
@@ -614,7 +616,7 @@ const handleConfirmOperation = async () => {
         }
         ElMessage.success('删除成功');
         // 刷新回收站列表
-        await getTrashList();
+        await getTrashList(searchValue.value);
         break;
       case 'trash':
         if (file.type === 'folder') {
@@ -639,7 +641,7 @@ const handleConfirmOperation = async () => {
         const res = await getProjectFile({
           page: 1,
           pageSize: 20,
-          search: ''
+          search: searchValue.value
         });
         if (res.code === 200) {
           // 根据 length 是否为 0 来判断类型
@@ -663,7 +665,7 @@ const handleConfirmOperation = async () => {
         const res2 = await getProjectFile({
           page: 1,
           pageSize: 20,
-          search: ''
+          search: searchValue.value
         });
         if (res2.code === 200) {
           // 根据 length 是否为 0 来判断类型
@@ -735,6 +737,57 @@ const formatFileSize = (bytes: number) => {
   return mb.toFixed(2) + ' MB';
 };
 
+// 监听搜索值变化
+watch(searchValue, async (newValue) => {
+  try {
+    if (activeIndex.value === 0) {
+      // 我的项目搜索
+      const res = await getProjectFile({
+        page: 1,
+        pageSize: 20,
+        search: newValue
+      });
+      if (res.code === 200) {
+        const list = res.data.data.map((item: any) => ({
+          ...item,
+          type: item.length === 0 ? 'folder' : 'file'
+        }));
+        fileLibraryStore.setLibraryList(list || []);
+      }
+    } else if (activeIndex.value === 1) {
+      // 我收藏的资源搜索
+      const res = await getResourceFiles({
+        page: 1,
+        pageSize: 20,
+        search: newValue
+      });
+      if (res.code === 200) {
+        const list = res.data.data.map((item: any) => ({
+          ...item,
+          type: item.length === 0 ? 'folder' : 'file'
+        }));
+        fileLibraryStore.setLibraryList(list || []);
+      }
+    } else if (activeIndex.value === 2) {
+      // 回收站搜索
+      const res = await getTrashedList({
+        page: 1,
+        pageSize: 20,
+        search: newValue
+      });
+      if (res.code === 200) {
+        const list = res.data.data.map((item: any) => ({
+          ...item,
+          type: item.length === 0 ? 'folder' : 'file'
+        }));
+        fileLibraryStore.setLibraryList(list || []);
+      }
+    }
+  } catch (error) {
+    ElMessage.error('搜索失败');
+  }
+});
+
 // 初始化加载项目列表
 onMounted(async () => {
   try {
@@ -742,7 +795,7 @@ onMounted(async () => {
       const res = await getProjectFile({
         page: 1,
         pageSize: 20,
-        search: ''
+        search: searchValue.value
       });
       console.log('初始化项目列表:', res);
       if (res.code === 200) {
@@ -753,7 +806,7 @@ onMounted(async () => {
         fileLibraryStore.setLibraryList(list || []);
       }
     } else if (activeIndex.value === 2) {
-      await getTrashList();
+      await getTrashList(searchValue.value);
     }
   } catch (error) {
     ElMessage.error('加载列表失败');
@@ -790,8 +843,7 @@ onUnmounted(() => {
             <el-input v-model="searchValue" placeholder="搜索" class="search-input" :prefix-icon="Search" clearable
               size="small" />
             <div class="right-tabs">
-              <div v-for="(tab, idx) in rightTabs" :key="tab.name"
-                :class="['right-tab', { active: rightActiveTab === idx }]" @click="rightActiveTab = idx">
+              <div v-for="(tab, idx) in rightTabs" :key="tab.name" class="right-tab">
                 <el-icon :size="18" style="margin-right: 4px;">
                   <component :is="tab.icon" />
                 </el-icon>
@@ -804,9 +856,9 @@ onUnmounted(() => {
           <div class="dcontent-cont-left">
             <FileLibrary ref="fileLibraryRef" @fileSelected="handleFileSelected" />
           </div>
-          <div class="dcontent-cont-right" v-if="selectedFile">
+          <div class="dcontent-cont-right" v-show="selectedFile">
             <div class="file-detail">
-              <div class="file-preview" v-if="selectedFile.preview">
+              <div class="file-preview" v-if="selectedFile?.preview">
                 <img :src="selectedFile.preview" :alt="selectedFile.name">
               </div>
               <div class="file-info">
@@ -815,15 +867,15 @@ onUnmounted(() => {
                 <!-- <span class="label">项目详情</span> -->
                 <!-- <span class="value">{{ selectedFile.type === 'folder' ? '文件夹' : '文件' }}</span> -->
                 <!-- </div> -->
-                <div class="info-item" v-if="selectedFile.name">
+                <div class="info-item" v-if="selectedFile?.name">
                   <span class="label">项目名称：</span>
                   <span class="value">{{ selectedFile.name }}</span>
                 </div>
-                <div class="info-item" v-if="selectedFile.createdAt">
+                <div class="info-item" v-if="selectedFile?.createdAt">
                   <span class="label">创建时间：</span>
                   <span class="value">{{ selectedFile.createdAt }}</span>
                 </div>
-                <div class="info-item" v-if="selectedFile.length">
+                <div class="info-item" v-if="selectedFile?.length">
                   <span class="label">大小：</span>
                   <span class="value">{{ formatFileSize(selectedFile.length) }}</span>
                 </div>
@@ -928,12 +980,21 @@ onUnmounted(() => {
   // padding: 20px;
   height: 100%;
   // background-color: var(--theme-background);
+  
+  :deep(.el-card) {
+    box-shadow: none !important;
+  }
 }
 
 .box-card {
   width: 100%;
   margin-bottom: 20px;
   transition: background-color 0.3s ease;
+  box-shadow: none;
+  max-width: 1200px;
+  min-width: 830px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .card-header {
@@ -946,6 +1007,7 @@ onUnmounted(() => {
   margin-bottom: 20px;
   color: v-bind(menuTextColor);
   transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
 }
 
 .desktop-content {
@@ -1050,22 +1112,6 @@ onUnmounted(() => {
           &:hover {
             opacity: 0.7;
           }
-
-          &.active {
-            color: #C4C4D3;
-            font-weight: bold;
-            position: relative;
-            // &::after {
-            //   content: '';
-            //   position: absolute;
-            //   left: 2px;
-            //   right: 2px;
-            //   bottom: -6px;
-            //   height: 2px;
-            //   background: #C4C4D3;
-            //   border-radius: 1px;
-            // }
-          }
         }
       }
     }
@@ -1074,16 +1120,36 @@ onUnmounted(() => {
   .dcontent-cont {
     min-height: 540px;
     display: flex;
+    position: relative;
 
     .dcontent-cont-left {
       flex: 1;
       padding: 20px;
+      padding-right: 280px; // 为右侧面板预留空间
     }
 
     .dcontent-cont-right {
-      width: 300px;
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 260px;
       border-left: 1px solid v-bind(desktopBboder);
       padding: 20px;
+      // background-color: var(--el-bg-color);
+      height: 100%;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      opacity: 1;
+      visibility: visible;
+
+      &:not([style*="display: none"]) {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      &[style*="display: none"] {
+        opacity: 0;
+        visibility: hidden;
+      }
 
       .file-detail {
         .file-preview {
@@ -1111,16 +1177,21 @@ onUnmounted(() => {
           .info-item {
             margin-bottom: 12px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
 
             .label {
               color: v-bind(subTextColor);
               width: 80px;
               flex-shrink: 0;
+              line-height: 1.4;
             }
 
             .value {
               color: v-bind(menuTextColor);
+              flex: 1;
+              line-height: 1.4;
+              word-wrap: break-word;
+              word-break: break-all;
             }
           }
         }

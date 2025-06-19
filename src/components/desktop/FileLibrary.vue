@@ -1,18 +1,18 @@
 <template>
-  <div class="file-library">
+  <div class="file-library" @click="handleContainerClick">
     <!-- 文件列表 -->
     <div class="file-section">
       <div class="section-header">
         <el-breadcrumb separator="/">
-          <el-breadcrumb-item v-for="(item, index) in filePath" :key="index" @click="handleBreadcrumbClick(index)">
+          <el-breadcrumb-item v-for="(item, index) in filePath" :key="index" @click.stop="handleBreadcrumbClick(index)">
             {{ item }}
           </el-breadcrumb-item>
         </el-breadcrumb>
       </div>
       <div class="file-grid">
         <div v-for="item in currentPageData" :key="item.id" class="file-item"
-          :class="{ 'is-selected': selectedItem?.id === item.id }" @click="handleFileClick(item)"
-          @dblclick="handleFileDblClick(item)">
+          :class="{ 'is-selected': selectedItem?.id === item.id }" @click.stop="handleFileClick(item)"
+          @dblclick.stop="handleFileDblClick(item)">
           <div class="file-preview">
             <template v-if="item.type === 'back' || item.type === 'folder'">
               <folder />
@@ -36,7 +36,7 @@
     </div>
 
     <!-- 分页 -->
-    <div v-if="showPagination" class="pagination">
+    <div v-if="showPagination" class="pagination" @click.stop>
       <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total"
         @current-change="onPageChange" />
     </div>
@@ -310,6 +310,13 @@ const openFile = async (item: FileItem) => {
 defineExpose({
   openFile
 });
+
+// 处理容器点击事件
+const handleContainerClick = () => {
+  // 点击容器时取消选中状态
+  selectedItem.value = null;
+  emit('fileSelected', null);
+};
 </script>
 
 <style lang="less" scoped>
@@ -503,7 +510,7 @@ html:not(.dark) {
           }
 
           .file-preview {
-            background-color: #E5F6E6;
+            background-color: transparent;
           }
         }
       }

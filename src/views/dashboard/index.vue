@@ -178,8 +178,6 @@
             </div>
         </div>
         <div class="dialog-footer">
-            <el-checkbox v-model="neverShowAgain" label="我已知晓，下次不再提示" size="large" />
-            <el-button type="primary" @click="handleConfirm">确定</el-button>
         </div>
     </el-dialog>
 
@@ -211,7 +209,13 @@
                 {{ currentCard?.name }}，无需本地部署，通过云端在线服务，实现智能给排水调试、喷头一键生成、管线自动布置。基于消防规范与智能算法，快速生成合规设计方案，支持多场景应用，助力企业高效完成消防系统设计与运维，降低成本与安全风险。
             </div>
             <div class="app-preview">
-                <h3>应用介绍</h3>
+                <div class="app-preview-header">
+                  <span class="app-preview-title">应用介绍</span>
+                  <span class="app-preview-standard">
+                    <el-icon><QuestionFilled /></el-icon>
+                    智能绘制平台上传图纸标准
+                  </span>
+                </div>
                 <div class="preview-container">
                     <img src="@/assets/operate/one.png" alt="应用截图" class="preview-image" />
                 </div>
@@ -224,7 +228,7 @@
 </template>
 
 <script setup lang="ts">
-import { Search, Monitor, Setting, Shop, MoreFilled, ArrowRight, Timer, Warning, Notification, Operation, ScaleToOriginal, Switch, Aim, Cpu, Smoking, Connection, Link, Microphone, OfficeBuilding, House, Management, Right, DArrowRight, CircleCheck, CirclePlus, Star } from '@element-plus/icons-vue'
+import { Search, Monitor, Setting, Shop, MoreFilled, ArrowRight, Timer, Warning, Notification, Operation, ScaleToOriginal, Switch, Aim, Cpu, Smoking, Connection, Link, Microphone, OfficeBuilding, House, Management, Right, DArrowRight, CircleCheck, CirclePlus, Star, QuestionFilled } from '@element-plus/icons-vue'
 import { computed, ref, onMounted, watch } from 'vue'
 import { isDark } from '../../utils/theme'
 import { getAigcPrimaryList, getAigcChildrenList } from '@/api/aigc'
@@ -417,23 +421,11 @@ const handleFireApplication = async (list: ProjectItem[], componentsList: AigcMo
 
 // 弹框相关
 const dialogVisible = ref(false)
-const neverShowAgain = ref(false)
-
-// 处理确认按钮点击
-const handleConfirm = () => {
-    if (neverShowAgain.value) {
-        localStorage.setItem('hideStandardDialog', 'true')
-    }
-    dialogVisible.value = false
-}
 
 // 在页面加载时检查是否需要显示弹框
 onMounted(() => {
-    // 检查是否显示弹框
-    const hideDialog = localStorage.getItem('hideStandardDialog')
-    if (!hideDialog) {
-        dialogVisible.value = true
-    }
+    // 显示弹框
+    dialogVisible.value = true
     
     fetchData()
 })
@@ -469,6 +461,8 @@ const plusIconBorderColor = computed(() => isDark.value ? '#C5C3D2' : '#000000')
 const plusIconColor = computed(() => isDark.value ? '#000' : '#ffff')
 const dashboardBgColor = computed(() => isDark.value ? '#000' : 'transparent')
 const appHeaderBgColor = computed(() => isDark.value ? 'rgba(231, 231, 224, 0.3)' : 'rgba(51, 51, 51, 0.3)')
+const appPreviewTitleColor = computed(() => isDark.value ? '#fff' : '#222');
+const appPreviewStandardColor = computed(() => isDark.value ? '#a3a6ad' : '#606266');
 
 const hvacCardList = [
     {
@@ -1245,36 +1239,6 @@ const handleTagClick = (tagName: string) => {
     align-items: center;
 }
 
-.dialog-footer .el-checkbox {
-    color: v-bind(subTextColor);
-}
-
-.dialog-footer .el-button {
-    min-width: 100px;
-    background-color: v-bind(menuBgColor);
-    border-color: v-bind(borderColor);
-    color: v-bind(menuTextColor);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.dialog-footer .el-button:hover {
-    background-color: v-bind(menuHoverBgColor);
-    border-color: #409EFF;
-    color: #409EFF;
-}
-
-.dialog-footer .el-button--primary {
-    background-color: #409EFF;
-    border-color: #409EFF;
-    color: #ffffff;
-}
-
-.dialog-footer .el-button--primary:hover {
-    background-color: #66b1ff;
-    border-color: #66b1ff;
-    color: #ffffff;
-}
-
 /* 修改卡片弹框样式 */
 .app-dialog {
     :deep(.el-dialog__header) {
@@ -1714,5 +1678,28 @@ const handleTagClick = (tagName: string) => {
 
 :deep(.el-link--primary) {
   color: #FFEA65 !important;
+}
+
+.app-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.app-preview-title {
+  font-weight: bold;
+  font-size: 16px;
+  color: v-bind(appPreviewTitleColor);
+}
+.app-preview-standard {
+  display: flex;
+  align-items: center;
+  color: v-bind(appPreviewStandardColor);
+  font-size: 14px;
+  cursor: pointer;
+}
+.app-preview-standard .el-icon {
+  margin-right: 4px;
+  font-size: 16px;
 }
 </style>
