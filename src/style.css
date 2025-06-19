@@ -369,3 +369,8 @@ html:not(.dark) .el-dropdown-menu__item {
   display: none !important;
 }
 
+/* 全局loading文字颜色 */
+.el-loading-text {
+  color: #F9DE4A !important;
+}
+

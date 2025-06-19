@@ -136,8 +136,6 @@ const dropdownTextColor = computed(() => isDark.value ? '#FFFFFF' : '#333333')
 const themeButtonBgColor = computed(() => darkMode.value ? '#333333' : '#E8E9E4')
 const themeButtonHoverBgColor = computed(() => darkMode.value ? '#1B2126' : '#FFF8CC')
 
-const logoFilter = computed(() => darkMode.value ? 'brightness(0) invert(1)' : 'none')
-
 const dropdownBgColor = computed(() => isDark.value ? 'var(--el-bg-color)' : '#E8E9E4')
 
 const menuIconFilter = computed(() => isDark.value ? 'brightness(0) invert(1)' : 'none')
@@ -169,6 +167,18 @@ const handleThemeSwitch = (event: MouseEvent) => {
 
 const getIconUrl = (name: string) => {
     if (!name) return '';
+    
+    // 特殊处理logo图标，根据主题模式返回不同的图标
+    if (name === 'beesfqd_ai_logo') {
+        const logoName = isDark.value ? 'text_only_logo - dark' : 'beesfqd_ai_logo';
+        try {
+            return new URL(`../assets/tb/${logoName}.svg`, import.meta.url).href;
+        } catch (error) {
+            console.error('Error loading logo:', logoName, error);
+            return '';
+        }
+    }
+    
     try {
         return new URL(`../assets/tb/${name}.svg`, import.meta.url).href;
     } catch (error) {
@@ -445,7 +455,6 @@ const handleLogout = async () => {
     width: 120px;
     height: 30px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    filter: v-bind(logoFilter);
     margin: 17.5px 0 0 0;
 }
 

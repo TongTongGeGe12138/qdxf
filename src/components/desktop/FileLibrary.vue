@@ -10,7 +10,13 @@
         </el-breadcrumb>
       </div>
       <div class="file-grid">
-        <div v-for="item in currentPageData" :key="item.id" class="file-item"
+        <!-- 空状态显示 -->
+        <div v-if="files.length === 0" class="empty-state">
+          <el-empty description="暂无数据"  :image-size="40" :image="simplified" />
+
+        </div>
+        <!-- 文件列表 -->
+        <div v-else v-for="item in currentPageData" :key="item.id" class="file-item"
           :class="{ 'is-selected': selectedItem?.id === item.id }" @click.stop="handleFileClick(item)"
           @dblclick.stop="handleFileDblClick(item)">
           <div class="file-preview">
@@ -36,7 +42,7 @@
     </div>
 
     <!-- 分页 -->
-    <div class="pagination" @click.stop>
+    <div v-if="files.length > 0" class="pagination" @click.stop>
       <el-pagination 
         v-model:current-page="currentPage" 
         v-model:page-size="pageSize" 
@@ -59,6 +65,7 @@ import { getP2d } from '@/api/cad';
 import { ElMessage } from 'element-plus';
 import { EngineContext } from '@/vendor/CadEngine/EngineContext.js';
 import { Close } from '@element-plus/icons-vue';
+import simplified from '@/assets/simplified_document_icon.svg?url';
 
 interface FileItem {
   id: string | number;
@@ -128,9 +135,9 @@ const showPagination = computed(() => {
     total: total.value,
     pageSize: pageSize.value,
     filesLength: files.value.length,
-    shouldShow: true
+    shouldShow: files.value.length > 0
   });
-  return true;
+  return files.value.length > 0;
 });
 
 // 计算属性：根据当前路径层级决定显示内容
@@ -428,8 +435,18 @@ const handleContainerClick = () => {
       display: flex;
       padding: 24px;
       flex-wrap: wrap;
-    flex-direction: row;
-    justify-content: flex-start;
+      flex-direction: row;
+      justify-content: flex-start;
+      min-height: 200px; // 确保有足够的高度显示空状态
+
+      .empty-state {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 200px;
+        color: var(--el-text-color-secondary);
+      }
 
       .file-item {
         width: 120px;

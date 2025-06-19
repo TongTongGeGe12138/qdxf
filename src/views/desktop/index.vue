@@ -139,6 +139,11 @@ const operationType = ref<'recover' | 'delete' | 'upload' | 'trash' | 'rename' |
 // 添加重命名输入框的值
 const renameValue = ref('');
 
+// 添加loading状态
+const listLoading = ref(false)
+const operationLoading = ref(false)
+const searchLoading = ref(false)
+
 // 添加项目表单数据
 const formDatassss = ref<any>({
   address: '中国',
@@ -217,6 +222,7 @@ watch(activeIndex, (newIndex) => {
 
   switch (newIndex) {
     case 0: // 我的项目
+      listLoading.value = true;
       getProjectFile({
         page: 1,
         pageSize: 20,
@@ -236,13 +242,21 @@ watch(activeIndex, (newIndex) => {
         ElMessage.error('获取项目列表失败');
         // API调用失败时，清空列表
         fileLibraryStore.setLibraryList([]);
+      }).finally(() => {
+        listLoading.value = false;
       });
       break;
     case 1: // 我收藏的资源
-      getFavoriteList(searchValue.value);
+      listLoading.value = true;
+      getFavoriteList(searchValue.value).finally(() => {
+        listLoading.value = false;
+      });
       break;
     case 2: // 回收站
-      getTrashList(searchValue.value);
+      listLoading.value = true;
+      getTrashList(searchValue.value).finally(() => {
+        listLoading.value = false;
+      });
       break;
   }
 });
@@ -436,6 +450,7 @@ const handleFileOperation = async (tab: TabItem) => {
         break;
       case '刷新列表':
         try {
+          listLoading.value = true;
           if (activeIndex.value === 2) {
             await getTrashList(searchValue.value);
           } else {
@@ -454,6 +469,8 @@ const handleFileOperation = async (tab: TabItem) => {
           }
         } catch (error) {
           ElMessage.error('刷新失败');
+        } finally {
+          listLoading.value = false;
         }
         break;
     }
@@ -472,7 +489,12 @@ const handleFileOperation = async (tab: TabItem) => {
     case '打开':
       // 使用 FileLibrary 组件的 openFile 方法
       if (fileLibraryRef.value) {
-        await fileLibraryRef.value.openFile(file);
+        operationLoading.value = true;
+        try {
+          await fileLibraryRef.value.openFile(file);
+        } finally {
+          operationLoading.value = false;
+        }
       }
       break;
     case '还原':
@@ -531,6 +553,8 @@ const handleFileOperation = async (tab: TabItem) => {
           return;
         }
         
+        operationLoading.value = true;
+        
         // 根据当前路径层级选择不同的下载参数
         let downloadParams;
         if (fileLibraryStore.currentPath.length === 0) {
@@ -567,6 +591,8 @@ const handleFileOperation = async (tab: TabItem) => {
       } catch (error) {
         console.error('下载失败:', error);
         ElMessage.error('下载失败');
+      } finally {
+        operationLoading.value = false;
       }
       break;
   }
@@ -574,9 +600,12 @@ const handleFileOperation = async (tab: TabItem) => {
 
 // 修改确认操作处理函数
 const handleConfirmOperation = async () => {
+  operationLoading.value = true;
+  
   if (operationType.value === 'create') {
     if (!renameValue.value) {
       ElMessage.warning('请输入名称');
+      operationLoading.value = false;
       return;
     }
     try {
@@ -638,12 +667,15 @@ const handleConfirmOperation = async () => {
       renameValue.value = '';
     } catch (error) {
       ElMessage.error('创建失败');
+    } finally {
+      operationLoading.value = false;
     }
     return;
   }
 
   if (!selectedFile.value) {
     ElMessage.warning('请先选择一个文件');
+    operationLoading.value = false;
     return;
   }
 
@@ -784,6 +816,8 @@ const handleConfirmOperation = async () => {
   } catch (error) {
     console.error('操作失败:', error);
     ElMessage.error(error instanceof Error ? error.message : '操作失败');
+  } finally {
+    operationLoading.value = false;
   }
 };
 
@@ -814,6 +848,7 @@ const formatDate = (dateString: string) => {
 
 // 监听搜索值变化
 watch(searchValue, async (newValue) => {
+  searchLoading.value = true;
   try {
     if (activeIndex.value === 0) {
       // 我的项目搜索
@@ -871,11 +906,14 @@ watch(searchValue, async (newValue) => {
     ElMessage.error('搜索失败');
     // API调用失败时，清空列表
     fileLibraryStore.setLibraryList([]);
+  } finally {
+    searchLoading.value = false;
   }
 });
 
 // 初始化加载项目列表
 onMounted(async () => {
+  listLoading.value = true;
   try {
     if (activeIndex.value === 0) {
       const res = await getProjectFile({
@@ -903,6 +941,8 @@ onMounted(async () => {
     ElMessage.error('加载列表失败');
     // API调用失败时，清空列表
     fileLibraryStore.setLibraryList([]);
+  } finally {
+    listLoading.value = false;
   }
   // 使用捕获阶段监听点击事件
   document.addEventListener('click', handleClickOutside, true)
@@ -934,19 +974,19 @@ onUnmounted(() => {
           </div>
           <div class="dcontent-top-right">
             <el-input v-model="searchValue" placeholder="搜索" class="search-input" :prefix-icon="Search" clearable
-              size="small" />
+              size="small" v-loading="searchLoading" />
             <div class="right-tabs">
               <div v-for="(tab, idx) in rightTabs" :key="tab.name" class="right-tab">
                 <el-icon :size="18" style="margin-right: 4px;">
                   <component :is="tab.icon" />
                 </el-icon>
-                <span @click="handleFileOperation(tab)">{{ tab.name }}</span>
+                <span @click="handleFileOperation(tab)" :class="{ 'loading': operationLoading }">{{ tab.name }}</span>
               </div>
             </div>
           </div>
         </div>
         <div class="dcontent-cont">
-          <div class="dcontent-cont-left">
+          <div class="dcontent-cont-left" v-loading="listLoading || searchLoading">
             <FileLibrary ref="fileLibraryRef" @fileSelected="handleFileSelected" />
           </div>
           <div class="dcontent-cont-right" v-if="selectedFile">
@@ -1072,7 +1112,7 @@ onUnmounted(() => {
     <template #footer>
       <span class="dialog-footer">
         <div class="dialog-button cancel" @click="operationDialogVisible = false">取消</div>
-        <div class="dialog-button confirm" @click="handleConfirmOperation">确定</div>
+        <div class="dialog-button confirm" @click="handleConfirmOperation" :loading="operationLoading">确定</div>
       </span>
     </template>
   </el-dialog>
@@ -1215,6 +1255,13 @@ onUnmounted(() => {
 
           &:hover {
             opacity: 0.7;
+          }
+
+          span {
+            &.loading {
+              opacity: 0.6;
+              cursor: not-allowed;
+            }
           }
         }
       }
