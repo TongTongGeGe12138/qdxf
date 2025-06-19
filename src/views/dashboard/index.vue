@@ -128,55 +128,57 @@
         :close-on-click-modal="false"
         class="standard-dialog"
     >
-        <div class="operate-box">
-            <div class="text-box">
-                <div class="standard-item">
-                    <span>1. 应确保图纸文件在本地能够使用AutoCAD正常打开。</span>
-                </div>
-                <div class="standard-item">
-                    <span>2. 天正绘制的图纸在上传平台前，应先导出为T3版本，非T3版本图纸上传后，部分图线无法解析显示。</span>
-                    <img src="@/assets/operate/one.png" alt="示例1" />
-                </div>
-                <div class="standard-item">
-                    <span>3. 上传的图纸中，构件应按图层绘制，不同的构件类型不可混用图层，如使用柱图层进行门窗构件的绘制、在0图层下绘制门窗等。</span>
-                    <img src="@/assets/operate/two.png" alt="示例2" />
-                </div>
-                <div class="standard-item">
-                    <span>4. 应该闭合的图线应保证闭合，如墙与门窗之间应能闭合，不可留有间隙。</span>
-                    <img src="@/assets/operate/three.png" alt="示例3" />
-                </div>
-                <div class="standard-item">
-                    <span>5. 图纸中，围合构件的图线（如墙线、幕墙线、门窗线等）不可存在断线。</span>
-                    <img src="@/assets/operate/four.png" alt="示例4" />
-                </div>
-                <div class="standard-item">
-                    <span>6. 存在多轴网时，应避免同一房间中存在多个方向的轴网，否则在进行组件自动生成时可能采用错误的方向进行布置。</span>
-                    <img src="@/assets/operate/five.png" alt="示例5" />
-                </div>
-                <div class="standard-item">
-                    <span>7. 图纸中部分线段是在三位坐标视图下绘制，会出现二维多段线等与3D相关线段，导致区域识别时，程序在未加载3D引擎的前提下无法正确定位。</span>
-                    <img src="@/assets/operate/six.png" alt="示例6" />
-                </div>
-                <div class="standard-item">
-                    <span>8. 图纸中图线应尽量避免重叠，过多的重线会导致解析与区域分析等待时间变长。</span>
-                    <img src="@/assets/operate/seven.png" alt="示例7" />
-                </div>
-                <div class="standard-item">
-                    <span>9. 图纸中房间注释文字应正确，否则区域分析时，会判断出错，从而导致组件智能生成时采用错误的方案。</span>
-                </div>
-                <div class="standard-item">
-                    <span>10. 在进行图层指定时，带"*"的图层为必选项，指定遗漏后无法进行区域的智能分析。</span>
-                    <img src="@/assets/operate/eight.png" alt="示例8" />
-                </div>
-                <div class="standard-item">
-                    <span>11. 图纸中若是存在隐藏的图元、图线，请确保隐藏的图元、图线不在需要指定的图层列表中，否则程序将一同将该部分图层信息提取，导致区域分析出错或分析时间变长。</span>
-                </div>
-                <div class="standard-item">
-                    <span>12. 存在环形轴网的图纸暂不支持组件的智能生成。</span>
-                    <img src="@/assets/operate/nine.png" alt="示例9" />
+        <el-scrollbar height="calc(100vh - 200px)">
+            <div class="operate-box">
+                <div class="text-box">
+                    <div class="standard-item">
+                        <span>1. 应确保图纸文件在本地能够使用AutoCAD正常打开。</span>
+                    </div>
+                    <div class="standard-item">
+                        <span>2. 天正绘制的图纸在上传平台前，应先导出为T3版本，非T3版本图纸上传后，部分图线无法解析显示。</span>
+                        <img src="@/assets/operate/one.png" alt="示例1" />
+                    </div>
+                    <div class="standard-item">
+                        <span>3. 上传的图纸中，构件应按图层绘制，不同的构件类型不可混用图层，如使用柱图层进行门窗构件的绘制、在0图层下绘制门窗等。</span>
+                        <img src="@/assets/operate/two.png" alt="示例2" />
+                    </div>
+                    <div class="standard-item">
+                        <span>4. 应该闭合的图线应保证闭合，如墙与门窗之间应能闭合，不可留有间隙。</span>
+                        <img src="@/assets/operate/three.png" alt="示例3" />
+                    </div>
+                    <div class="standard-item">
+                        <span>5. 图纸中，围合构件的图线（如墙线、幕墙线、门窗线等）不可存在断线。</span>
+                        <img src="@/assets/operate/four.png" alt="示例4" />
+                    </div>
+                    <div class="standard-item">
+                        <span>6. 存在多轴网时，应避免同一房间中存在多个方向的轴网，否则在进行组件自动生成时可能采用错误的方向进行布置。</span>
+                        <img src="@/assets/operate/five.png" alt="示例5" />
+                    </div>
+                    <div class="standard-item">
+                        <span>7. 图纸中部分线段是在三位坐标视图下绘制，会出现二维多段线等与3D相关线段，导致区域识别时，程序在未加载3D引擎的前提下无法正确定位。</span>
+                        <img src="@/assets/operate/six.png" alt="示例6" />
+                    </div>
+                    <div class="standard-item">
+                        <span>8. 图纸中图线应尽量避免重叠，过多的重线会导致解析与区域分析等待时间变长。</span>
+                        <img src="@/assets/operate/seven.png" alt="示例7" />
+                    </div>
+                    <div class="standard-item">
+                        <span>9. 图纸中房间注释文字应正确，否则区域分析时，会判断出错，从而导致组件智能生成时采用错误的方案。</span>
+                    </div>
+                    <div class="standard-item">
+                        <span>10. 在进行图层指定时，带"*"的图层为必选项，指定遗漏后无法进行区域的智能分析。</span>
+                        <img src="@/assets/operate/eight.png" alt="示例8" />
+                    </div>
+                    <div class="standard-item">
+                        <span>11. 图纸中若是存在隐藏的图元、图线，请确保隐藏的图元、图线不在需要指定的图层列表中，否则程序将一同将该部分图层信息提取，导致区域分析出错或分析时间变长。</span>
+                    </div>
+                    <div class="standard-item">
+                        <span>12. 存在环形轴网的图纸暂不支持组件的智能生成。</span>
+                        <img src="@/assets/operate/nine.png" alt="示例9" />
+                    </div>
                 </div>
             </div>
-        </div>
+        </el-scrollbar>
         <div class="dialog-footer">
         </div>
     </el-dialog>
@@ -188,39 +190,41 @@
         :close-on-click-modal="false"
         class="standard-dialog app-dialog"
     >
-        <div class="app-dialog-content">
-            <div class="app-header">
-                <div class="app-icon fire-icon-container" :class="isDark ? 'dark-mode' : 'light-mode'">
-                    <img 
-                        v-if="currentCard?.value"
-                        :src="getIconUrl(currentCard.value)"
-                        :alt="currentCard.name"
-                        class="fire-icon"
-                        @error="console.log('Failed to load image:', currentCard.value)"
-                    />
+        <el-scrollbar height="calc(100vh - 150px)">
+            <div class="app-dialog-content">
+                <div class="app-header">
+                    <div class="app-icon fire-icon-container" :class="isDark ? 'dark-mode' : 'light-mode'">
+                        <img 
+                            v-if="currentCard?.value"
+                            :src="getIconUrl(currentCard.value)"
+                            :alt="currentCard.name"
+                            class="fire-icon"
+                            @error="console.log('Failed to load image:', currentCard.value)"
+                        />
+                    </div>
+                    <div class="app-title">
+                        <div class="name">{{ currentCard?.name }}</div>
+                        <div class="desc">{{ currentCard?.extra?.englishName }}</div>
+                    </div>
+                    <el-button type="primary" class="launch-btn" @click="handleLaunchClick">启动应用</el-button>
                 </div>
-                <div class="app-title">
-                    <div class="name">{{ currentCard?.name }}</div>
-                    <div class="desc">{{ currentCard?.extra?.englishName }}</div>
+                <div class="app-desc">
+                    {{ currentCard?.name }}，无需本地部署，通过云端在线服务，实现智能给排水调试、喷头一键生成、管线自动布置。基于消防规范与智能算法，快速生成合规设计方案，支持多场景应用，助力企业高效完成消防系统设计与运维，降低成本与安全风险。
                 </div>
-                <el-button type="primary" class="launch-btn" @click="handleLaunchClick">启动应用</el-button>
+                <div class="app-preview">
+                    <div class="app-preview-header">
+                      <span class="app-preview-title">应用介绍</span>
+                      <span class="app-preview-standard" @click="handleStandardClick">
+                        <el-icon><QuestionFilled /></el-icon>
+                        智能绘制平台上传图纸标准
+                      </span>
+                    </div>
+                    <div class="preview-container">
+                        <img src="@/assets/operate/one.png" alt="应用截图" class="preview-image" />
+                    </div>
+                </div>
             </div>
-            <div class="app-desc">
-                {{ currentCard?.name }}，无需本地部署，通过云端在线服务，实现智能给排水调试、喷头一键生成、管线自动布置。基于消防规范与智能算法，快速生成合规设计方案，支持多场景应用，助力企业高效完成消防系统设计与运维，降低成本与安全风险。
-            </div>
-            <div class="app-preview">
-                <div class="app-preview-header">
-                  <span class="app-preview-title">应用介绍</span>
-                  <span class="app-preview-standard">
-                    <el-icon><QuestionFilled /></el-icon>
-                    智能绘制平台上传图纸标准
-                  </span>
-                </div>
-                <div class="preview-container">
-                    <img src="@/assets/operate/one.png" alt="应用截图" class="preview-image" />
-                </div>
-            </div>
-        </div>
+        </el-scrollbar>
         <div class="version-info">
             版本：{{ currentCard?.extra?.version }}
         </div>
@@ -422,11 +426,8 @@ const handleFireApplication = async (list: ProjectItem[], componentsList: AigcMo
 // 弹框相关
 const dialogVisible = ref(false)
 
-// 在页面加载时检查是否需要显示弹框
+// 移除页面加载时自动打开弹框的逻辑
 onMounted(() => {
-    // 显示弹框
-    dialogVisible.value = true
-    
     fetchData()
 })
 
@@ -721,7 +722,10 @@ const handleLaunchClick = async () => {
   cardDialogVisible.value = false;
 };
 
-
+// 添加点击标准说明的处理函数
+const handleStandardClick = () => {
+  dialogVisible.value = true;
+};
 
 const toggleIconMode = () => {
     const containers = document.querySelectorAll('.fire-icon-container');
@@ -1141,21 +1145,24 @@ const handleTagClick = (tagName: string) => {
 }
 
 .standard-dialog :deep(.el-dialog) {
-    display: flex;
-    flex-direction: column;
-    max-height: 90vh;
-    margin: 15vh auto 0 !important;
+    margin: 50px auto !important;
+    max-height: calc(100vh - 100px) !important;
     background-color: v-bind(dialogBgColor);
     border: 1px solid v-bind(borderColor);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 .standard-dialog :deep(.el-dialog__header) {
-    margin: 0;
-    padding: 20px;
+    margin: 0 !important;
+    padding: 20px !important;
     border-bottom: 1px solid v-bind(borderColor);
     background-color: v-bind(dialogHeaderBgColor);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0 !important;
+    position: relative !important;
+    z-index: 1;
 }
 
 .standard-dialog :deep(.el-dialog__title) {
@@ -1168,21 +1175,28 @@ const handleTagClick = (tagName: string) => {
 }
 
 .standard-dialog :deep(.el-dialog__body) {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    margin: 0;
+    flex: 1 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
     background-color: v-bind(dialogBgColor);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 0 !important;
+    position: relative !important;
+    height: auto !important;
+    max-height: none !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
+/* 滚动条样式 */
 .standard-dialog :deep(.el-scrollbar__thumb) {
-    background-color: v-bind(subTextColor);
-    opacity: 0.3;
+    background-color: v-bind(subTextColor) !important;
+    opacity: 0.3 !important;
 }
 
 .standard-dialog :deep(.el-scrollbar__thumb:hover) {
-    opacity: 0.5;
+    opacity: 0.5 !important;
 }
 
 .operate-box {
@@ -1242,18 +1256,30 @@ const handleTagClick = (tagName: string) => {
 /* 修改卡片弹框样式 */
 .app-dialog {
     :deep(.el-dialog__header) {
-        display: none;
+        display: none !important;
     }
     
     :deep(.el-dialog__body) {
-        padding: 0;
-        margin: 0;
+        padding: 0 !important;
+        margin: 0 !important;
         background-color: v-bind(dialogBgColor);
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        position: relative !important;
+        flex: 1 !important;
+        min-height: 0 !important;
     }
 
     :deep(.el-dialog) {
+        margin: 50px auto !important;
+        max-height: calc(100vh - 100px) !important;
         background-color: v-bind(dialogBgColor);
         border: 1px solid v-bind(borderColor);
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
     }
 }
 
@@ -1261,6 +1287,11 @@ const handleTagClick = (tagName: string) => {
     position: relative;
     padding: 24px;
     color: v-bind(menuTextColor);
+    flex: 1 !important;
+    overflow: visible !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
 }
 
 .app-header {
@@ -1385,7 +1416,6 @@ const handleTagClick = (tagName: string) => {
     position: relative;
     left: 0;
     // width: 100%;
-    height: 50px;
     margin: 0 24px;
     font-size: 14px;
     font-weight: 400;
@@ -1393,8 +1423,8 @@ const handleTagClick = (tagName: string) => {
     border-top: 1px solid v-bind(appHeaderBgColor);
     display: flex;
     align-items: center;
-    padding-top: 20px;
-
+    padding: 20px 0;
+    flex-shrink: 0; /* 防止收缩 */
 }
 
 /* 关闭按钮样式 */
@@ -1697,9 +1727,48 @@ const handleTagClick = (tagName: string) => {
   color: v-bind(appPreviewStandardColor);
   font-size: 14px;
   cursor: pointer;
+  transition: color 0.3s ease;
+  
+  &:hover {
+    color: #F9DE4A;
+  }
 }
 .app-preview-standard .el-icon {
   margin-right: 4px;
   font-size: 16px;
+}
+
+.dialog-scroll-container {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 20px !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    background-color: v-bind(dialogBgColor);
+    position: relative !important;
+}
+
+/* 应用弹框的滚动容器特殊样式 */
+.app-dialog .dialog-scroll-container {
+    padding: 24px !important;
+}
+
+.dialog-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dialog-scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dialog-scroll-container::-webkit-scrollbar-thumb {
+    background-color: v-bind(subTextColor);
+    opacity: 0.3;
+    border-radius: 3px;
+}
+
+.dialog-scroll-container::-webkit-scrollbar-thumb:hover {
+    opacity: 0.5;
 }
 </style>

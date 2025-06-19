@@ -8,225 +8,232 @@
         </div> -->
       </div>
       <div class="right">
-        <div class="login-type-switch">
-          <el-tooltip :content="loginType === 'account' ? '扫码登录' : '手机登录'" placement="left" effect="dark" popper-class="custom-tooltip">
-            <div class="qrcode-switch" @click="loginType = loginType === 'account' ? 'qrcode' : 'account'">
-              <img :src="loginType === 'account' ? qrcodeIcon : phoneIcon" alt="" class="QRcode" />
-            </div>
-          </el-tooltip>
-        </div>
-
-        <!-- 账号密码登录 -->
-        <template v-if="loginType === 'account'">
-          <div class="logo">
-            <img :src=ssss alt="BeesFPD" />
+        <!-- 动画容器，带渐隐过渡 -->
+        <transition name="fade-out">
+          <div v-if="!showLoginForm" ref="animationContainer" style="width:100%;height:100%;"></div>
+        </transition>
+        <!-- 登录表单容器 -->
+        <div v-if="showLoginForm" style="width: 380px;">
+          <div class="login-type-switch">
+            <el-tooltip :content="loginType === 'account' ? '扫码登录' : '手机登录'" placement="left" effect="dark" popper-class="custom-tooltip">
+              <div class="qrcode-switch" @click="loginType = loginType === 'account' ? 'qrcode' : 'account'">
+                <img :src="loginType === 'account' ? qrcodeIcon : phoneIcon" alt="" class="QRcode" />
+              </div>
+            </el-tooltip>
           </div>
-          <h2>欢迎回来</h2>
-          <p class="subtitle">即刻登录使用智能测绘</p>
 
-          <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form">
-            <el-form-item prop="account">
-              <el-input v-model="loginForm.account" placeholder="账户名/手机号"
-                :class="{ 'error-input': errorMessages.account }" />
-              <el-tooltip v-if="errorMessages.account" :content="errorMessages.account" placement="bottom" effect="dark"
-                :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
-                popper-class="error-tooltip">
-                <div class="error-trigger"></div>
-              </el-tooltip>
-            </el-form-item>
+          <!-- 账号密码登录 -->
+          <template v-if="loginType === 'account'">
+            <div class="logo">
+              <img :src=ssss alt="BeesFPD" />
+            </div>
+            <h2>欢迎回来</h2>
+            <p class="subtitle">即刻登录使用智能绘制</p>
 
-            <el-form-item prop="password">
-              <el-input v-model="loginForm.password" type="password" placeholder="请输入A-16位包含字母大小写及数字密码" show-password
-                :class="{ 'error-input': errorMessages.password }" />
-              <el-tooltip v-if="errorMessages.password" :content="errorMessages.password" placement="bottom"
-                effect="dark" :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
-                popper-class="error-tooltip">
-                <div class="error-trigger"></div>
-              </el-tooltip>
-            </el-form-item>
+            <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form">
+              <el-form-item prop="account">
+                <el-input v-model="loginForm.account" placeholder="账户名/手机号"
+                  :class="{ 'error-input': errorMessages.account }" />
+                <el-tooltip v-if="errorMessages.account" :content="errorMessages.account" placement="bottom" effect="dark"
+                  :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
+                  popper-class="error-tooltip">
+                  <div class="error-trigger"></div>
+                </el-tooltip>
+              </el-form-item>
 
-            <el-form-item>
+              <el-form-item prop="password">
+                <el-input v-model="loginForm.password" type="password" placeholder="请输入A-16位包含字母大小写及数字密码" show-password
+                  :class="{ 'error-input': errorMessages.password }" />
+                <el-tooltip v-if="errorMessages.password" :content="errorMessages.password" placement="bottom"
+                  effect="dark" :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
+                  popper-class="error-tooltip">
+                  <div class="error-trigger"></div>
+                </el-tooltip>
+              </el-form-item>
+
+              <el-form-item>
+                <el-checkbox v-model="loginForm.agreement" class="dark-checkbox">
+                  <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
+                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">用户协议</el-link>
+                  <span style="font-size: 10px; color: #A1A1A1;">和</span>
+                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">隐私政策</el-link>
+                </el-checkbox>
+              </el-form-item>
+
+              <el-button type="primary" class="login-button" :loading="loading" :disabled="!loginForm.agreement" @click="handleLogin" style="background-color: rgba(249, 222, 74, 1) !important; color: #000 !important; border: none !important; transition: background-color 0.3s;" @mouseover="$event.target.style.backgroundColor='rgba(255, 234, 101, 1)'" @mouseleave="$event.target.style.backgroundColor='rgba(249, 222, 74, 1)'">
+                登录
+              </el-button>
+            </el-form>
+          </template>
+
+          <!-- 二维码登录 -->
+          <template v-else-if="loginType === 'qrcode'">
+            <div class="qrcode-container">
+              <div class="logo">
+                <img :src=ssss alt="BeesFPD" />
+              </div>
+              <h2>请使用微信扫码登录</h2>
+              <div class="qrcode-box">
+                <div id="login_container"></div>
+              </div>
               <el-checkbox v-model="loginForm.agreement" class="dark-checkbox">
                 <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
                 <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">用户协议</el-link>
                 <span style="font-size: 10px; color: #A1A1A1;">和</span>
                 <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">隐私政策</el-link>
               </el-checkbox>
-            </el-form-item>
+            </div>
+          </template>
 
-            <el-button type="primary" class="login-button" :loading="loading" :disabled="!loginForm.agreement" @click="handleLogin" style="background-color: rgba(249, 222, 74, 1) !important; color: #000 !important; border: none !important; transition: background-color 0.3s;" @mouseover="$event.target.style.backgroundColor='rgba(255, 234, 101, 1)'" @mouseleave="$event.target.style.backgroundColor='rgba(249, 222, 74, 1)'">
-              登录
-            </el-button>
-          </el-form>
-        </template>
+          <!-- 注册表单 -->
+          <template v-else-if="loginType === 'register'">
+            <div class="logo" >
+              <img src="/assets/sssss.svg" alt="BeesFPD" />
+            </div>
+            <h2 class="form-title">注册账号</h2>
+            <el-form ref="registerFormRef" :model="registerForm" :rules="registerRules" class="login-form">
+              <el-form-item prop="mobile">
+                <el-input v-model="registerForm.mobile" placeholder="输入手机号" 
+                  :class="{ 'error-input': errorMessages.mobile }" />
+                <el-tooltip v-if="errorMessages.mobile" :content="errorMessages.mobile" placement="bottom" effect="dark"
+                  :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
+                  popper-class="error-tooltip">
+                  <div class="error-trigger"></div>
+                </el-tooltip>
+              </el-form-item>
 
-        <!-- 二维码登录 -->
-        <template v-else-if="loginType === 'qrcode'">
-          <div class="qrcode-container">
+              <el-form-item prop="password">
+                <el-input v-model="registerForm.password" type="password" placeholder="请输入6-16位包含字母大小写及数字密码"
+                  show-password :class="{ 'error-input': errorMessages.password }" />
+                <el-tooltip v-if="errorMessages.password" :content="errorMessages.password" placement="bottom" effect="dark"
+                  :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
+                  popper-class="error-tooltip">
+                  <div class="error-trigger"></div>
+                </el-tooltip>
+              </el-form-item>
+
+              <el-form-item prop="confirmPassword">
+                <el-input v-model="registerForm.confirmPassword" type="password" placeholder="确认密码" show-password 
+                  :class="{ 'error-input': errorMessages.confirmPassword }" />
+                <el-tooltip v-if="errorMessages.confirmPassword" :content="errorMessages.confirmPassword" placement="bottom" effect="dark"
+                  :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
+                  popper-class="error-tooltip">
+                  <div class="error-trigger"></div>
+                </el-tooltip>
+              </el-form-item>
+
+              <el-form-item prop="verifyCode" class="verify-code-item">
+                <el-input v-model="registerForm.verifyCode" placeholder="输入验证码" 
+                  :class="{ 'error-input': errorMessages.verifyCode }" />
+                <el-button type="text" class="get-code-btn" :disabled="countdown > 0" @click="sendVerifyCode">
+                  {{ sendCodeText }}
+                </el-button>
+                <el-tooltip v-if="errorMessages.verifyCode" :content="errorMessages.verifyCode" placement="bottom" effect="dark"
+                  :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
+                  popper-class="error-tooltip">
+                  <div class="error-trigger"></div>
+                </el-tooltip>
+              </el-form-item>
+
+              <el-form-item prop="identity" >
+                <el-select
+                  v-model="registerForm.identity"
+                  placeholder="您是尊贵的"
+                  class="identity-select"
+                  filterable
+                  popper-class="dark-select-dropdown"
+                  clearable
+                >
+                  <el-option
+                    v-for="item in professionOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+
+              <el-form-item prop="description">
+                <el-input v-model="registerForm.description" placeholder="若有分享码，请填写" />
+              </el-form-item>
+
+              <el-form-item >
+                <el-checkbox v-model="registerForm.agreement" class="dark-checkbox">
+                  <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
+                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">用户协议</el-link>
+                  <span style="font-size: 10px; color: #A1A1A1;">和</span>
+                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">隐私政策</el-link>
+                </el-checkbox>
+              </el-form-item>
+
+              <el-button type="primary" class="login-button" :disabled="!registerForm.agreement" @click="handleRegister(registerFormRef)" style="background-color: rgba(249, 222, 74, 1) !important; color: #000 !important; border: none !important; transition: background-color 0.3s;" @mouseover="$event.target.style.backgroundColor='rgba(255, 234, 101, 1)'" @mouseleave="$event.target.style.backgroundColor='rgba(249, 222, 74, 1)'">
+                注册登录
+              </el-button>
+            </el-form>
+          </template>
+
+          <!-- 忘记密码表单 -->
+          <template v-else-if="loginType === 'forgot'">
             <div class="logo">
-              <img :src=ssss alt="BeesFPD" />
+              <img src="/assets/sssss.svg" alt="BeesFPD" />
             </div>
-            <h2>请使用微信扫码登录</h2>
-            <div class="qrcode-box">
-              <div id="login_container"></div>
-            </div>
-            <el-checkbox v-model="loginForm.agreement" class="dark-checkbox">
-              <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
-              <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">用户协议</el-link>
-              <span style="font-size: 10px; color: #A1A1A1;">和</span>
-              <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">隐私政策</el-link>
-            </el-checkbox>
-          </div>
-        </template>
+            <h2 class="form-title" style="margin-bottom: 20px;">找回密码</h2>
+            <el-form ref="forgotFormRef" :model="forgotForm" :rules="forgotRules" class="login-form" >
+              <el-form-item prop="mobile">
+                <el-input v-model="forgotForm.mobile" placeholder="输入手机号" 
+                  :class="{ 'error-input': errorMessages.mobile }" />
+                <el-tooltip v-if="errorMessages.mobile" :content="errorMessages.mobile" placement="bottom" effect="dark"
+                  :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
+                  popper-class="error-tooltip">
+                  <div class="error-trigger"></div>
+                </el-tooltip>
+              </el-form-item>
 
-        <!-- 注册表单 -->
-        <template v-else-if="loginType === 'register'">
-          <div class="logo" >
-            <img src="/assets/sssss.svg" alt="BeesFPD" />
-          </div>
-          <h2 class="form-title">注册账号</h2>
-          <el-form ref="registerFormRef" :model="registerForm" :rules="registerRules" class="login-form">
-            <el-form-item prop="mobile">
-              <el-input v-model="registerForm.mobile" placeholder="输入手机号" 
-                :class="{ 'error-input': errorMessages.mobile }" />
-              <el-tooltip v-if="errorMessages.mobile" :content="errorMessages.mobile" placement="bottom" effect="dark"
-                :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
-                popper-class="error-tooltip">
-                <div class="error-trigger"></div>
-              </el-tooltip>
-            </el-form-item>
+              <el-form-item prop="verifyCode" class="verify-code-item">
+                <el-input v-model="forgotForm.verifyCode" placeholder="输入验证码" 
+                  :class="{ 'error-input': errorMessages.verifyCode }" />
+                <el-button type="text" class="get-code-btn" :disabled="countdown > 0" @click="sendForgotVerifyCode">
+                  {{ sendCodeText }}
+                </el-button>
+                <el-tooltip v-if="errorMessages.verifyCode" :content="errorMessages.verifyCode" placement="bottom" effect="dark"
+                  :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
+                  popper-class="error-tooltip">
+                  <div class="error-trigger"></div>
+                </el-tooltip>
+              </el-form-item>
 
-            <el-form-item prop="password">
-              <el-input v-model="registerForm.password" type="password" placeholder="请输入6-16位包含字母大小写及数字密码"
-                show-password :class="{ 'error-input': errorMessages.password }" />
-              <el-tooltip v-if="errorMessages.password" :content="errorMessages.password" placement="bottom" effect="dark"
-                :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
-                popper-class="error-tooltip">
-                <div class="error-trigger"></div>
-              </el-tooltip>
-            </el-form-item>
+              <el-form-item prop="newPassword">
+                <el-input v-model="forgotForm.newPassword" type="password" placeholder="请输入新密码"
+                  show-password :class="{ 'error-input': errorMessages.password }" />
+                <el-tooltip v-if="errorMessages.password" :content="errorMessages.password" placement="bottom" effect="dark"
+                  :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
+                  popper-class="error-tooltip">
+                  <div class="error-trigger"></div>
+                </el-tooltip>
+              </el-form-item>
 
-            <el-form-item prop="confirmPassword">
-              <el-input v-model="registerForm.confirmPassword" type="password" placeholder="确认密码" show-password 
-                :class="{ 'error-input': errorMessages.confirmPassword }" />
-              <el-tooltip v-if="errorMessages.confirmPassword" :content="errorMessages.confirmPassword" placement="bottom" effect="dark"
-                :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
-                popper-class="error-tooltip">
-                <div class="error-trigger"></div>
-              </el-tooltip>
-            </el-form-item>
+              <el-form-item prop="confirmPassword">
+                <el-input v-model="forgotForm.confirmPassword" type="password" placeholder="确认新密码" show-password 
+                  :class="{ 'error-input': errorMessages.confirmPassword }" />
+                <el-tooltip v-if="errorMessages.confirmPassword" :content="errorMessages.confirmPassword" placement="bottom" effect="dark"
+                  :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
+                  popper-class="error-tooltip">
+                  <div class="error-trigger"></div>
+                </el-tooltip>
+              </el-form-item>
 
-            <el-form-item prop="verifyCode" class="verify-code-item">
-              <el-input v-model="registerForm.verifyCode" placeholder="输入验证码" 
-                :class="{ 'error-input': errorMessages.verifyCode }" />
-              <el-button type="text" class="get-code-btn" :disabled="countdown > 0" @click="sendVerifyCode">
-                {{ sendCodeText }}
+              <el-button type="primary" class="login-button" @click="handleResetPassword(forgotFormRef)" style="background-color: rgba(249, 222, 74, 1) !important; color: #000 !important; border: none !important; transition: background-color 0.3s;" @mouseover="$event.target.style.backgroundColor='rgba(255, 234, 101, 1)'" @mouseleave="$event.target.style.backgroundColor='rgba(249, 222, 74, 1)'">
+                重置密码
               </el-button>
-              <el-tooltip v-if="errorMessages.verifyCode" :content="errorMessages.verifyCode" placement="bottom" effect="dark"
-                :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
-                popper-class="error-tooltip">
-                <div class="error-trigger"></div>
-              </el-tooltip>
-            </el-form-item>
+            </el-form>
+          </template>
 
-            <el-form-item prop="identity" >
-              <el-select
-                v-model="registerForm.identity"
-                placeholder="您是尊贵的"
-                class="identity-select"
-                filterable
-                popper-class="dark-select-dropdown"
-                clearable
-              >
-                <el-option
-                  v-for="item in professionOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-
-            <el-form-item prop="description">
-              <el-input v-model="registerForm.description" placeholder="若有分享码，请填写" />
-            </el-form-item>
-
-            <el-form-item >
-              <el-checkbox v-model="registerForm.agreement" class="dark-checkbox">
-                <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
-                <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">用户协议</el-link>
-                <span style="font-size: 10px; color: #A1A1A1;">和</span>
-                <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">隐私政策</el-link>
-              </el-checkbox>
-            </el-form-item>
-
-            <el-button type="primary" class="login-button" :disabled="!registerForm.agreement" @click="handleRegister(registerFormRef)" style="background-color: rgba(249, 222, 74, 1) !important; color: #000 !important; border: none !important; transition: background-color 0.3s;" @mouseover="$event.target.style.backgroundColor='rgba(255, 234, 101, 1)'" @mouseleave="$event.target.style.backgroundColor='rgba(249, 222, 74, 1)'">
-              注册登录
-            </el-button>
-          </el-form>
-        </template>
-
-        <!-- 忘记密码表单 -->
-        <template v-else-if="loginType === 'forgot'">
-          <div class="logo">
-            <img src="/assets/sssss.svg" alt="BeesFPD" />
+          <div class="login-footer" v-if="loginType !== 'forgot'" style="margin-top: 20px;">
+            <el-link class="dark-link" @click="loginType = 'forgot'" v-if="loginType === 'account'" style="font-size: 12px; color: #A1A1A1;">忘记密码？</el-link>
+            <br v-if="loginType === 'account'" />
+            <el-link class="dark-link" @click="loginType = 'register'" v-if="loginType != 'register'" style="margin-top: 10px;font-size: 12px; color: #A1A1A1;">没有账户？<span style="text-decoration: underline;">注册账号</span></el-link>
+            <el-link class="dark-link" @click="loginType = 'account'" v-else style="font-size: 12px; color: #A1A1A1;">已有账户？登录</el-link>
           </div>
-          <h2 class="form-title" style="margin-bottom: 20px;">找回密码</h2>
-          <el-form ref="forgotFormRef" :model="forgotForm" :rules="forgotRules" class="login-form" >
-            <el-form-item prop="mobile">
-              <el-input v-model="forgotForm.mobile" placeholder="输入手机号" 
-                :class="{ 'error-input': errorMessages.mobile }" />
-              <el-tooltip v-if="errorMessages.mobile" :content="errorMessages.mobile" placement="bottom" effect="dark"
-                :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
-                popper-class="error-tooltip">
-                <div class="error-trigger"></div>
-              </el-tooltip>
-            </el-form-item>
-
-            <el-form-item prop="verifyCode" class="verify-code-item">
-              <el-input v-model="forgotForm.verifyCode" placeholder="输入验证码" 
-                :class="{ 'error-input': errorMessages.verifyCode }" />
-              <el-button type="text" class="get-code-btn" :disabled="countdown > 0" @click="sendForgotVerifyCode">
-                {{ sendCodeText }}
-              </el-button>
-              <el-tooltip v-if="errorMessages.verifyCode" :content="errorMessages.verifyCode" placement="bottom" effect="dark"
-                :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
-                popper-class="error-tooltip">
-                <div class="error-trigger"></div>
-              </el-tooltip>
-            </el-form-item>
-
-            <el-form-item prop="newPassword">
-              <el-input v-model="forgotForm.newPassword" type="password" placeholder="请输入新密码"
-                show-password :class="{ 'error-input': errorMessages.password }" />
-              <el-tooltip v-if="errorMessages.password" :content="errorMessages.password" placement="bottom" effect="dark"
-                :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
-                popper-class="error-tooltip">
-                <div class="error-trigger"></div>
-              </el-tooltip>
-            </el-form-item>
-
-            <el-form-item prop="confirmPassword">
-              <el-input v-model="forgotForm.confirmPassword" type="password" placeholder="确认新密码" show-password 
-                :class="{ 'error-input': errorMessages.confirmPassword }" />
-              <el-tooltip v-if="errorMessages.confirmPassword" :content="errorMessages.confirmPassword" placement="bottom" effect="dark"
-                :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
-                popper-class="error-tooltip">
-                <div class="error-trigger"></div>
-              </el-tooltip>
-            </el-form-item>
-
-            <el-button type="primary" class="login-button" @click="handleResetPassword(forgotFormRef)" style="background-color: rgba(249, 222, 74, 1) !important; color: #000 !important; border: none !important; transition: background-color 0.3s;" @mouseover="$event.target.style.backgroundColor='rgba(255, 234, 101, 1)'" @mouseleave="$event.target.style.backgroundColor='rgba(249, 222, 74, 1)'">
-              重置密码
-            </el-button>
-          </el-form>
-        </template>
-
-        <div class="login-footer" v-if="loginType !== 'forgot'" style="margin-top: 20px;">
-          <el-link class="dark-link" @click="loginType = 'forgot'" v-if="loginType === 'account'" style="font-size: 12px; color: #A1A1A1;">忘记密码？</el-link>
-          <br v-if="loginType === 'account'" />
-          <el-link class="dark-link" @click="loginType = 'register'" v-if="loginType != 'register'" style="margin-top: 10px;font-size: 12px; color: #A1A1A1;">没有账户？<span style="text-decoration: underline;">注册账号</span></el-link>
-          <el-link class="dark-link" @click="loginType = 'account'" v-else style="font-size: 12px; color: #A1A1A1;">已有账户？登录</el-link>
         </div>
       </div>
     </div>
@@ -243,7 +250,8 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import qrcodeIcon from '@/assets/qrcode-scan.svg?url';
 import phoneIcon from '@/assets/phone.svg?url';
-import ssss from '@/assets/sssss.svg?url';
+import ssss from '@/assets/tb/text_only_logo - dark.svg?url';
+import SimpleLoginAnimation from '@/utils/SimpleLoginAnimation.js'
 
 declare const WxLogin: any;
 
@@ -314,6 +322,9 @@ const loginType = ref<'account' | 'qrcode' | 'register' | 'forgot'>('account')
 const countdown = ref(0)
 const sendCodeText = ref('获取验证码')
 const professionOptions = ref<ProfessionOption[]>([])
+const showLoginForm = ref(false)
+const animationContainer = ref<HTMLElement | null>(null)
+let animationInstance: any = null
 
 // 表单数据
 const loginForm = reactive<LoginForm>({
@@ -673,6 +684,25 @@ watch(loginType, (newType) => {
 
 // 生命周期钩子
 onMounted(() => {
+  animationInstance = new SimpleLoginAnimation({
+    container: animationContainer.value,
+    logo: {
+      type: 'image',
+      content: ssss,
+      text: 'BeesFPD',
+      highlight: 'FPD'
+    },
+    onComplete: () => {
+      showLoginForm.value = true
+    }
+  })
+  if (animationInstance.init()) {
+    setTimeout(() => {
+      animationInstance.start()
+    }, 500)
+  } else {
+    showLoginForm.value = true
+  }
   loadProfessionList()
   if (loginType.value === 'qrcode') {
     initWxLogin()
@@ -685,6 +715,7 @@ onUnmounted(() => {
     clearInterval(timer)
     timer = null
   }
+  if (animationInstance) animationInstance.destroy()
 })
 
 const sendForgotVerifyCode = async () => {
@@ -770,6 +801,7 @@ const handleResetPassword = async (formEl: FormInstance | undefined) => {
   justify-content: center;
   align-items: center;
   background-color: #000;
+  position: relative;
 
   .login-card {
     width: 900px;
@@ -778,6 +810,10 @@ const handleResetPassword = async (formEl: FormInstance | undefined) => {
     border-radius: 10px;
     overflow: hidden;
     box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 
     .left {
       width: 380px;
@@ -812,7 +848,10 @@ const handleResetPassword = async (formEl: FormInstance | undefined) => {
       padding: 20px 40px;
       box-sizing: border-box;
       position: relative;
-      // display: flex;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
 
       .logo {
         text-align: center;
@@ -1232,6 +1271,14 @@ const handleResetPassword = async (formEl: FormInstance | undefined) => {
   // 添加选择框占位符样式
   :deep(.el-select .el-input__inner::placeholder) {
     color: #666;
+  }
+
+  // 动画渐隐过渡
+  .fade-out-leave-active {
+    transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  .fade-out-leave-to {
+    opacity: 0;
   }
 }
 </style>
