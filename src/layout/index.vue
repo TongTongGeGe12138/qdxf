@@ -66,7 +66,7 @@
                                     </div>
                                     返回官网
                                 </el-dropdown-item>
-                                <el-dropdown-item>
+                                <el-dropdown-item @click="handleLogout">
                                     <div class="icon-container">
                                         <img :src="getIconUrl('tcdl')" alt="退出登录" class="dropdown-icon" />
                                     </div>
@@ -98,13 +98,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Fold, Expand, Moon, Sunny, UserFilled, Monitor } from '@element-plus/icons-vue'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import { UserFilled } from '@element-plus/icons-vue'
 import { isDark, toggleDark, applyTheme } from '../utils/theme'
 import ThemeTransition from '../components/ThemeTransition.vue'
+import { useUserStore } from '../stores/user'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 const isCollapse = ref(false)
 const themeTransitionRef = ref()
 
@@ -202,6 +203,14 @@ onMounted(() => {
     document.body.classList.toggle('dark-mode', isDark.value);
     toggleIconMode();
 })
+
+const handleLogout = async () => {
+    try {
+        await userStore.logout()
+    } catch (error) {
+        console.error('退出登录失败:', error)
+    }
+}
 </script>
 
 <style scoped>

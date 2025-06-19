@@ -450,7 +450,7 @@ const searchInputBorderColor = computed(() => isDark.value ? 'rgba(34, 34, 34, 0
 const menuTextColor = computed(() => isDark.value ?'#EDEDED' : '#13343C')
 const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#A1A1A1')
 const vTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
-const borderColor = computed(() => isDark.value ? 'transparent' : 'rgba(228, 231, 237, 0.6)')
+const borderColor = computed(() => isDark.value ? 'transparent' : 'rgba(228, 231, 237, 0.3)')
 const VborderColor = computed(() => isDark.value ? '#EDEDED' : 'rgba(228, 231, 237, 0.6)')
 const menuBgColor = computed(() => isDark.value ? '#000' : '#ffffff')
 const listheader = computed(() => isDark.value ? 'rgba(255, 255, 255, 0.3)' : 'rgba(51, 51, 51, 0.2980392156862745)')
@@ -467,6 +467,8 @@ const cardHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#FFF8CC')
 const plusIconBgColor = computed(() => isDark.value ? '#C5C3D2' : '#c9c9c9')
 const plusIconBorderColor = computed(() => isDark.value ? '#C5C3D2' : '#000000')
 const plusIconColor = computed(() => isDark.value ? '#000' : '#ffff')
+const dashboardBgColor = computed(() => isDark.value ? '#000' : 'transparent')
+const appHeaderBgColor = computed(() => isDark.value ? 'rgba(231, 231, 224, 0.3)' : 'rgba(51, 51, 51, 0.3)')
 
 const hvacCardList = [
     {
@@ -725,7 +727,7 @@ const handleLaunchClick = async () => {
   cardDialogVisible.value = false;
 };
 
-const dashboardBgColor = computed(() => isDark.value ? '#000' : 'transparent')
+
 
 const toggleIconMode = () => {
     const containers = document.querySelectorAll('.fire-icon-container');
@@ -1303,7 +1305,8 @@ const handleTagClick = (tagName: string) => {
     gap: 16px;
     margin-bottom: 24px;
     padding-bottom: 24px;
-    border-bottom: 1px solid v-bind(borderColor);
+    border-bottom: 1px solid v-bind(appHeaderBgColor);
+    // border-bottom: 1px solid v-bind(appHeaderBgColor);
 }
 
 .app-icon {
@@ -1417,16 +1420,17 @@ const handleTagClick = (tagName: string) => {
 .version-info {
     position: relative;
     left: 0;
-    width: 100%;
-    height: 40px;
-    margin-top: 20px;
-    padding: 0 24px;
+    // width: 100%;
+    height: 50px;
+    margin: 0 24px;
     font-size: 14px;
     font-weight: 400;
     color: v-bind(vTextColor);
-    border-top: 1px solid v-bind(VborderColor);
+    border-top: 1px solid v-bind(appHeaderBgColor);
     display: flex;
     align-items: center;
+    padding-top: 20px;
+
 }
 
 /* 关闭按钮样式 */

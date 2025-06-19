@@ -1,12 +1,13 @@
 import { createRouter, createWebHashHistory  } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { useUserStore } from '../stores/user'
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'Layout',
     component: () => import('../layout/index.vue'),
-    redirect: '/login',
+    redirect: '/dashboard',
     children: [
       {
         path: '/dashboard',
@@ -78,6 +79,25 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
   history: createWebHashHistory (),
   routes
+})
+
+// 路由守卫
+router.beforeEach((to, _from, next) => {
+  const userStore = useUserStore()
+  
+  // 如果访问登录页面且已登录，重定向到首页
+  if (to.path === '/login' && userStore.isLoggedIn) {
+    next('/dashboard')
+    return
+  }
+  
+  // 如果访问需要登录的页面但未登录，重定向到登录页
+  if (to.path !== '/login' && !userStore.isLoggedIn) {
+    next('/login')
+    return
+  }
+  
+  next()
 })
 
 // 添加全局错误处理
