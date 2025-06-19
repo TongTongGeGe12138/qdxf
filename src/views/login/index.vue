@@ -772,7 +772,7 @@ const handleResetPassword = async (formEl: FormInstance | undefined) => {
   background-color: #000;
 
   .login-card {
-    width: 765px;
+    width: 900px;
     height: 600px;
     display: flex;
     border-radius: 10px;
@@ -812,6 +812,7 @@ const handleResetPassword = async (formEl: FormInstance | undefined) => {
       padding: 20px 40px;
       box-sizing: border-box;
       position: relative;
+      // display: flex;
 
       .logo {
         text-align: center;

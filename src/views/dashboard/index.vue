@@ -445,11 +445,11 @@ const vTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const borderColor = computed(() => isDark.value ? 'transparent' : 'rgba(228, 231, 237, 0.3)')
 const VborderColor = computed(() => isDark.value ? '#EDEDED' : 'rgba(228, 231, 237, 0.6)')
 const menuBgColor = computed(() => isDark.value ? '#000' : '#ffffff')
-const listheader = computed(() => isDark.value ? 'rgba(255, 255, 255, 0.3)' : 'rgba(51, 51, 51, 0.2980392156862745)')
+const listheader = computed(() => isDark.value ? 'rgba(255, 255, 255, 0.3)' : '#D7D7D7')
 const menuHoverBgColor = computed(() => isDark.value ? '#2b2b2b' : '#f5f7fa')
 const dialogBgColor = computed(() => isDark.value ? '#141414' : '#ffffff')
 const dialogHeaderBgColor = computed(() => isDark.value ? '#1d1e1f' : '#f5f7fa')
-const tagsBorderColor = computed(() => isDark.value ? '#222222' : 'rgba(51, 51, 51, 0.2980392156862745)')
+const tagsBorderColor = computed(() => isDark.value ? '#222222' : '#D7D7D7')
 const tagsBgColor = computed(() => isDark.value ? '#0A0A0A' : '#FFFFFF')
 const tagTextColor = computed(() => isDark.value ? '#C4C4D3' : '#000000')
 const tagHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#F9F9F9')
@@ -460,7 +460,7 @@ const plusIconBgColor = computed(() => isDark.value ? '#C5C3D2' : '#c9c9c9')
 const plusIconBorderColor = computed(() => isDark.value ? '#C5C3D2' : '#000000')
 const plusIconColor = computed(() => isDark.value ? '#000' : '#ffff')
 const dashboardBgColor = computed(() => isDark.value ? '#000' : 'transparent')
-const appHeaderBgColor = computed(() => isDark.value ? 'rgba(231, 231, 224, 0.3)' : 'rgba(51, 51, 51, 0.3)')
+const appHeaderBgColor = computed(() => isDark.value ? 'rgba(231, 231, 224, 0.3)' : '#D7D7D7')
 const appPreviewTitleColor = computed(() => isDark.value ? '#fff' : '#222');
 const appPreviewStandardColor = computed(() => isDark.value ? '#a3a6ad' : '#606266');
 
@@ -1283,8 +1283,8 @@ const handleTagClick = (tagName: string) => {
 }
 
 .app-icon.fire-icon-container {
-    width: 30px;
-    height: 30px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     transition: background-color 0.3s ease;
 }
@@ -1298,8 +1298,8 @@ const handleTagClick = (tagName: string) => {
 }
 
 .app-icon .fire-icon {
-    width: 21px;
-    height: 21px;
+    width: 60px;
+    height: 60px;
     display: block;
 }
 
@@ -1467,8 +1467,8 @@ const handleTagClick = (tagName: string) => {
 
 /* 基础图标容器样式 */
 .fire-icon-container {
-    width: 30px;
-    height: 30px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -1488,8 +1488,8 @@ const handleTagClick = (tagName: string) => {
 
 /* 图标本身的样式 */
 .fire-icon {
-    width: 21px;
-    height: 21px;
+    width: 42px;
+    height: 42px;
     display: block;
     flex-shrink: 0;
 }

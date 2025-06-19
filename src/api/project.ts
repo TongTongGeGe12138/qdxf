@@ -144,7 +144,7 @@ export function downProjectResourceFile(data: any) {
 
 // 重命名项目资源文件
 export function editProjectResourceFile(data: any) {
-  return request.get<ProjectListResult>({
+  return request.put<ProjectListResult>({
     url: `${Api.ProjectUrl}/${data.projectId}/resource/file/${data.fileId}/name/${data.name}`,
   });
 }

@@ -48,7 +48,7 @@
                                     </div>
                                     账户管理
                                 </el-dropdown-item>
-                                <el-dropdown-item>
+                                <!-- <el-dropdown-item>
                                     <div class="icon-container">
                                         <img :src="getIconUrl('dygl')" alt="订阅管理" class="dropdown-icon" />
                                     </div>
@@ -59,14 +59,14 @@
                                         <img :src="getIconUrl('ddgl')" alt="订单管理" class="dropdown-icon" />
                                     </div>
                                     订单管理
-                                </el-dropdown-item>
+                                </el-dropdown-item> -->
                                 <el-dropdown-item>
                                     <div class="icon-container">
                                         <img :src="getIconUrl('grzx')" alt="返回官网" class="dropdown-icon" />
                                     </div>
                                     返回官网
                                 </el-dropdown-item>
-                                <el-dropdown-item @click="handleLogout">
+                                <el-dropdown-item divided @click="handleLogout">
                                     <div class="icon-container">
                                         <img :src="getIconUrl('tcdl')" alt="退出登录" class="dropdown-icon" />
                                     </div>
@@ -230,12 +230,13 @@ const handleLogout = async () => {
 .logo-container {
     height: 60px;
     display: flex;
-    align-items: center;
+    /* align-items: center; */
     padding: 0 20px;
     overflow: hidden;
     background-color: v-bind(menuBgColor);
     /* border-bottom: 1px solid v-bind(borderColor); */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    justify-content: center;
 
     .logo-text {
         font-size: 20px;
@@ -276,6 +277,7 @@ const handleLogout = async () => {
     align-items: center;
     gap: 20px;
 }
+
 
 .el-dropdown-link {
     cursor: pointer;
@@ -338,6 +340,7 @@ const handleLogout = async () => {
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    margin-top: 10px !important;
     /* padding-left: 20px; */
 
     &.is-active {
@@ -348,9 +351,14 @@ const handleLogout = async () => {
         .menu-icon {
             filter: brightness(0) invert(1);
         }
+
+        &:hover {
+            background-color: rgba(255, 189, 51, 1) !important;
+            color: v-bind(menuActiveTextColor) !important;
+        }
     }
 
-    &:hover {
+    &:not(.is-active):hover {
         background-color: v-bind(menuHoverBgColor) !important;
     }
 }
@@ -399,8 +407,8 @@ const handleLogout = async () => {
 }
 
 .menu-icon {
-    width: 24px;
-    height: 24px;
+    width: 16px;
+    height: 16px;
     margin-right: 8px;
     pointer-events: none;  /* 禁止图标的点击事件 */
     filter: v-bind(menuIconFilter);
@@ -417,6 +425,13 @@ const handleLogout = async () => {
     display: flex;
     align-items: center;
 }
+.icon-container:hover{
+    color: #F9DE4A !important;
+}
+
+.icon-container:hover .dropdown-icon {
+    filter: brightness(0) saturate(100%) invert(84%) sepia(31%) saturate(638%) hue-rotate(359deg) brightness(103%) contrast(107%) !important;
+}
 
 .icon-container.dark-mode .dropdown-icon {
     filter: brightness(0) invert(1); /* 将图标变为白色 */
@@ -427,7 +442,7 @@ const handleLogout = async () => {
 }
 
 .logo-icon {
-    width: 140px;
+    width: 120px;
     height: 30px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     filter: v-bind(logoFilter);

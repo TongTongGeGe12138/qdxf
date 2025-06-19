@@ -32,11 +32,13 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
     setCurrentPath(path: string[]) {
       this.currentPath = path;
     },
-    async  clearCurrentPath() {
+    async  clearCurrentPath(autoRefresh = true) {
       this.currentPath = [];
       this.projectId = null;
       this.folderPath = [];
-      await this.refreshCurrentList(); // ✅ 修复关键
+      if (autoRefresh) {
+        await this.refreshCurrentList(); // ✅ 修复关键
+      }
     },
     setLibraryList(list: FileItem[]) {
       this.libraryList = list;

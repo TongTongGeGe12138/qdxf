@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { isDark } from '../../utils/theme'
 import { computed } from 'vue'
-import { Refresh, UploadFilled, FolderAdd, Search, View, Edit, Download, Delete, Setting } from '@element-plus/icons-vue'
+import { Refresh, UploadFilled, FolderAdd, Search, View, Edit, Download, Delete, Setting, Tickets } from '@element-plus/icons-vue'
 import FileLibrary from '@/components/desktop/FileLibrary.vue';
 import { useFileLibraryStore } from '@/store/modules/fileLibrary';
 import { ElMessage,  } from 'element-plus';
@@ -25,6 +25,8 @@ import {
 } from '@/api/project';
 import { getResourceFiles } from '@/api/resource';
 import { getProvinceList, getCityList} from '@/api/location';
+import simplified from '@/assets/simplified_document_icon.svg?url';
+
 
 interface AddressOption {
   value: string | number;
@@ -204,8 +206,14 @@ const onProvinceChange = async (provinceId: string | number) => {
 watch(activeIndex, (newIndex) => {
   selectedFile.value = null;
   rightActiveTab.value = 0;
-  // 重置文件路径
-  fileLibraryStore.clearCurrentPath();
+  
+  // 先清空文件列表，避免显示错误的数据
+  fileLibraryStore.setLibraryList([]);
+  
+  // 重置文件路径（但不触发refreshCurrentList）
+  fileLibraryStore.currentPath = [];
+  fileLibraryStore.projectId = null;
+  fileLibraryStore.folderPath = [];
 
   switch (newIndex) {
     case 0: // 我的项目
@@ -220,7 +228,14 @@ watch(activeIndex, (newIndex) => {
             type: item.length === 0 ? 'folder' : 'file'
           }));
           fileLibraryStore.setLibraryList(list || []);
+        } else {
+          // API调用成功但返回错误状态码时，清空列表
+          fileLibraryStore.setLibraryList([]);
         }
+      }).catch(error => {
+        ElMessage.error('获取项目列表失败');
+        // API调用失败时，清空列表
+        fileLibraryStore.setLibraryList([]);
       });
       break;
     case 1: // 我收藏的资源
@@ -246,9 +261,14 @@ const getTrashList = async (search = '') => {
         type: item.length === 0 ? 'folder' : 'file'
       }));
       fileLibraryStore.setLibraryList(list || []);
+    } else {
+      // API调用成功但返回错误状态码时，清空列表
+      fileLibraryStore.setLibraryList([]);
     }
   } catch (error) {
     ElMessage.error('获取回收站列表失败');
+    // API调用失败时，清空列表
+    fileLibraryStore.setLibraryList([]);
   }
 }
 
@@ -266,9 +286,14 @@ const getFavoriteList = async (search = '') => {
         type: item.length === 0 ? 'folder' : 'file'
       }));
       fileLibraryStore.setLibraryList(list || []);
+    } else {
+      // API调用成功但返回错误状态码时，清空列表
+      fileLibraryStore.setLibraryList([]);
     }
   } catch (error) {
     ElMessage.error('获取收藏资源列表失败');
+    // API调用失败时，清空列表
+    fileLibraryStore.setLibraryList([]);
   }
 }
 
@@ -283,7 +308,7 @@ const handleFileSelected = (file: FileItem) => {
 const cardBgColor = computed(() => isDark.value ? '#000' : 'transparent')
 const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 // const navTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
-const desktopBboder = computed(() => isDark.value ? 'rgba(231,231,224,.3)' : '#D7D7D7')
+const desktopBboder = computed(() => isDark.value ? 'rgba(231,231,224,.3)' : '#D7D7D7')//11111
 const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#A1A1A1')
 // const vTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const borderColor = computed(() => isDark.value ? 'transparent' : 'rgba(228, 231, 237, 0.6)')
@@ -500,14 +525,47 @@ const handleFileOperation = async (tab: TabItem) => {
       break;
     case '下载':
       try {
-        const res = await downProjectResourceFile({
-          projectId: file.id,
-          fileId: file.id
-        });
+        // 如果是文件夹，提示不能下载
+        if (file.type === 'folder') {
+          ElMessage.warning('文件夹不能下载');
+          return;
+        }
+        
+        // 根据当前路径层级选择不同的下载参数
+        let downloadParams;
+        if (fileLibraryStore.currentPath.length === 0) {
+          // 一级目录：直接使用文件ID作为项目ID
+          downloadParams = {
+            projectId: file.id,
+            fileId: file.id
+          };
+        } else {
+          // 二级及n级目录：使用当前项目ID和文件ID
+          if (!fileLibraryStore.projectId) {
+            throw new Error('项目ID不存在');
+          }
+          downloadParams = {
+            projectId: fileLibraryStore.projectId,
+            fileId: file.id
+          };
+        }
+        
+        const res = await downProjectResourceFile(downloadParams);
         if (res.code === 200) {
-          window.open(res.data);
+          // 创建下载链接
+          const blob = new Blob([res.data]);
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = file.name || 'download';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          ElMessage.success('下载成功');
         }
       } catch (error) {
+        console.error('下载失败:', error);
         ElMessage.error('下载失败');
       }
       break;
@@ -698,9 +756,10 @@ const handleConfirmOperation = async () => {
             });
           }
         } else {
-          await editProjectResource({
+          // 如果是文件，使用 editProjectResourceFile
+          await editProjectResourceFile({
             projectId: fileLibraryStore.projectId,
-            folderId: fileLibraryStore.folderPath[fileLibraryStore.folderPath.length - 1]?.id,
+            fileId: file.id,
             name: renameValue.value
           });
         }
@@ -742,6 +801,17 @@ const formatFileSize = (bytes: number) => {
   return mb.toFixed(2) + ' MB';
 };
 
+// 添加日期格式化函数
+const formatDate = (dateString: string) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+};
+
 // 监听搜索值变化
 watch(searchValue, async (newValue) => {
   try {
@@ -758,6 +828,9 @@ watch(searchValue, async (newValue) => {
           type: item.length === 0 ? 'folder' : 'file'
         }));
         fileLibraryStore.setLibraryList(list || []);
+      } else {
+        // API调用成功但返回错误状态码时，清空列表
+        fileLibraryStore.setLibraryList([]);
       }
     } else if (activeIndex.value === 1) {
       // 我收藏的资源搜索
@@ -772,6 +845,9 @@ watch(searchValue, async (newValue) => {
           type: item.length === 0 ? 'folder' : 'file'
         }));
         fileLibraryStore.setLibraryList(list || []);
+      } else {
+        // API调用成功但返回错误状态码时，清空列表
+        fileLibraryStore.setLibraryList([]);
       }
     } else if (activeIndex.value === 2) {
       // 回收站搜索
@@ -786,10 +862,15 @@ watch(searchValue, async (newValue) => {
           type: item.length === 0 ? 'folder' : 'file'
         }));
         fileLibraryStore.setLibraryList(list || []);
+      } else {
+        // API调用成功但返回错误状态码时，清空列表
+        fileLibraryStore.setLibraryList([]);
       }
     }
   } catch (error) {
     ElMessage.error('搜索失败');
+    // API调用失败时，清空列表
+    fileLibraryStore.setLibraryList([]);
   }
 });
 
@@ -809,12 +890,19 @@ onMounted(async () => {
           type: item.length === 0 ? 'folder' : 'file'
         }));
         fileLibraryStore.setLibraryList(list || []);
+      } else {
+        // API调用成功但返回错误状态码时，清空列表
+        fileLibraryStore.setLibraryList([]);
       }
+    } else if (activeIndex.value === 1) {
+      await getFavoriteList(searchValue.value);
     } else if (activeIndex.value === 2) {
       await getTrashList(searchValue.value);
     }
   } catch (error) {
     ElMessage.error('加载列表失败');
+    // API调用失败时，清空列表
+    fileLibraryStore.setLibraryList([]);
   }
   // 使用捕获阶段监听点击事件
   document.addEventListener('click', handleClickOutside, true)
@@ -861,13 +949,13 @@ onUnmounted(() => {
           <div class="dcontent-cont-left">
             <FileLibrary ref="fileLibraryRef" @fileSelected="handleFileSelected" />
           </div>
-          <div class="dcontent-cont-right" v-show="selectedFile">
+          <div class="dcontent-cont-right" v-if="selectedFile">
             <div class="file-detail">
               <div class="file-preview" v-if="selectedFile?.preview">
                 <img :src="selectedFile.preview" :alt="selectedFile.name">
               </div>
               <div class="file-info">
-                <h3>{{ fileLibraryStore.currentPath.length === 0 ? '项目详情' : '文件详情' }}</h3>
+                <h3 style="font-size: 14px;"><el-icon><Tickets /></el-icon> {{ fileLibraryStore.currentPath.length === 0 ? '项目详情' : '文件详情' }}</h3>
                 <!-- <div class="info-item"> -->
                 <!-- <span class="label">项目详情</span> -->
                 <!-- <span class="value">{{ selectedFile.type === 'folder' ? '文件夹' : '文件' }}</span> -->
@@ -878,13 +966,18 @@ onUnmounted(() => {
                 </div>
                 <div class="info-item" v-if="selectedFile?.createdAt">
                   <span class="label">创建时间：</span>
-                  <span class="value">{{ selectedFile.createdAt }}</span>
+                  <span class="value">{{ formatDate(selectedFile.createdAt) }}</span>
                 </div>
                 <div class="info-item" v-if="selectedFile?.length">
                   <span class="label">大小：</span>
                   <span class="value">{{ formatFileSize(selectedFile.length) }}</span>
                 </div>
               </div>
+            </div>
+          </div>
+          <div class="dcontent-cont-right" v-else>
+            <div class="empty-container">
+              <el-empty description="请选择一个文件或者文件夹预览"  :image-size="40" :image="simplified" />
             </div>
           </div>
         </div>
@@ -1001,7 +1094,7 @@ onUnmounted(() => {
   margin-bottom: 20px;
   transition: background-color 0.3s ease;
   box-shadow: none;
-  max-width: 1200px;
+  max-width: 1300px;
   min-width: 830px;
   margin-left: auto;
   margin-right: auto;
@@ -1014,7 +1107,7 @@ onUnmounted(() => {
   color: var(--el-text-color-primary);
   font-size: 24px;
   /* font-weight: bold; */
-  margin-bottom: 20px;
+  // margin-bottom: 20px;
   color: v-bind(menuTextColor);
   transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -1024,6 +1117,7 @@ onUnmounted(() => {
   min-height: 300px;
   color: var(--el-text-color-regular);
   border: 1px solid v-bind(desktopBboder);
+  border-radius: 10px;
 
   .dcontent-top {
     display: flex;
@@ -1055,7 +1149,7 @@ onUnmounted(() => {
           &::after {
             content: '';
             position: absolute;
-            bottom: -2px;
+            bottom: -15px;
             left: -2px;
             right: -2px;
             height: 2px;
@@ -1079,9 +1173,9 @@ onUnmounted(() => {
       gap: 16px;
 
       .search-input {
-        width: 180px;
+        width: 200px;
         margin-right: 16px;
-        background: transparent;
+        // background: transparent !important;
 
         :deep(.el-input__wrapper) {
           // background-color: v-bind(menuBgColor);
@@ -1110,7 +1204,7 @@ onUnmounted(() => {
         .right-tab {
           display: flex;
           align-items: center;
-          font-size: 16px;
+          font-size: 12px;
           color: #8E9094;
           cursor: pointer;
           padding: 0 10px;
@@ -1150,6 +1244,7 @@ onUnmounted(() => {
       transition: opacity 0.3s ease, visibility 0.3s ease;
       opacity: 1;
       visibility: visible;
+      padding-top: 30px;
 
       &:not([style*="display: none"]) {
         opacity: 1;
@@ -1168,7 +1263,7 @@ onUnmounted(() => {
           border-radius: 8px;
           overflow: hidden;
           margin-bottom: 20px;
-          background-color: var(--el-bg-color-overlay);
+          // background-color: var(--el-bg-color-overlay);
 
           img {
             width: 100%;
@@ -1185,9 +1280,10 @@ onUnmounted(() => {
           }
 
           .info-item {
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             display: flex;
             align-items: flex-start;
+            font-size: 12px;
 
             .label {
               color: v-bind(subTextColor);
@@ -1202,6 +1298,7 @@ onUnmounted(() => {
               line-height: 1.4;
               word-wrap: break-word;
               word-break: break-all;
+              text-align: right;
             }
           }
         }
@@ -1389,5 +1486,15 @@ html.dark {
       }
     }
   }
+}
+
+.empty-container {
+  display: flex;
+    align-items: center;
+    height: 100%;
+    min-height: 400px;
+    align-content: flex-start;
+    flex-direction: column;
+    padding-top: 150px;
 }
 </style>

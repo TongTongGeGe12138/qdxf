@@ -36,9 +36,16 @@
     </div>
 
     <!-- 分页 -->
-    <div v-if="showPagination" class="pagination" @click.stop>
-      <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total"
-        @current-change="onPageChange" />
+    <div class="pagination" @click.stop>
+      <el-pagination 
+        v-model:current-page="currentPage" 
+        v-model:page-size="pageSize" 
+        :total="total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @current-change="onPageChange"
+        @size-change="onSizeChange"
+      />
     </div>
   </div>
 </template>
@@ -117,7 +124,13 @@ watch(() => fileLibraryStore.libraryList, () => {
 
 // 计算属性：是否显示分页
 const showPagination = computed(() => {
-  return files.value.length > pageSize.value;
+  console.log('分页调试信息:', {
+    total: total.value,
+    pageSize: pageSize.value,
+    filesLength: files.value.length,
+    shouldShow: true
+  });
+  return true;
 });
 
 // 计算属性：根据当前路径层级决定显示内容
@@ -152,6 +165,10 @@ const total = computed(() => {
 
 const onPageChange = (page: number) => {
   currentPage.value = page;
+};
+
+const onSizeChange = (size: number) => {
+  pageSize.value = size;
 };
 
 // 单击选中
@@ -234,7 +251,7 @@ const handleFileDblClick = async (item: FileItem) => {
                   url: p2dRes.Data,
                   type: 'p2d',
                 });
-                ElMessage.success('获取P2D文件成功');
+                // ElMessage.success('获取P2D文件成功');
               } else {
                 ElMessage.error(p2dRes.Msg || '获取P2D文件失败');
                 // 如果是dwg地址错误，尝试直接加载dwg文件
@@ -269,7 +286,7 @@ const handleFileDblClick = async (item: FileItem) => {
 // 面包屑点击
 const handleBreadcrumbClick = async (index: number) => {
   if (index === 0) {
-    await fileLibraryStore.clearCurrentPath(); // ✅ 等待加载完成
+    await fileLibraryStore.clearCurrentPath(true); // ✅ 等待加载完成，自动刷新
   } else {
     await fileLibraryStore.navigateToPath(index - 1); // ✅ 正确跳转层级
   }
@@ -301,7 +318,7 @@ onMounted(async () => {
 
 // 卸载时清理
 onUnmounted(() => {
-  fileLibraryStore.clearCurrentPath();
+  fileLibraryStore.clearCurrentPath(false); // 不自动刷新
   if (EngineContext.Container) {
     EngineContext.Container.style.display = 'none';
   }
@@ -405,12 +422,18 @@ const handleContainerClick = () => {
     }
 
     .file-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 24px;
+      // display: grid;
+      // grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      // gap: 24px;
+      display: flex;
       padding: 24px;
+      flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: flex-start;
 
       .file-item {
+        width: 120px;
+        height: 170px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -437,8 +460,8 @@ const handleContainerClick = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 12px;
-          background-color: var(--el-bg-color-overlay);
+          // margin-bottom: 12px;
+          // background-color: var(--el-bg-color-overlay);
           border-radius: 8px;
           padding: 12px;
 
@@ -475,6 +498,73 @@ const handleContainerClick = () => {
     display: flex;
     justify-content: center;
     margin-top: 20px;
+    padding: 20px;
+    
+    :deep(.el-pagination) {
+      --el-pagination-bg-color: transparent;
+      --el-pagination-text-color: var(--el-text-color-regular);
+      --el-pagination-border-radius: 4px;
+      --el-pagination-button-color: var(--el-text-color-regular);
+      --el-pagination-button-bg-color: transparent;
+      --el-pagination-button-disabled-color: var(--el-text-color-placeholder);
+      --el-pagination-button-disabled-bg-color: transparent;
+      --el-pagination-hover-color: var(--el-color-primary);
+      
+      .el-pagination__total {
+        color: var(--el-text-color-regular);
+      }
+      
+      .el-pagination__sizes {
+        .el-select {
+          .el-input {
+            .el-input__wrapper {
+              background-color: var(--el-bg-color-overlay);
+              border: 1px solid var(--el-border-color);
+            }
+          }
+        }
+      }
+      
+      .btn-prev,
+      .btn-next {
+        background-color: var(--el-bg-color-overlay);
+        border: 1px solid var(--el-border-color);
+        
+        &:hover {
+          background-color: var(--el-color-primary);
+          color: white;
+        }
+      }
+      
+      .el-pager {
+        li {
+          background-color: var(--el-bg-color-overlay);
+          border: 1px solid var(--el-border-color);
+          color: var(--el-text-color-regular);
+          
+          &:hover {
+            background-color: var(--el-color-primary);
+            color: white;
+          }
+          
+          &.active {
+            background-color: var(--el-color-primary);
+            color: white;
+          }
+        }
+      }
+      
+      .el-pagination__jump {
+        color: var(--el-text-color-regular);
+        
+        .el-input {
+          .el-input__wrapper {
+            background-color: var(--el-bg-color-overlay);
+            border: 1px solid var(--el-border-color);
+          }
+        }
+      }
+    }
   }
 }
 
@@ -493,7 +583,7 @@ html.dark {
           }
 
           .file-preview {
-            background-color: #1B2126;
+            // background-color: #1B2126;
           }
         }
       }
