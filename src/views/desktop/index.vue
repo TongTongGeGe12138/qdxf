@@ -57,18 +57,34 @@ const navtitle = ref(['我的项目', '我收藏的资源', '回收站'])
 const activeIndex = ref(0)
 const selectedFile = ref<FileItem | null>(null)
 
-const defaultTabs = [
-  { name: '刷新列表', icon: Refresh },
-  { name: '上传文件', icon: UploadFilled },
-  { name: '创建项目', icon: FolderAdd }
-]
+const defaultTabs = computed(() => {
+  const tabs = [
+    { name: '刷新列表', icon: Refresh }
+  ];
+  
+  // 只有在我的项目场景下才显示上传和创建按钮
+  if (activeIndex.value === 0) {
+    // 第一层目录显示上传文件和创建项目按钮
+    if (fileLibraryStore.currentPath.length === 0) {
+      tabs.push({ name: '上传文件', icon: UploadFilled });
+      tabs.push({ name: '创建项目', icon: FolderAdd });
+    }
+    // 如果当前在某个项目内部（有路径层级），显示上传文件和新建文件夹按钮
+    if (fileLibraryStore.currentPath.length > 0) {
+      tabs.push({ name: '上传文件', icon: UploadFilled });
+      tabs.push({ name: '新建文件夹', icon: FolderAdd });
+    }
+  }
+  
+  return tabs;
+});
 
 const fileLibraryStore = useFileLibraryStore();
 
-const fileTabs = computed(() => {
+const rightTabs = computed(() => {
   // 如果没有选中文件，返回默认标签
   if (!selectedFile.value) {
-    return defaultTabs;
+    return defaultTabs.value;
   }
 
   // 回收站场景
@@ -90,15 +106,6 @@ const fileTabs = computed(() => {
   }
 
   // 我的项目场景
-  // 如果是文件夹且当前路径不为空，显示上传和新建按钮
-  if (selectedFile.value.type === 'folder' && fileLibraryStore.currentPath.length > 0) {
-    return [
-      { name: '重命名', icon: Edit },
-      { name: '上传文件', icon: UploadFilled },
-      { name: '创建项目', icon: FolderAdd }
-    ];
-  }
-
   const baseTabs = [
     { name: '打开', icon: View },
     { name: '重命名', icon: Edit },
@@ -111,10 +118,10 @@ const fileTabs = computed(() => {
     baseTabs.unshift({ name: '编辑项目', icon: Setting });
   }
 
+  // 除了第一层外，其他层级都显示baseTabs
   return baseTabs;
 });
 
-const rightTabs = ref(defaultTabs)
 const rightActiveTab = ref(0)
 const searchValue = ref('')
 
@@ -122,15 +129,10 @@ const searchValue = ref('')
 const uploadDialogVisible = ref(false)
 const uploadLoading = ref(false)
 const uploadFile = ref<File | null>(null)
-const uploadProjectId = ref<string | number>('')
 
 // 添加操作弹框相关的变量定义
 const operationDialogVisible = ref(false)
 const operationType = ref<'recover' | 'delete' | 'upload' | 'trash' | 'rename' | 'edit' | 'create'>('recover')
-const uploadForm = ref<{
-  file: File;
-  projectId: string;
-} | null>(null)
 
 // 添加重命名输入框的值
 const renameValue = ref('');
@@ -201,7 +203,6 @@ const onProvinceChange = async (provinceId: string | number) => {
 // 监听 activeIndex 变化
 watch(activeIndex, (newIndex) => {
   selectedFile.value = null;
-  rightTabs.value = defaultTabs;
   rightActiveTab.value = 0;
   // 重置文件路径
   fileLibraryStore.clearCurrentPath();
@@ -273,9 +274,8 @@ const getFavoriteList = async (search = '') => {
 
 // 处理文件选中
 const handleFileSelected = (file: FileItem) => {
+  // 允许在所有层级选中文件，但只在第一层目录显示项目详情
   selectedFile.value = file;
-  // 无论是文件夹还是文件，都切换到fileTabs
-  rightTabs.value = fileTabs.value;
   rightActiveTab.value = 0;
 }
 
@@ -295,15 +295,16 @@ const handleClickOutside = (event: MouseEvent) => {
   const fileGrid = document.querySelector('.file-grid')
   const rightTabsElement = document.querySelector('.right-tabs')
   const operationDialog = document.querySelector('.el-dialog')
+  const uploadDialog = document.querySelector('.el-dialog')
 
   // 检查点击是否在文件网格内、操作按钮区域内或操作弹框内
   const isClickInside = (fileGrid && fileGrid.contains(target)) ||
     (rightTabsElement && rightTabsElement.contains(target)) ||
-    (operationDialog && operationDialog.contains(target))
+    (operationDialog && operationDialog.contains(target)) ||
+    (uploadDialog && uploadDialog.contains(target))
 
   if (!isClickInside) {
     selectedFile.value = null
-    rightTabs.value = defaultTabs
     rightActiveTab.value = 0
   }
 }
@@ -327,18 +328,23 @@ const handleUpload = async () => {
 
     // 根据当前路径层级选择不同的上传接口
     if (fileLibraryStore.currentPath.length === 0) {
-      // 一级目录
-      formData.append('projectId', String(uploadProjectId.value))
+      // 一级目录：直接使用addProjectFile接口，不需要选择项目
       await addProjectFile(formData)
     } else {
-      // 二级及n级目录
-      const currentFolder = selectedFile.value
-      if (!currentFolder?.id) {
-        throw new Error('文件夹ID不存在')
+      // 二级及n级目录：通过面包屑层级确定上传位置
+      if (!fileLibraryStore.projectId) {
+        throw new Error('项目ID不存在')
       }
+      
+      // 获取当前文件夹ID（面包屑最后一级）
+      const currentFolderId = fileLibraryStore.folderPath[fileLibraryStore.folderPath.length - 1]?.id
+      if (!currentFolderId) {
+        throw new Error('当前文件夹ID不存在')
+      }
+      
       await addProjectResourceFile({
         projectId: fileLibraryStore.projectId,
-        folderId: fileLibraryStore.folderPath[fileLibraryStore.folderPath.length - 1]?.id,
+        folderId: currentFolderId,
         file: uploadFile.value
       })
     }
@@ -387,13 +393,18 @@ const handleUpload = async () => {
 const fileLibraryRef = ref();
 
 const handleFileOperation = async (tab: TabItem) => {
-  // 上传文件和创建项目不需要选择文件
-  if (tab.name === '上传文件' || tab.name === '创建项目' || tab.name === '刷新列表') {
+  // 上传文件、创建项目、新建文件夹和刷新列表不需要选择文件
+  if (tab.name === '上传文件' || tab.name === '创建项目' || tab.name === '新建文件夹' || tab.name === '刷新列表') {
     switch (tab.name) {
       case '上传文件':
         uploadDialogVisible.value = true;
         break;
       case '创建项目':
+        operationDialogVisible.value = true;
+        operationType.value = 'create';
+        renameValue.value = '';
+        break;
+      case '新建文件夹':
         operationDialogVisible.value = true;
         operationType.value = 'create';
         renameValue.value = '';
@@ -507,7 +518,7 @@ const handleFileOperation = async (tab: TabItem) => {
 const handleConfirmOperation = async () => {
   if (operationType.value === 'create') {
     if (!renameValue.value) {
-      ElMessage.warning('请输入项目名称');
+      ElMessage.warning('请输入名称');
       return;
     }
     try {
@@ -532,41 +543,36 @@ const handleConfirmOperation = async () => {
           fileLibraryStore.setLibraryList(list || []);
         }
       } else {
-        // 二级及n级目录创建项目
-        const currentFolder = selectedFile.value;
-        if (!currentFolder?.id) {
-          throw new Error('文件夹ID不存在');
+        // 二级及n级目录创建文件夹
+        if (!fileLibraryStore.projectId) {
+          throw new Error('项目ID不存在');
         }
+        
+        // 获取当前文件夹ID（面包屑最后一级）
+        const currentFolderId = fileLibraryStore.folderPath[fileLibraryStore.folderPath.length - 1]?.id;
+        if (!currentFolderId) {
+          throw new Error('当前文件夹ID不存在');
+        }
+        
         // 使用addProjectResource接口创建文件夹
         await addProjectResource({
-          projectId: currentFolder.id,
+          projectId: fileLibraryStore.projectId,
           name: renameValue.value
         });
         ElMessage.success('创建成功');
         // 刷新列表
         const res = await getProjectResourceFile({
-          projectId: currentFolder.id,
-          folderId: currentFolder.id,
+          projectId: fileLibraryStore.projectId,
+          folderId: currentFolderId,
           page: 1,
           pageSize: 20,
           search: searchValue.value
         });
         if (res.code === 200) {
-          // 确保新创建的文件夹length为0
-          const list = res.data.data.map((item: any) => {
-            // 如果是新创建的文件夹，设置length为0
-            if (item.name === renameValue.value) {
-              return {
-                ...item,
-                length: 0,
-                type: 'folder'
-              };
-            }
-            return {
-              ...item,
-              type: item.length === 0 ? 'folder' : 'file'
-            };
-          });
+          const list = res.data.data.map((item: any) => ({
+            ...item,
+            type: item.length === 0 ? 'folder' : 'file'
+          }));
           fileLibraryStore.setLibraryList(list || []);
         }
       }
@@ -653,12 +659,11 @@ const handleConfirmOperation = async () => {
         }
         break;
       case 'upload':
-        if (!uploadForm.value) {
+        if (!uploadFile.value) {
           throw new Error('请选择要上传的文件');
         }
         const formData = new FormData();
-        formData.append('file', uploadForm.value.file);
-        formData.append('projectId', uploadForm.value.projectId);
+        formData.append('file', uploadFile.value);
         await addProjectFile(formData);
         ElMessage.success('上传成功');
         // 刷新列表
@@ -862,13 +867,13 @@ onUnmounted(() => {
                 <img :src="selectedFile.preview" :alt="selectedFile.name">
               </div>
               <div class="file-info">
-                <h3>项目详情</h3>
+                <h3>{{ fileLibraryStore.currentPath.length === 0 ? '项目详情' : '文件详情' }}</h3>
                 <!-- <div class="info-item"> -->
                 <!-- <span class="label">项目详情</span> -->
                 <!-- <span class="value">{{ selectedFile.type === 'folder' ? '文件夹' : '文件' }}</span> -->
                 <!-- </div> -->
                 <div class="info-item" v-if="selectedFile?.name">
-                  <span class="label">项目名称：</span>
+                  <span class="label">{{ fileLibraryStore.currentPath.length === 0 ? '项目名称：' : '文件名称：' }}</span>
                   <span class="value">{{ selectedFile.name }}</span>
                 </div>
                 <div class="info-item" v-if="selectedFile?.createdAt">
@@ -902,7 +907,10 @@ onUnmounted(() => {
     </el-upload>
     <template #footer>
       <span class="dialog-footer">
-        <div class="dialog-button cancel" @click="uploadDialogVisible = false">取消</div>
+        <div class="dialog-button cancel" @click="() => {
+          uploadDialogVisible = false;
+          uploadFile = null;
+        }">取消</div>
         <div class="dialog-button confirm" @click="handleUpload" :loading="uploadLoading">
           上传
         </div>
@@ -916,9 +924,11 @@ onUnmounted(() => {
       operationType === 'trash' ? '回收站确认' :
         operationType === 'rename' ? '重命名' :
           operationType === 'edit' ? '编辑项目' :
-            operationType === 'create' ? '创建项目' : ''" width="30%" :close-on-click-modal="false">
+            operationType === 'create' ? (fileLibraryStore.currentPath.length === 0 ? '创建项目' : '新建文件夹') : ''" width="30%" :close-on-click-modal="false">
     <template v-if="operationType === 'rename' || operationType === 'create'">
-      <el-input v-model="renameValue" :placeholder="operationType === 'create' ? '请输入项目名称' : '请输入新的名称'" />
+      <el-input v-model="renameValue" :placeholder="operationType === 'create' ? 
+        (fileLibraryStore.currentPath.length === 0 ? '请输入项目名称' : '请输入文件夹名称') : 
+        '请输入新的名称'" />
     </template>
     <template v-else-if="operationType === 'edit'">
       <el-form :model="formDatassss" label-width="130px">

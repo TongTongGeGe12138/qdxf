@@ -164,12 +164,16 @@ const handleFileClick = (item: FileItem) => {
 const handleFileDblClick = async (item: FileItem) => {
   if (item.type === 'back') {
     fileLibraryStore.navigateUp();
+    // 返回上级时取消选中状态
+    selectedItem.value = null;
+    emit('fileSelected', null);
   } else if (item.type === 'folder') {
     fileLibraryStore.navigateToFolder({
       id: item.id,
       name: item.name,
       type: 'folder'
     });
+    // 进入文件夹时不取消选中状态，让用户可以继续操作
   } else {
     // 处理文件双击
     try {
@@ -270,7 +274,9 @@ const handleBreadcrumbClick = async (index: number) => {
     await fileLibraryStore.navigateToPath(index - 1); // ✅ 正确跳转层级
   }
 
+  // 路径变化时取消选中状态
   selectedItem.value = null;
+  emit('fileSelected', null);
   currentPage.value = 1;
 };
 
