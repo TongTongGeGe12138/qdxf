@@ -8,12 +8,16 @@
         </div> -->
       </div>
       <div class="right">
-        <!-- 动画容器，带渐隐过渡 -->
+        <!-- 动画容器，绝对定位覆盖表单 -->
         <transition name="fade-out">
-          <div v-if="!showLoginForm" ref="animationContainer" style="width:100%;height:100%;"></div>
+          <div
+            v-show="!showLoginForm"
+            ref="animationContainer"
+            class="animation-overlay"
+          ></div>
         </transition>
-        <!-- 登录表单容器 -->
-        <div v-if="showLoginForm" style="width: 380px;">
+        <!-- 登录表单容器始终渲染 -->
+        <div style="width: 280px;">
           <div class="login-type-switch">
             <el-tooltip :content="loginType === 'account' ? '扫码登录' : '手机登录'" placement="left" effect="dark" popper-class="custom-tooltip">
               <div class="qrcode-switch" @click="loginType = loginType === 'account' ? 'qrcode' : 'account'">
@@ -611,7 +615,7 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
           loginForm.account = registerForm.mobile
           loginForm.password = registerForm.password
         } else {
-          ElMessage.error(res.message || '注册失败')
+          ElMessage.error(res.msg || '注册失败')
         }
       } catch (error) {
         console.error('注册失败：', error)
@@ -1279,6 +1283,23 @@ const handleResetPassword = async (formEl: FormInstance | undefined) => {
   }
   .fade-out-leave-to {
     opacity: 0;
+  }
+
+  .animation-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    background: transparent;
+    pointer-events: auto;
+    border-radius: 10px;
+    overflow: hidden;
+    // transform: scale(1.05);
+
   }
 }
 </style>

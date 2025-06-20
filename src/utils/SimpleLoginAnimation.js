@@ -130,12 +130,12 @@ class SimpleLoginAnimation {
     
     renderLogo() {
         const { logo } = this.config;
-        if (logo.type === 'image') {
-            return `<img src="${logo.content}" alt="Logo" style="width:263px;height:64px;display:block;margin:0 auto;object-fit:contain;" />`;
-        }
+        
         switch (logo.type) {
             case 'svg':
                 return logo.content;
+            case 'image':
+                return `<img src="${logo.content}" alt="Logo" style="width: 263px; height: 64px; object-fit: contain;">`;
             case 'icon':
             default:
                 return logo.content;
@@ -143,16 +143,7 @@ class SimpleLoginAnimation {
     }
     
     renderLogoText() {
-        const { logo } = this.config;
-        if (!logo.text) return '';
-        
-        if (logo.highlight && logo.text.includes(logo.highlight)) {
-            return logo.text.replace(
-                logo.highlight,
-                `<span style="color: #f5d13a;">${logo.highlight}</span>`
-            );
-        }
-        return logo.text;
+        return ''; // 不再需要文字
     }
     
     injectStyles() {
@@ -183,30 +174,9 @@ class SimpleLoginAnimation {
                 transform: translateY(30px);
             }
 
-            .logo-icon {
-                width: 42px;
-                height: 42px;
-                background: #f5d13a;
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin-right: 12px;
-                position: relative;
-                overflow: hidden;
-                font-size: 20px;
-                color: #1a1a1a;
-            }
-
-            .logo-icon svg {
-                width: 100%;
-                height: 100%;
-            }
-
-            .logo-text {
-                font-size: 24px;
-                font-weight: 700;
-                color: #ffffff;
+            .logo-animation img {
+                display: block;
+                margin: 0 auto;
             }
 
             .thinking-content {

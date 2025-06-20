@@ -54,6 +54,7 @@ export interface ProjectItem {
 export interface ProjectListResult {
   code: number;
   message: string;
+  msg?: string;
   data: any;
 }
 

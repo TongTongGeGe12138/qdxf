@@ -42,7 +42,7 @@
     </div>
 
     <!-- 分页 -->
-    <div v-if="files.length > 0" class="pagination" @click.stop>
+    <div v-if="showPagination" class="pagination" @click.stop>
       <el-pagination 
         v-model:current-page="currentPage" 
         v-model:page-size="pageSize" 
@@ -125,19 +125,13 @@ const getFileIcon = (contentType?: number) => {
 // }, { immediate: true });
 
 // 文件列表变化时重置分页
-watch(() => fileLibraryStore.libraryList, () => {
-  currentPage.value = 1;
-}, { immediate: true });
+// watch(() => fileLibraryStore.libraryList, () => {
+//   currentPage.value = 1;
+// }, { immediate: true });
 
 // 计算属性：是否显示分页
 const showPagination = computed(() => {
-  console.log('分页调试信息:', {
-    total: total.value,
-    pageSize: pageSize.value,
-    filesLength: files.value.length,
-    shouldShow: files.value.length > 0
-  });
-  return files.value.length > 0;
+  return total.value > 0;
 });
 
 // 计算属性：根据当前路径层级决定显示内容
@@ -153,29 +147,25 @@ const files = computed<FileItem[]>(() => {
 
 // 当前页显示的数据
 const currentPageData = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  if (files.value.length > 0 && files.value[0].type === 'back') {
-    const backButton = files.value[0];
-    const restFiles = files.value.slice(1);
-    const paginatedFiles = restFiles.slice(start, end);
-    return [backButton, ...paginatedFiles];
-  }
-  return files.value.slice(start, end);
+  return files.value;
 });
 
-// 总数（不包括返回按钮）
+// 总数（使用store中的total值）
 const total = computed(() => {
-  if (files.value.length === 0) return 0;
-  return files.value[0].type === 'back' ? files.value.length - 1 : files.value.length;
+  return fileLibraryStore.total;
 });
 
-const onPageChange = (page: number) => {
+const onPageChange = async (page: number) => {
   currentPage.value = page;
+  // 重新请求数据
+  await fileLibraryStore.refreshCurrentList(page, pageSize.value);
 };
 
-const onSizeChange = (size: number) => {
+const onSizeChange = async (size: number) => {
   pageSize.value = size;
+  currentPage.value = 1; // 重置到第一页
+  // 重新请求数据
+  await fileLibraryStore.refreshCurrentList(1, size);
 };
 
 // 单击选中
