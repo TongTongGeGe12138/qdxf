@@ -6,43 +6,34 @@
       <el-table :data="memberList" style="width: 100%">
         <el-table-column prop="account" label="用户账号" min-width="120" />
         <el-table-column prop="name" label="姓名" min-width="60" />
-        <el-table-column prop="contact" label="联系方式" min-width="100" >
+        <el-table-column prop="contact" label="联系方式" min-width="100">
           <template #default="{ row }">
-            <div @click="lookcontact(row)">查看</div>
+            <div @click="lookcontact(row)" style="color: #FFBD33;">查看</div>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="账号状态" min-width="120">
           <template #default="{ row }">
-            <el-tag :type="row.status === '已启用' ? 'success' : 'info'">
+            <!-- <el-tag :type="row.status === '已启用' ? 'success' : 'info'">
               {{ row.status }}
-            </el-tag>
+            </el-tag> -->
+            <div> {{ row.status }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="role" label="权限" min-width="60" />
-        <el-table-column prop="tasks" label="任务" min-width="100" align="center" />
         <el-table-column label="操作" min-width="280" fixed="right">
           <template #default="{ row }">
-            <el-button
-              link
-              type="primary"
-              @click="handleTransfer(row)"
-            >
-              移除成员
-            </el-button>
-            <el-button
-              link
-              type="primary"
-              @click="handlePermission(row)"
-            >
-              设置权限
-            </el-button>
-            <el-button
-              link
-              type="primary"
-              @click="handleAssignTask(row)"
-            >
-              分配任务
-            </el-button>
+            <div class="member-action">
+              <div @click="handleTransfer(row)">
+                移除成员
+              </div>
+              <div @click="handlePermission(row)">
+                设置权限
+              </div>
+              <div @click="handleAssignTask(row)">
+                分配任务
+              </div>
+            </div>
+
           </template>
         </el-table-column>
       </el-table>
@@ -94,6 +85,10 @@ const handleView = (row: Member) => {
   console.log('查看成员:', row)
 }
 
+const lookcontact = (row: Member) => {
+  console.log('查看联系方式:', row.contact)
+}
+
 const handleTransfer = (row: Member) => {
   console.log('移除成员:', row)
 }
@@ -115,6 +110,12 @@ const handleAssignTask = (row: Member) => {
 .members-content {
   margin-top: 20px;
 }
+.member-action{
+  display: flex;
+  justify-content: space-between;
+    align-items: center;
+    color: #ffbd33;
+}
 
 :deep(.el-button) {
   padding: 4px 8px;
@@ -128,6 +129,7 @@ const handleAssignTask = (row: Member) => {
   --el-table-row-hover-bg-color: var(--el-fill-color);
   border-radius: 4px;
   border: 1px solid var(--el-table-border-color);
+  font-size: 12px;
 }
 
 :deep(.el-table__header) {
@@ -138,4 +140,34 @@ const handleAssignTask = (row: Member) => {
 :deep(.el-table__row) {
   font-size: 12px;
 }
-</style> 
+
+:deep(.el-table__body) {
+  font-size: 12px;
+}
+
+:deep(.el-table__cell) {
+  font-size: 12px;
+}
+
+/* 深色主题 */
+html.dark {
+  :deep(.el-table__body) {
+    color: #C4C4D3;
+  }
+
+  :deep(.el-table__cell) {
+    color: #C4C4D3;
+  }
+}
+
+/* 浅色主题 */
+html:not(.dark) {
+  :deep(.el-table__body) {
+    color: #666666;
+  }
+
+  :deep(.el-table__cell) {
+    color: #666666;
+  }
+}
+</style>

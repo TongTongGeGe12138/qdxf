@@ -234,14 +234,17 @@ watch(activeIndex, (newIndex) => {
             type: item.length === 0 ? 'folder' : 'file'
           }));
           fileLibraryStore.setLibraryList(list || []);
+          fileLibraryStore.setTotal(res.data.total || 0);
         } else {
           // API调用成功但返回错误状态码时，清空列表
           fileLibraryStore.setLibraryList([]);
+          fileLibraryStore.setTotal(0);
         }
       }).catch(error => {
         ElMessage.error('获取项目列表失败');
         // API调用失败时，清空列表
         fileLibraryStore.setLibraryList([]);
+        fileLibraryStore.setTotal(0);
       }).finally(() => {
         listLoading.value = false;
       });
@@ -275,14 +278,17 @@ const getTrashList = async (search = '') => {
         type: item.length === 0 ? 'folder' : 'file'
       }));
       fileLibraryStore.setLibraryList(list || []);
+      fileLibraryStore.setTotal(res.data.total || 0);
     } else {
       // API调用成功但返回错误状态码时，清空列表
       fileLibraryStore.setLibraryList([]);
+      fileLibraryStore.setTotal(0);
     }
   } catch (error) {
     ElMessage.error('获取回收站列表失败');
     // API调用失败时，清空列表
     fileLibraryStore.setLibraryList([]);
+    fileLibraryStore.setTotal(0);
   }
 }
 
@@ -300,14 +306,17 @@ const getFavoriteList = async (search = '') => {
         type: item.length === 0 ? 'folder' : 'file'
       }));
       fileLibraryStore.setLibraryList(list || []);
+      fileLibraryStore.setTotal(res.data.total || 0);
     } else {
       // API调用成功但返回错误状态码时，清空列表
       fileLibraryStore.setLibraryList([]);
+      fileLibraryStore.setTotal(0);
     }
   } catch (error) {
     ElMessage.error('获取收藏资源列表失败');
     // API调用失败时，清空列表
     fileLibraryStore.setLibraryList([]);
+    fileLibraryStore.setTotal(0);
   }
 }
 
@@ -399,11 +408,7 @@ const handleUpload = async () => {
         search: ''
       })
       if (res.code === 200) {
-        const list = res.data.data.map((item: any) => ({
-          ...item,
-          type: item.length === 0 ? 'folder' : 'file'
-        }))
-        fileLibraryStore.setLibraryList(list || [])
+        setStoreDataFromResponse(res);
       }
     } else {
       const res = await getProjectResourceFile({
@@ -419,6 +424,7 @@ const handleUpload = async () => {
           type: item.length === 0 ? 'folder' : 'file'
         }))
         fileLibraryStore.setLibraryList(list || [])
+        fileLibraryStore.setTotal(res.data.total || 0)
       }
     }
   } catch (error) {
@@ -465,6 +471,7 @@ const handleFileOperation = async (tab: TabItem) => {
                 type: item.length === 0 ? 'folder' : 'file'
               }));
               fileLibraryStore.setLibraryList(list || []);
+              fileLibraryStore.setTotal(res.data.total || 0);
             }
           }
         } catch (error) {
@@ -911,6 +918,24 @@ watch(searchValue, async (newValue) => {
   }
 });
 
+// 辅助函数：统一处理API响应和设置store数据
+const setStoreDataFromResponse = (res: any) => {
+  if (res.code === 200) {
+    const list = res.data.data.map((item: any) => ({
+      ...item,
+      type: item.type || (item.isFolder ? 'folder' : 'file')
+    }));
+    fileLibraryStore.setLibraryList(list || []);
+    fileLibraryStore.setTotal(res.data.total || 0);
+  }
+};
+
+// 辅助函数：清空store数据
+const clearStoreData = () => {
+  fileLibraryStore.setLibraryList([]);
+  fileLibraryStore.setTotal(0);
+};
+
 // 初始化加载项目列表
 onMounted(async () => {
   listLoading.value = true;
@@ -928,9 +953,11 @@ onMounted(async () => {
           type: item.length === 0 ? 'folder' : 'file'
         }));
         fileLibraryStore.setLibraryList(list || []);
+        fileLibraryStore.setTotal(res.data.total || 0);
       } else {
         // API调用成功但返回错误状态码时，清空列表
         fileLibraryStore.setLibraryList([]);
+        fileLibraryStore.setTotal(0);
       }
     } else if (activeIndex.value === 1) {
       await getFavoriteList(searchValue.value);
@@ -941,6 +968,7 @@ onMounted(async () => {
     ElMessage.error('加载列表失败');
     // API调用失败时，清空列表
     fileLibraryStore.setLibraryList([]);
+    fileLibraryStore.setTotal(0);
   } finally {
     listLoading.value = false;
   }

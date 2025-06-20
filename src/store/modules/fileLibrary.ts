@@ -67,7 +67,13 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
           if (res.code === 200) {
             const list = res.data.data.map((item: any) => ({
               ...item,
-              type: item.length === 0 ? 'folder' : 'file'
+              type: item.type || 
+                    (item.length === 0 ? 'folder' : 'file') ||
+                    (item.isFolder ? 'folder' : 'file') ||
+                    (item.isDirectory ? 'folder' : 'file') ||
+                    (item.folder ? 'folder' : 'file') ||
+                    (item.contentType === null || item.contentType === undefined ? 'folder' : 'file') ||
+                    'file'
             }));
             this.setLibraryList(list || []);
             this.setTotal(res.data.total || 0);
@@ -112,7 +118,13 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
           if (res.code === 200) {
             const list = res.data.data.map((item: any) => ({
               ...item,
-              type: item.length === 0 ? 'folder' : 'file'
+              type: item.type || 
+                    (item.length === 0 ? 'folder' : 'file') ||
+                    (item.isFolder ? 'folder' : 'file') ||
+                    (item.isDirectory ? 'folder' : 'file') ||
+                    (item.folder ? 'folder' : 'file') ||
+                    (item.contentType === null || item.contentType === undefined ? 'folder' : 'file') ||
+                    'file'
             }));
             this.setLibraryList(list || []);
             this.setTotal(res.data.total || 0);
@@ -132,7 +144,13 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
           if (res.code === 200) {
             const list = res.data.data.map((item: any) => ({
               ...item,
-              type: item.length === 0 ? 'folder' : 'file'
+              type: item.type || 
+                    (item.length === 0 ? 'folder' : 'file') ||
+                    (item.isFolder ? 'folder' : 'file') ||
+                    (item.isDirectory ? 'folder' : 'file') ||
+                    (item.folder ? 'folder' : 'file') ||
+                    (item.contentType === null || item.contentType === undefined ? 'folder' : 'file') ||
+                    'file'
             }));
             this.setLibraryList(list || []);
             this.setTotal(res.data.total || 0);
@@ -153,7 +171,13 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
           if (res.code === 200) {
             const list = res.data.data.map((item: any) => ({
               ...item,
-              type: item.length === 0 ? 'folder' : 'file'
+              type: item.type || 
+                    (item.length === 0 ? 'folder' : 'file') ||
+                    (item.isFolder ? 'folder' : 'file') ||
+                    (item.isDirectory ? 'folder' : 'file') ||
+                    (item.folder ? 'folder' : 'file') ||
+                    (item.contentType === null || item.contentType === undefined ? 'folder' : 'file') ||
+                    'file'
             }));
             this.setLibraryList(list || []);
             this.setTotal(res.data.total || 0);

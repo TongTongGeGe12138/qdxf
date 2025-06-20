@@ -58,9 +58,9 @@
               <el-form-item>
                 <el-checkbox v-model="loginForm.agreement" class="dark-checkbox">
                   <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
-                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">用户协议</el-link>
+                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('user')" @dblclick="openAgreement('user', true)" @contextmenu.prevent="openAgreement('user', true)">用户协议</el-link>
                   <span style="font-size: 10px; color: #A1A1A1;">和</span>
-                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">隐私政策</el-link>
+                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('privacy')" @dblclick="openAgreement('privacy', true)" @contextmenu.prevent="openAgreement('privacy', true)">隐私政策</el-link>
                 </el-checkbox>
               </el-form-item>
 
@@ -82,9 +82,9 @@
               </div>
               <el-checkbox v-model="loginForm.agreement" class="dark-checkbox">
                 <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
-                <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">用户协议</el-link>
+                <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('user')" @dblclick="openAgreement('user', true)" @contextmenu.prevent="openAgreement('user', true)">用户协议</el-link>
                 <span style="font-size: 10px; color: #A1A1A1;">和</span>
-                <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">隐私政策</el-link>
+                <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('privacy')" @dblclick="openAgreement('privacy', true)" @contextmenu.prevent="openAgreement('privacy', true)">隐私政策</el-link>
               </el-checkbox>
             </div>
           </template>
@@ -92,7 +92,7 @@
           <!-- 注册表单 -->
           <template v-else-if="loginType === 'register'">
             <div class="logo" >
-              <img src="/assets/sssss.svg" alt="BeesFPD" />
+              <img :src="ssss" alt="BeesFPD" />
             </div>
             <h2 class="form-title">注册账号</h2>
             <el-form ref="registerFormRef" :model="registerForm" :rules="registerRules" class="login-form">
@@ -164,9 +164,9 @@
               <el-form-item >
                 <el-checkbox v-model="registerForm.agreement" class="dark-checkbox">
                   <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
-                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">用户协议</el-link>
+                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('user')" @dblclick="openAgreement('user', true)" @contextmenu.prevent="openAgreement('user', true)">用户协议</el-link>
                   <span style="font-size: 10px; color: #A1A1A1;">和</span>
-                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;">隐私政策</el-link>
+                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('privacy')" @dblclick="openAgreement('privacy', true)" @contextmenu.prevent="openAgreement('privacy', true)">隐私政策</el-link>
                 </el-checkbox>
               </el-form-item>
 
@@ -179,7 +179,7 @@
           <!-- 忘记密码表单 -->
           <template v-else-if="loginType === 'forgot'">
             <div class="logo">
-              <img src="/assets/sssss.svg" alt="BeesFPD" />
+              <img :src="ssss" alt="BeesFPD" />
             </div>
             <h2 class="form-title" style="margin-bottom: 20px;">找回密码</h2>
             <el-form ref="forgotFormRef" :model="forgotForm" :rules="forgotRules" class="login-form" >
@@ -329,6 +329,9 @@ const professionOptions = ref<ProfessionOption[]>([])
 const showLoginForm = ref(false)
 const animationContainer = ref<HTMLElement | null>(null)
 let animationInstance: any = null
+
+// 协议弹窗状态
+const agreementModalVisible = ref(false)
 
 // 表单数据
 const loginForm = reactive<LoginForm>({
@@ -497,7 +500,7 @@ const handleLogin = async () => {
         if (response.data && (response.data as LoginError).password) {
           errorMessages.password = (response.data as LoginError).password![0]
         } else {
-          ElMessage.error(response.msg || '登录失败')
+          ElMessage.error((response as any).msg || '登录失败，请稍后重试')
         }
       }
     } catch (error: any) {
@@ -507,7 +510,7 @@ const handleLogin = async () => {
         if ((data as LoginError).password) {
           errorMessages.password = (data as LoginError).password![0]
         } else {
-          ElMessage.error(data.msg || '登录失败，请稍后重试')
+          ElMessage.error((data as any).msg || '登录失败，请稍后重试')
         }
       } else {
         // ElMessage.error('登录失败，请稍后重试')
@@ -550,7 +553,7 @@ const sendVerifyCode = async () => {
       ElMessage.success('验证码发送成功')
       startCountdown()
     } else {
-      ElMessage.error(res.message || '验证码发送失败')
+      ElMessage.error((res as any).msg || '验证码发送失败')
     }
   } catch (error) {
     console.error('验证码发送错误：', error)
@@ -615,7 +618,7 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
           loginForm.account = registerForm.mobile
           loginForm.password = registerForm.password
         } else {
-          ElMessage.error(res.msg || '注册失败')
+          ElMessage.error((res as any).msg || '注册失败')
         }
       } catch (error) {
         console.error('注册失败：', error)
@@ -738,7 +741,7 @@ const sendForgotVerifyCode = async () => {
       ElMessage.success('验证码发送成功')
       startCountdown()
     } else {
-      ElMessage.error(res.message || '验证码发送失败')
+      ElMessage.error((res as any).msg || '验证码发送失败')
     }
   } catch (error) {
     ElMessage.error('验证码发送失败，请稍后重试')
@@ -762,12 +765,12 @@ const handleResetPassword = async (formEl: FormInstance | undefined) => {
           loginType.value = 'account'
           loginForm.account = forgotForm.mobile
         } else {
-          ElMessage.error(res.message || '密码重置失败')
+          ElMessage.error((res as any).msg || '密码重置失败')
         }
       } catch (error) {
         ElMessage.error('密码重置失败，请稍后重试')
       }
-    } else if (fields) {
+    } else if (fields) {  
       let errorMsg = '请检查以下字段：'
       Object.keys(fields).forEach(key => {
         const fieldErrors = fields[key]
@@ -778,6 +781,13 @@ const handleResetPassword = async (formEl: FormInstance | undefined) => {
       ElMessage.error(errorMsg)
     }
   })
+}
+
+// 打开协议弹窗
+const openAgreement = (type: 'user' | 'privacy', openInNewWindow = false) => {
+  // 只在新窗口打开对应的协议页面
+  const url = type === 'user' ? '/userAgreement.html' : '/privacyPolicy.html';
+  window.open(url, '_blank');
 }
 </script>
 
@@ -972,25 +982,14 @@ const handleResetPassword = async (formEl: FormInstance | undefined) => {
         border-radius: 50%;
         background-color: transparent;
         border-color: rgb(249, 222, 74);
-        
-        &::after {
-          border-color: #000;
-        }
-      }
-      
-      &.is-checked {
-        .el-checkbox__inner {
-          background-color: rgb(249, 222, 74);
-          border-color: rgb(249, 222, 74);
-        }
       }
     }
   }
 
-  // 链接样式
+  // 协议链接样式
   :deep(.yellow-link) {
-    display: inline-flex !important;
-    align-items: center !important;
+    position: relative;
+    cursor: pointer;
   }
 
   // 按钮样式

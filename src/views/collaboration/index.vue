@@ -34,13 +34,13 @@
                         <!-- 一级目录模式 -->
                         <div class="file-library">
                             <div class="file-section">
-                                <div class="section-header">
+                                <!-- <div class="section-header">
                                     <el-breadcrumb separator="/">
                                         <el-breadcrumb-item v-for="(item, index) in filePath" :key="index" @click="handleBreadcrumbClick(index)">
                                             {{ item }}
                                         </el-breadcrumb-item>
-                                    </el-breadcrumb>
-                                </div>
+                                    </el-breadcrumb> -->
+                                <!-- </div> -->
                                 <div class="file-grid">
                                     <div v-for="item in currentPageData" :key="item.id" class="file-item"
                                         :class="{ 'is-selected': selectedFile?.id === item.id }"
@@ -105,12 +105,40 @@
                         <div class="dcontent-cont-count">
                             <div class="breadcrumb-container">
                                 <el-breadcrumb separator="/">
-                                    <el-breadcrumb-item v-for="(item, index) in filePath" :key="index" @click="handleBreadcrumbClick(index)">
+                                    <el-breadcrumb-item v-for="(item, index) in breadcrumbPath" :key="index" @click="handleBreadcrumbClick(index)">
                                         {{ item }}
                                     </el-breadcrumb-item>
                                 </el-breadcrumb>
                             </div>
-                            <router-view></router-view>
+                            <!-- 根据当前路由路径显示不同内容 -->
+                            <template v-if="isSpaceRoute">
+                                <!-- 协同空间：显示项目内文件 -->
+                                <div class="file-library">
+                                    <div class="file-section">
+                                        <div class="file-grid">
+                                            <div v-for="item in projectFiles" :key="item.id" class="file-item"
+                                                :class="{ 'is-selected': selectedFile?.id === item.id }"
+                                                @click="handleFileClick(item)" @dblclick="handleProjectFileDblClick(item)">
+                                                <div class="file-preview">
+                                                    <template v-if="item.type === 'folder'">
+                                                        <el-icon :size="40">
+                                                            <Folder />
+                                                        </el-icon>
+                                                    </template>
+                                                    <template v-else>
+                                                        <img src="@/assets/doc-preview.png" alt="文件预览" />
+                                                    </template>
+                                                </div>
+                                                <div class="file-name">{{ item.name }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <!-- 其他菜单项：显示路由内容 -->
+                                <router-view></router-view>
+                            </template>
                         </div>
                         <div class="dcontent-cont-right">
                             <div class="detail-panel">
@@ -150,6 +178,7 @@ const activeMenu = ref('space')
 const title = ref('协同空间')
 const navtitle = ref(['团队项目', '公共回收站'])
 const activeIndex = ref(0)
+const searchValue = ref('')
 
 // 状态管理
 const detailMode = ref(false)
@@ -175,6 +204,34 @@ const fileList = ref<FileItem[]>([
         name: '项目二',
         type: 'folder',
         createdAt: '2024-03-15'
+    }
+])
+
+// 项目内文件列表数据
+const projectFiles = ref<FileItem[]>([
+    {
+        id: 101,
+        name: '设计文档.docx',
+        type: 'file',
+        createdAt: '2024-03-16'
+    },
+    {
+        id: 102,
+        name: '施工图纸.dwg',
+        type: 'file',
+        createdAt: '2024-03-17'
+    },
+    {
+        id: 103,
+        name: '会议记录',
+        type: 'folder',
+        createdAt: '2024-03-18'
+    },
+    {
+        id: 104,
+        name: '项目计划.pdf',
+        type: 'file',
+        createdAt: '2024-03-19'
     }
 ])
 
@@ -237,40 +294,71 @@ const handleFileDblClick = (item: FileItem) => {
         // 进入文件夹
         filePath.value.push(item.name);
         toggleDetailMode(true);
-        router.push('/collaboration/members');
+        activeMenu.value = 'space'; // 默认显示协同空间
+        // 跳转到协同空间路由
+        router.push('/collaboration');
     }
 };
+
+// 面包屑路径计算
+const breadcrumbPath = computed(() => {
+    if (!showDetailMode.value) {
+        // 非详情模式：显示基本路径
+        return ['协同空间'];
+    } else {
+        // 详情模式：只显示到项目名，不显示子路由
+        const basePath = ['协同空间'];
+        if (currentProject.value) {
+            basePath.push(currentProject.value.name);
+        }
+        
+        return basePath;
+    }
+});
 
 // 面包屑点击
 const handleBreadcrumbClick = (index: number) => {
     if (index === 0) {
+        // 点击"协同空间"：返回项目列表
         filePath.value = ['协同空间'];
         toggleDetailMode(false);
-    } else {
-        filePath.value = filePath.value.slice(0, index + 1);
-        if (index === filePath.value.length - 1) {
-            toggleDetailMode(true);
-        } else {
-            toggleDetailMode(false);
-        }
+        router.push('/collaboration');
+    } else if (index === 1) {
+        // 点击项目名：返回项目根目录（协同空间）
+        activeMenu.value = 'space';
+        router.push('/collaboration');
     }
 };
 
 // 处理菜单选择
 const handleMenuSelect = (index: string) => {
     if (index === 'back') {
+        // 返回所有项目：清理所有状态
         toggleDetailMode(false);
+        filePath.value = ['协同空间'];
+        currentProject.value = null;
+        selectedFile.value = null;
+        activeMenu.value = 'space';
+        router.push('/collaboration');
+    } else if (index === 'space') {
+        // 协同空间：显示项目内的文件列表
+        activeMenu.value = 'space';
+        // 清除路由，显示项目内容
+        router.push('/collaboration');
     } else {
+        // 其他菜单项：跳转到对应路由
+        activeMenu.value = index;
         router.push(`/collaboration/${index}`);
     }
 }
 
 // 计算背景色
-const cardBgColor = computed(() => isDark.value ? '#000' : '#ffffff')
-const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
-const desktopBboder = computed(() => isDark.value ? 'rgba(231,231,224,.3)' : '#D7D7D7')
-const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#A1A1A1')
-const borderColor = computed(() => isDark.value ? 'transparent' : 'rgba(228, 231, 237, 0.6)')
+const cardBgColor = computed(() => isDark ? '#000' : '#ffffff')
+const menuTextColor = computed(() => isDark ? '#EDEDED' : '#13343C')
+const desktopBboder = computed(() => isDark ? 'rgba(231,231,224,.3)' : '#D7D7D7')
+const subTextColor = computed(() => isDark ? '#A1A1A1' : '#A1A1A1')
+const borderColor = computed(() => isDark ? 'transparent' : 'rgba(228, 231, 237, 0.6)')
+const containerColor = computed(() => isDark ? '#000' : '#f5f5f5')
 
 // 右侧操作按钮
 const defaultTabs = [
@@ -288,6 +376,24 @@ const handleTabClick = (tab: any) => {
 const handleFileOperation = (tab: any) => {
     console.log('点击了标签:', tab.name)
 }
+
+// 计算是否为协同空间路由
+const isSpaceRoute = computed(() => {
+    // 当在详情模式下且当前路由是 /collaboration 时，显示协同空间内容
+    return showDetailMode.value && router.currentRoute.value.path === '/collaboration';
+});
+
+// 处理项目内文件的双击逻辑
+const handleProjectFileDblClick = (item: FileItem) => {
+    if (item.type === 'folder') {
+        // 进入文件夹
+        filePath.value.push(item.name);
+        toggleDetailMode(true);
+        activeMenu.value = 'space'; // 默认显示协同空间
+        // 跳转到协同空间路由
+        router.push('/collaboration');
+    }
+};
 </script>
 
 <style scoped lang="less">
@@ -302,7 +408,7 @@ const handleFileOperation = (tab: any) => {
 }
 
 :deep(.el-card__body) {
-    padding: 0 !important;
+    // padding: 0 !important;
     border: none !important;
 }
 
@@ -470,6 +576,7 @@ const handleFileOperation = (tab: any) => {
 
                     .section-header {
                         padding-left: 10px;
+                        margin-top: 10px;
 
                         :deep(.el-breadcrumb) {
                             .el-breadcrumb__item {
@@ -558,7 +665,8 @@ const handleFileOperation = (tab: any) => {
                 }
 
                 .dcontent-cont-count {
-                    flex: 1;
+                    // flex: 1;
+                    width: 70%;
                     padding: 20px;
                     position: relative;
                     display: flex;
@@ -644,17 +752,18 @@ html.dark {
     background-color: transparent;
 
     :deep(.el-menu-item) {
-        height: 50px;
+        width: 125px;
+        height: 25px;
         line-height: 50px;
         color: v-bind(menuTextColor);
         background-color: transparent;
 
         &:hover {
-            background-color: v-bind('isDark.value ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.03)"');
+            background-color: v-bind('isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.03)"');
         }
 
         &.is-active {
-            background-color: v-bind('isDark.value ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)"');
+            background-color: v-bind('isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)"');
             color: var(--el-color-primary);
             border-right: 2px solid var(--el-color-primary);
         }
