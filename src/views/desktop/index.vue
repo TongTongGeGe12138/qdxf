@@ -1392,6 +1392,25 @@ onUnmounted(() => {
   :deep(.el-upload-dragger) {
     width: 100%;
   }
+  
+  // 自定义上传文字颜色
+  :deep(.el-upload__text) {
+    color: #F9DE4A !important;
+    
+    em {
+      color: #F9DE4A !important;
+    }
+  }
+  
+  // 自定义上传图标颜色
+  :deep(.el-icon--upload) {
+    color: #F9DE4A !important;
+  }
+  
+  // 自定义提示文字颜色
+  :deep(.el-upload__tip) {
+    color: #F9DE4A !important;
+  }
 }
 
 .dialog-footer {
@@ -1426,6 +1445,27 @@ onUnmounted(() => {
       &:hover {
         background-color: #B4B4C3;
       }
+      
+      // 自定义loading圈圈颜色
+      :deep(.el-loading-spinner) {
+        .circular {
+          .path {
+            stroke: #F9DE4A !important;
+          }
+        }
+      }
+      
+      // 更强的优先级选择器
+      :deep(.el-loading-spinner .circular .path) {
+        stroke: #F9DE4A !important;
+      }
+      
+      // 直接针对loading状态
+      &.is-loading {
+        :deep(.el-loading-spinner .circular .path) {
+          stroke: #F9DE4A !important;
+        }
+      }
     }
   }
 }
@@ -1450,6 +1490,15 @@ html.dark {
 
       &:hover {
         background-color: #B4B4C3;
+      }
+      
+      // 自定义loading圈圈颜色
+      :deep(.el-loading-spinner) {
+        .circular {
+          .path {
+            stroke: #F9DE4A !important;
+          }
+        }
       }
     }
   }
@@ -1529,6 +1578,15 @@ html.dark {
         &:hover {
           background-color: rgba(249, 222, 74, 0.8);
         }
+        
+        // 自定义loading圈圈颜色
+        :deep(.el-loading-spinner) {
+          .circular {
+            .path {
+              stroke: #F9DE4A !important;
+            }
+          }
+        }
       }
     }
   }
@@ -1571,5 +1629,20 @@ html.dark {
     align-content: flex-start;
     flex-direction: column;
     padding-top: 150px;
+}
+
+// 全局覆盖loading圈圈颜色
+:deep(.el-loading-spinner .circular .path) {
+  stroke: #F9DE4A !important;
+}
+
+// 针对按钮的loading圈圈
+:deep(.el-button .el-loading-spinner .circular .path) {
+  stroke: #F9DE4A !important;
+}
+
+// 针对对话框按钮的loading圈圈
+:deep(.dialog-button .el-loading-spinner .circular .path) {
+  stroke: #F9DE4A !important;
 }
 </style>

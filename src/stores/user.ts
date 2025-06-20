@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { UserLoginOut } from '@/api/userCenter'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
+import { useFileLibraryStore } from '@/store/modules/fileLibrary'
 
 interface UserState {
   sessionId: number | null
@@ -28,7 +29,10 @@ export const useUserStore = defineStore('user', {
     setUserInfo(data: Partial<UserState>) {
       // 更新 store 状态
       if (data.sessionId) this.sessionId = data.sessionId
-      if (data.accessToken) this.accessToken = data.accessToken
+      if (data.accessToken) {
+        this.accessToken = data.accessToken
+        localStorage.setItem('token', data.accessToken)
+      }
       if (data.refreshToken) this.refreshToken = data.refreshToken
       if (data.extra !== undefined) this.extra = data.extra
 
@@ -55,6 +59,7 @@ export const useUserStore = defineStore('user', {
       this.refreshToken = ''
       this.extra = null
       sessionStorage.removeItem('userInfo')
+      localStorage.removeItem('token')
     },
 
     async logout() {
@@ -62,6 +67,10 @@ export const useUserStore = defineStore('user', {
         const res = await UserLoginOut()
         if (res.code === 200) {
           this.clearUserInfo()
+          // 清空文件列表
+          const fileLibraryStore = useFileLibraryStore()
+          fileLibraryStore.clearStore()
+
           ElMessage.success('退出登录成功')
           // 跳转到登录页
           router.push('/login')
@@ -73,6 +82,8 @@ export const useUserStore = defineStore('user', {
         ElMessage.error('退出登录失败，请稍后重试')
         // 即使接口调用失败，也清除本地登录信息
         this.clearUserInfo()
+        const fileLibraryStore = useFileLibraryStore()
+        fileLibraryStore.clearStore()
         router.push('/login')
       }
     }

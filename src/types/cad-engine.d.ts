@@ -1,19 +1,20 @@
 declare module '@/vendor/CadEngine/EngineContext.js' {
-  interface ViewManager {
-    ZoomToFit(): void;
+  class CadContext {
+    static Container: HTMLElement;
+    static ViewManager: {
+      ZoomToFit(): void;
+    };
+    static LoadManager: {
+      LoadModel(params: { url: string; type: string }): void;
+      addEventListener(event: string, callback: (e: any) => void): void;
+      removeEventListener(event: string, callback: (e: any) => void): void;
+    };
+    static AttachContainer(container: HTMLElement): void;
+    static init(): void;
+    static LoadModel(url: string): void;
+    static Dispose(): void;
+    static Initialize(): void;
   }
-
-  interface LoadManager {
-    addEventListener(event: string, callback: (e: any) => void): void;
-    removeEventListener(event: string, callback: (e: any) => void): void;
-    LoadModel(options: { url: string; type: string }): void;
-  }
-
-  export class EngineContext {
-    constructor();
-    static init(): Promise<void>;
-    static ViewManager: ViewManager;
-    static LoadManager: LoadManager;
-    loadP2d(data: any): Promise<void>;
-  }
+  
+  export const EngineContext: typeof CadContext;
 } 

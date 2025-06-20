@@ -67,6 +67,12 @@ import { EngineContext } from '@/vendor/CadEngine/EngineContext.js';
 import { Close } from '@element-plus/icons-vue';
 import simplified from '@/assets/simplified_document_icon.svg?url';
 
+interface P2dResponse {
+  Code: number;
+  Msg: string;
+  Data: string;
+}
+
 interface FileItem {
   id: string | number;
   name: string;
@@ -225,7 +231,14 @@ const handleFileDblClick = async (item: FileItem) => {
           // 如果有 url，获取 P2D 文件
           if (updatedFile.url) {
             try {
-              const p2dRes = await getP2d({ DwgUrl: updatedFile.url });
+              // 添加超时处理
+              const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('请求超时')), 30000); // 30秒超时
+              });
+              
+              const p2dPromise = getP2d({ DwgUrl: updatedFile.url });
+              const p2dRes = await Promise.race([p2dPromise, timeoutPromise]) as P2dResponse;
+              
               if (p2dRes.Code === 0) {
                 const loading = ref(true);
                 const finish = (e: any) => {
@@ -250,18 +263,40 @@ const handleFileDblClick = async (item: FileItem) => {
                 });
                 // ElMessage.success('获取P2D文件成功');
               } else {
+                console.error('P2D接口返回错误:', p2dRes);
                 ElMessage.error(p2dRes.Msg || '获取P2D文件失败');
                 // 如果是dwg地址错误，尝试直接加载dwg文件
                 if (p2dRes.Msg === 'dwg地址错误' && updatedFile.url) {
+                  ElMessage.info('尝试直接加载DWG文件...');
                   EngineContext.LoadManager.LoadModel({
                     url: updatedFile.url,
-                    type: 'p2d',
+                    type: 'dwg',
                   });
                 }
               }
             } catch (error) {
-              ElMessage.error('获取P2D文件失败');
+              console.error('P2D文件加载失败:', error);
+              if (error.message === '请求超时') {
+                ElMessage.error('P2D文件加载超时，请稍后重试');
+              } else {
+                ElMessage.error('获取P2D文件失败，请稍后重试');
+              }
+              // 尝试直接加载DWG文件作为备用方案
+              try {
+                ElMessage.info('尝试直接加载DWG文件...');
+                EngineContext.LoadManager.LoadModel({
+                  url: updatedFile.url,
+                  type: 'dwg',
+                });
+              } catch (dwgError) {
+                console.error('DWG文件加载也失败:', dwgError);
+                ElMessage.error('无法加载CAD文件，请检查文件是否有效');
+                cadLoading.value = false;
+              }
             }
+          } else {
+            ElMessage.warning('文件URL不存在，无法预览');
+            cadLoading.value = false;
           }
         } else {  // 非 DWG 文件
           // 在新窗口打开文件
@@ -396,6 +431,20 @@ const handleContainerClick = () => {
       overflow: hidden;
       background-color: var(--el-bg-color);
       border-radius: 0 0 12px 12px;
+      
+      // 自定义loading圈圈颜色
+      :deep(.el-loading-spinner) {
+        .circular {
+          .path {
+            stroke: #F9DE4A !important;
+          }
+        }
+      }
+      
+      // 更强的优先级选择器
+      :deep(.el-loading-spinner .circular .path) {
+        stroke: #F9DE4A !important;
+      }
     }
   }
 

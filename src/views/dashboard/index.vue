@@ -57,11 +57,14 @@
                     <div class="sub-title">专注服务于建筑设计的云端应用</div>
                 </div>
                 <div class="card-grid">
-                    <div class="card" v-for="(item, index) in hvacCardList" :key="index">
-                        <div class="card-icon">
-                            <el-icon>
-                                <Monitor />
-                            </el-icon>
+                    <div class="card" v-for="(item, index) in hvacCardList" :key="index" @click="handleMoreAppCardClick(item)">
+                        <div class="fire-icon-container" :class="isDark ? 'dark-mode' : 'light-mode'">
+                            <img
+                                v-if="item.icon"
+                                :src="getIconUrl(item.icon)"
+                                :alt="item.title"
+                                class="fire-icon"
+                            />
                         </div>
                         <div class="card-content">
                             <div class="card-title">{{ item.title }}</div>
@@ -190,7 +193,7 @@
         :close-on-click-modal="false"
         class="standard-dialog app-dialog"
     >
-        <el-scrollbar height="calc(100vh - 150px)">
+        <el-scrollbar >
             <div class="app-dialog-content">
                 <div class="app-header">
                     <div class="app-icon fire-icon-container" :class="isDark ? 'dark-mode' : 'light-mode'">
@@ -209,7 +212,7 @@
                     <el-button type="primary" class="launch-btn" @click="handleLaunchClick">启动应用</el-button>
                 </div>
                 <div class="app-desc">
-                    {{ currentCard?.name }}，无需本地部署，通过云端在线服务，实现智能给排水调试、喷头一键生成、管线自动布置。基于消防规范与智能算法，快速生成合规设计方案，支持多场景应用，助力企业高效完成消防系统设计与运维，降低成本与安全风险。
+                    {{ currentCard?.description || (currentCard?.name + '，无需本地部署，通过云端在线服务，实现智能给排水调试、喷头一键生成、管线自动布置。基于消防规范与智能算法，快速生成合规设计方案，支持多场景应用，助力企业高效完成消防系统设计与运维，降低成本与安全风险。') }}
                 </div>
                 <div class="app-preview">
                     <div class="app-preview-header">
@@ -227,6 +230,21 @@
         </el-scrollbar>
         <div class="version-info">
             版本：{{ currentCard?.extra?.version }}
+        </div>
+    </el-dialog>
+
+    <!-- 权限弹框 -->
+    <el-dialog
+        v-model="permissionDialogVisible"
+        title="暂无权限"
+        width="600px"
+        :close-on-click-modal="false"
+        class="permission-dialog"
+    >
+        <div class="permission-dialog-content">
+            <!-- <p class="permission-title">权限不足</p> -->
+            <p class="permission-text">此版块功能仅限于企业版，您暂未获得使用资格</p>
+            <el-button type="primary" class="permission-btn" @click="handlePermissionClick">我已知晓</el-button>
         </div>
     </el-dialog>
 </template>
@@ -450,7 +468,7 @@ const listheader = computed(() => isDark.value ? 'rgba(255, 255, 255, 0.3)' : '#
 const menuHoverBgColor = computed(() => isDark.value ? '#2b2b2b' : '#f5f7fa')
 const dialogBgColor = computed(() => isDark.value ? '#141414' : '#ffffff')
 const dialogHeaderBgColor = computed(() => isDark.value ? '#1d1e1f' : '#f5f7fa')
-const tagsBorderColor = computed(() => isDark.value ? '#222222' : '#D7D7D7')
+// const tagsBorderColor = computed(() => isDark.value ? '#222222' : '#D7D7D7')
 const tagsBgColor = computed(() => isDark.value ? '#0A0A0A' : '#FFFFFF')
 const tagTextColor = computed(() => isDark.value ? '#C4C4D3' : '#000000')
 const tagHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#F9F9F9')
@@ -458,7 +476,7 @@ const tagActiveBgColor = computed(() => isDark.value ? '#191919' : '#F2F2F2')
 const cardBgColor = computed(() => isDark.value ? 'rgb(10,10,10)' : 'rgba(255, 253, 246, 1)')
 const cardHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#FFF8CC')
 const plusIconBgColor = computed(() => isDark.value ? '#C5C3D2' : '#c9c9c9')
-const plusIconBorderColor = computed(() => isDark.value ? '#C5C3D2' : '#000000')
+// const plusIconBorderColor = computed(() => isDark.value ? '#C5C3D2' : '#000000')
 const plusIconColor = computed(() => isDark.value ? '#000' : '#ffff')
 const dashboardBgColor = computed(() => isDark.value ? '#000' : 'transparent')
 const appHeaderBgColor = computed(() => isDark.value ? 'rgba(231, 231, 224, 0.3)' : '#D7D7D7')
@@ -468,16 +486,22 @@ const appPreviewStandardColor = computed(() => isDark.value ? '#a3a6ad' : '#6062
 const hvacCardList = [
     {
         title: 'CloudBeeCAD',
-        description: '基于云架构，完全自主产权的新一代 CAD'
+        description: '基于云架构，完全自主产权的新一代 CAD',
+        icon: 'cloud_cad',
+        action: 'open_app'
     },
-    // {
-    //     title: '智能物联',
-    //     description: '基于云架构，完全自主产权的新一代 CAD'
-    // },
-    // {
-    //     title: '智能建筑',
-    //     description: '基于云架构，完全自主产权的新一代 CAD'
-    // },
+    {
+        title: '智能预算',
+        description: '智能算量，预算精准无忧',
+        icon: 'smart_budget',
+        action: 'show_permission_denied'
+    },
+    {
+        title: '智慧管理',
+        description: '消防管理，智能一键掌控',
+        icon: 'smart_management',
+        action: 'show_permission_denied'
+    },
 
 ]
 
@@ -539,6 +563,7 @@ const handleSupplierClick = (url: string) => {
 
 // 添加新的响应式变量
 const cardDialogVisible = ref(false)
+const permissionDialogVisible = ref(false)
 const currentCard = ref<any>(null)
 
 // 添加卡片点击事件处理函数
@@ -794,7 +819,30 @@ const handleTagClick = (tagName: string) => {
     console.log('当前筛选后的列表:', filteredSecondaryList.value);
 };
 
-// 在计算属性部分添加
+// 处理更多应用卡片点击
+const handleMoreAppCardClick = (item: any) => {
+  if (item.action === 'open_app') {
+    const mockItem = {
+      name: item.title,
+      value: item.icon,
+      description: item.description,
+      extra: {
+        englishName: 'Next Generation CAD based on Cloud',
+        version: '1.0.0',
+        url: null,
+        group: 'CloudBeeCAD'
+      }
+    };
+    handleCardClick(mockItem as any);
+  } else if (item.action === 'show_permission_denied') {
+    permissionDialogVisible.value = true;
+  }
+};
+
+// 处理权限点击
+const handlePermissionClick = () => {
+  permissionDialogVisible.value = false;
+};
 </script>
 
 <style lang="less" scoped>
@@ -1770,5 +1818,42 @@ const handleTagClick = (tagName: string) => {
 
 .dialog-scroll-container::-webkit-scrollbar-thumb:hover {
     opacity: 0.5;
+}
+
+.permission-dialog :deep(.el-dialog) {
+  border-radius: 12px;
+}
+.permission-dialog :deep(.el-dialog__header) {
+  display: none;
+}
+.permission-dialog :deep(.el-dialog__body) {
+  padding: 0 !important;
+}
+.permission-dialog-content {
+  padding: 30px;
+  text-align: center;
+  color: v-bind(menuTextColor);
+}
+.permission-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+.permission-text {
+  font-size: 14px;
+  color: v-bind(subTextColor);
+  margin-bottom: 30px;
+}
+.permission-btn {
+  width: 120px;
+  height: 40px;
+  background-color: rgba(249, 222, 74, 1) !important;
+  color: #000 !important;
+  border: none;
+  border-radius: 5px;
+  font-weight: 500;
+}
+.permission-btn:hover {
+  background-color: rgba(249, 222, 74, 0.8) !important;
 }
 </style>

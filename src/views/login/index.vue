@@ -252,6 +252,7 @@ import { UserCenterLogin, UserCenterPostSendCode, GetUserCenterRegister, passwor
 import { getProfessionList } from '@/api/dict'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import { useFileLibraryStore } from '@/store/modules/fileLibrary'
 import qrcodeIcon from '@/assets/qrcode-scan.svg?url';
 import phoneIcon from '@/assets/phone.svg?url';
 import ssss from '@/assets/tb/text_only_logo - dark.svg?url';
@@ -487,6 +488,11 @@ const handleLogin = async () => {
       })
 
       if (response.code === 200) {
+        // 登录成功前，先清空所有旧数据
+        const fileLibraryStore = useFileLibraryStore()
+        userStore.clearUserInfo()
+        fileLibraryStore.clearStore()
+        
         userStore.setUserInfo({
           sessionId: response.data.sessionId,
           accessToken: response.data.accessToken,
@@ -599,17 +605,15 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
           phone: registerForm.mobile,
           code: registerForm.verifyCode,
           password: registerForm.password,
+          PwdTwo: registerForm.confirmPassword,
+          profession:registerForm.identity || '',
           utm: {
             source: 'referral',
-            medium: 'offline',
-            campaign: '',
-            content: registerForm.description || 'dev',
-            term: registerForm.identity || ''
+            // medium: 'offline',
+            // campaign: '',
+            // content: registerForm.description || 'dev',
+            // term: registerForm.identity || ''
           },
-          referrer: 'string',
-          wxOpen: {
-            code: 'string'
-          }
         })
 
         if (res.code === 200) {
@@ -622,7 +626,7 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
         }
       } catch (error) {
         console.error('注册失败：', error)
-        ElMessage.error('注册失败，请稍后重试')
+        // ElMessage.error('注册失败，请稍后重试')
       }
     } else if (fields) {
       let errorMsg = '请检查以下字段：'

@@ -21,9 +21,14 @@ const service: AxiosInstance = axios.create({
 // 请求拦截器
 service.interceptors.request.use(
   (config) => {
+    // 定义不需要 token 的接口白名单
+    const whiteList = ['/signup', '/auth/signin']; 
+
     // 在这里可以添加token等认证信息
     const token = localStorage.getItem('token');
-    if (token && config.headers) {
+    
+    // 检查当前请求是否在白名单中
+    if (token && config.headers && !whiteList.includes(config.url || '')) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;

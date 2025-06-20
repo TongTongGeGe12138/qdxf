@@ -11,15 +11,17 @@ interface ApiResponse<T> {
 // 定义请求参数类型
 interface UtmParams {
   source: string;
-  medium: string;
-  campaign: string;
-  content: string;
-  term: string;
+  medium?: string;
+  campaign?: string;
+  content?: string;
+  term?: string;
 }
 
 interface LoginParams {
   account?: string;
   password?: string;
+  PwdTwo?: string;
+  profession?: string;
   phone?: string;
   code?: string;
   utm?: UtmParams;

@@ -47,12 +47,10 @@
                                         @click="handleFileClick(item)" @dblclick="handleFileDblClick(item)">
                                         <div class="file-preview">
                                             <template v-if="item.type === 'back' || item.type === 'folder'">
-                                                <el-icon :size="40">
-                                                    <Folder />
-                                                </el-icon>
+                                                <folder />
                                             </template>
                                             <template v-else>
-                                                <img src="@/assets/doc-preview.png" alt="文件预览" />
+                                                <img :src="getFileIcon(item.contentType)" :alt="item.name" />
                                             </template>
                                         </div>
                                         <div class="file-name">{{ item.name }}</div>
@@ -121,12 +119,10 @@
                                                 @click="handleFileClick(item)" @dblclick="handleProjectFileDblClick(item)">
                                                 <div class="file-preview">
                                                     <template v-if="item.type === 'folder'">
-                                                        <el-icon :size="40">
-                                                            <Folder />
-                                                        </el-icon>
+                                                        <folder />
                                                     </template>
                                                     <template v-else>
-                                                        <img src="@/assets/doc-preview.png" alt="文件预览" />
+                                                        <img :src="getFileIcon(item.contentType)" :alt="item.name" />
                                                     </template>
                                                 </div>
                                                 <div class="file-name">{{ item.name }}</div>
@@ -162,7 +158,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Refresh, Search, Operation, User, List, Grid, Back, Folder } from '@element-plus/icons-vue'
+import { Refresh, Search, Operation, User, List, Grid, Back } from '@element-plus/icons-vue'
+import folder from '@/assets/wjj.svg?component';
 import { isDark } from '../../utils/theme'
 import { useRouter } from 'vue-router'
 
@@ -171,6 +168,7 @@ interface FileItem {
     name: string;
     type: 'folder' | 'file' | 'back';
     createdAt?: string;
+    contentType?: number;
 }
 
 const router = useRouter()
@@ -190,6 +188,31 @@ const selectedFile = ref<FileItem | null>(null)
 const filePath = ref(['协同空间'])
 const currentPage = ref(1)
 const pageSize = ref(20)
+
+// 导入所有文件图标
+const fileIcons = {
+  42: new URL('@/assets/file-icons/DOC.png', import.meta.url).href,
+  141: new URL('@/assets/file-icons/DWG.png', import.meta.url).href,
+  142: new URL('@/assets/file-icons/DXF.png', import.meta.url).href,
+  164: new URL('@/assets/file-icons/IFG.png', import.meta.url).href,
+  61: new URL('@/assets/file-icons/JPG.png', import.meta.url).href,
+  41: new URL('@/assets/file-icons/PDF.png', import.meta.url).href,
+  62: new URL('@/assets/file-icons/PNG.png', import.meta.url).href,
+  45: new URL('@/assets/file-icons/PPT.png', import.meta.url).href,
+  162: new URL('@/assets/file-icons/RFA.png', import.meta.url).href,
+  163: new URL('@/assets/file-icons/RTE.png', import.meta.url).href,
+  161: new URL('@/assets/file-icons/RVT.png', import.meta.url).href,
+  21: new URL('@/assets/file-icons/TXT.png', import.meta.url).href,
+  43: new URL('@/assets/file-icons/XLSX.png', import.meta.url).href,
+  121: new URL('@/assets/file-icons/ZIP.png', import.meta.url).href,
+  122: new URL('@/assets/file-icons/RAR.png', import.meta.url).href,
+} as const;
+
+// 获取文件图标
+const getFileIcon = (contentType?: number) => {
+  if (!contentType) return new URL('@/assets/doc-preview.png', import.meta.url).href;
+  return fileIcons[contentType as keyof typeof fileIcons] || new URL('@/assets/doc-preview.png', import.meta.url).href;
+};
 
 // 模拟文件列表数据
 const fileList = ref<FileItem[]>([
@@ -213,13 +236,15 @@ const projectFiles = ref<FileItem[]>([
         id: 101,
         name: '设计文档.docx',
         type: 'file',
-        createdAt: '2024-03-16'
+        createdAt: '2024-03-16',
+        contentType: 42
     },
     {
         id: 102,
         name: '施工图纸.dwg',
         type: 'file',
-        createdAt: '2024-03-17'
+        createdAt: '2024-03-17',
+        contentType: 141
     },
     {
         id: 103,
@@ -231,7 +256,8 @@ const projectFiles = ref<FileItem[]>([
         id: 104,
         name: '项目计划.pdf',
         type: 'file',
-        createdAt: '2024-03-19'
+        createdAt: '2024-03-19',
+        contentType: 41
     }
 ])
 
@@ -628,10 +654,15 @@ const handleProjectFileDblClick = (item: FileItem) => {
                                 border-radius: 8px;
                                 overflow: hidden;
 
+                                svg {
+                                    width: 80px;
+                                    height: 80px;
+                                }
+
                                 img {
                                     width: 100%;
                                     height: 100%;
-                                    object-fit: cover;
+                                    object-fit: contain;
                                 }
                             }
 

@@ -47,6 +47,13 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
     setTotal(total: number) {
       this.total = total;
     },
+    clearStore() {
+      this.libraryList = [];
+      this.currentPath = [];
+      this.projectId = null;
+      this.folderPath = [];
+      this.total = 0;
+    },
     async navigateUp(page = 1, pageSize = 20) {
       if (this.currentPath.length > 0) {
         this.currentPath = this.currentPath.slice(0, -1);
