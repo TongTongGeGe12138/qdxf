@@ -23,7 +23,7 @@ import {
   addProjectResource,
   editProjectResource
 } from '@/api/project';
-import { getResourceFiles } from '@/api/resource';
+import { getResourceFiles, deleteResourcesFile } from '@/api/resource';
 import { removeMyResource } from '@/api/dict';
 import { getProvinceList, getCityList} from '@/api/location';
 import simplified from '@/assets/simplified_document_icon.svg?url';
@@ -695,8 +695,8 @@ const handleConfirmOperation = async () => {
   try {
     switch (operationType.value) {
       case 'removeFavorite':
-        await removeMyResource(file.id);
-        ElMessage.success('已取消收藏');
+        await deleteResourcesFile(file.id);
+        ElMessage.success('取消收藏成功');
         await getFavoriteList(searchValue.value);
         break;
       case 'recover':
@@ -1145,7 +1145,7 @@ onUnmounted(() => {
     <template v-else>
       <span>{{ operationType === 'recover' ? '确定要还原该文件吗？' :
         operationType === 'delete' ? '确定要彻底删除该文件吗？此操作不可恢复！' :
-          operationType === 'removeFavorite' ? '确定要取消收藏该文件吗？' :
+          operationType === 'removeFavorite' ? '确定要删除该文件吗？' :
             '确定要删除文件吗？若删除文件，之后可以在回收站中还原。' }}</span>
     </template>
     <template #footer>

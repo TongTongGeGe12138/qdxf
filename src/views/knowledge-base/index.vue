@@ -118,9 +118,10 @@ import {
   getSecondLevelListApi,
   downloadFile as downloadFileApi,
   addMyResource,
-  getBeeResourcesSecond
+  getBeeResourcesSecond,
+  removeMyResource
 } from '@/api/dict';
-import { getMyResourcesInfo } from '@/api/resource';
+import { getMyResourcesInfo, deleteResourcesFile } from '@/api/resource';
 import folder from '@/assets/wjj.svg?component';
 
 // 文件类型接口
@@ -468,27 +469,20 @@ const viewFile = async (file: FileItem) => {
   try {
     const res = await getMyResourcesInfo(file.id);
     if (res.code === 200 && res.data.url) {
-      window.open(res.data.url, '_blank');
+      // 检查文件类型，如果是DWG格式，使用CAD查看器
+      if (file.contentType === 141 || file.type?.toLowerCase() === 'dwg') {
+        // 使用CAD查看器逻辑
+        const cadViewerUrl = `/cad-viewer?fileId=${file.id}&fileName=${encodeURIComponent(file.name)}`;
+        window.open(cadViewerUrl, '_blank');
+      } else {
+        // 其他文件类型直接在新窗口打开
+        window.open(res.data.url, '_blank');
+      }
     } else {
       ElMessage.warning('获取文件链接失败或链接不存在');
     }
   } catch (error) {
     console.error('获取文件链接失败:', error);
-  }
-};
-
-// 添加到我的资源
-const addToMyResource = async (fileId: string) => {
-  try {
-    const response = await addMyResource(fileId);
-    if (response.code === 200) {
-      ElMessage.success('已添加到我的资源');
-    } else {
-      ElMessage.error(response.message || '添加失败');
-    }
-  } catch (error) {
-    console.error('添加失败:', error);
-    ElMessage.error('添加失败');
   }
 };
 
@@ -601,7 +595,7 @@ const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#A1A1A1');
 const borderColor = computed(() => isDark.value ? 'rgba(231, 231, 224, 0.2)' : 'rgba(0, 0, 0, 0.1)');
 const menuBgColor = computed(() => isDark.value ? '#0A0A0A' : '#FFFFFF');
 const tagHoverBgColor = computed(() => isDark.value ? '#2b2b2b' : '#f0f0f0');
-const tagActiveColor = computed(() => isDark.value ? '#000000' : '#FFFFFF');
+const tagActiveColor = computed(() => isDark.value ? '#ff9900' : '#ff9900');
 const tagActiveBgColor = computed(() => isDark.value ? '#F9DE4A' : '#F9DE4A');
 
 // 获取一级分类
@@ -733,6 +727,21 @@ const handleBackToParent = () => {
   fetchFileList();
 };
 
+// 添加到我的资源
+const addToMyResource = async (fileId: string) => {
+  try {
+    const response = await addMyResource(fileId);
+    if (response.code === 200) {
+      ElMessage.success('已添加到我的资源');
+    } else {
+      ElMessage.error(response.message || '添加失败');
+    }
+  } catch (error) {
+    console.error('添加失败:', error);
+    ElMessage.error('添加失败');
+  }
+};
+
 </script>
 
 <style scoped lang="less">
@@ -773,7 +782,7 @@ const handleBackToParent = () => {
     color: v-bind(subTextColor);
     cursor: pointer;
     position: relative;
-    padding-bottom: 10px; // Space for the underline
+    padding-bottom: 10px;
 
     &.active {
       color: v-bind(menuTextColor);
@@ -848,7 +857,7 @@ const handleBackToParent = () => {
 
       &.active {
         color: v-bind(tagActiveColor);
-        background-color: v-bind(tagActiveBgColor);
+        // background-color: v-bind(tagActiveBgColor);
       }
     }
   }
@@ -908,6 +917,76 @@ const handleBackToParent = () => {
     box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1);
   }
 
+  // 文件夹样式 - 参考桌面页面
+  &:has(.file-icon svg) {
+    width: 170px;
+    height: 172px;
+    padding: 16px;
+    
+    &:hover {
+      background-color: var(--el-fill-color-light);
+      transform: none;
+      box-shadow: none;
+      
+      .file-info {
+        display: block !important;
+      }
+    }
+    
+    &.is-selected {
+      transform: scale(1.1);
+      background-color: var(--el-fill-color-light);
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+      
+      .file-info {
+        display: block !important;
+      }
+    }
+    
+    .file-icon {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      padding: 12px;
+      background-color: transparent;
+      margin-bottom: 12px;
+      
+      :deep(svg) {
+        width: 100%;
+        height: 100%;
+      }
+    }
+    
+    .file-info {
+      position: static;
+      color: var(--el-text-color-primary);
+      padding: 0;
+      text-align: center;
+      display: block !important;
+      
+      .file-name {
+        font-size: 14px;
+        color: var(--el-text-color-primary);
+        margin-bottom: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-all;
+        max-width: 100%;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-height: 1.4;
+      }
+    }
+    
+    .file-actions {
+      display: none !important;
+    }
+  }
+
   .file-icon {
     width: 100%;
     height: 100%;
@@ -938,7 +1017,6 @@ const handleBackToParent = () => {
     bottom: 0;
     left: 0;
     right: 0;
-    background-color: rgba(0, 0, 0, 0.4);
     color: white;
     padding: 12px 8px;
     min-width: 0;
@@ -985,20 +1063,17 @@ const handleBackToParent = () => {
   }
   
   .action-btn {
-    width: 54px;
+    width: 64px;
     height: 32px;
     border: none;
     color: #1B2126;
     background-color: #F9DE4A;
-    // padding: 8px 24px;
     font-size: 12px;
     font-weight: 500;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
-    // margin-bottom: 16px;
     margin-bottom: 20px;
-
 
     &:hover {
       opacity: 0.8;
@@ -1027,6 +1102,17 @@ html.dark {
       .file-icon {
         background-color: transparent;
       }
+      
+      // 文件夹在深色主题下的样式
+      &:has(.file-icon svg) {
+        &:hover {
+          background-color: #1B2126;
+        }
+
+        &.is-selected {
+          background-color: #1B2126;
+        }
+      }
     }
   }
 }
@@ -1045,6 +1131,17 @@ html:not(.dark) {
 
       .file-icon {
         background-color: transparent;
+      }
+      
+      // 文件夹在浅色主题下的样式
+      &:has(.file-icon svg) {
+        &:hover {
+          background-color: #E5F6E6;
+        }
+
+        &.is-selected {
+          background-color: #E5F6E6;
+        }
       }
     }
   }
