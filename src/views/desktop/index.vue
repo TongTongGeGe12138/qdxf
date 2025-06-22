@@ -24,6 +24,7 @@ import {
   editProjectResource
 } from '@/api/project';
 import { getResourceFiles } from '@/api/resource';
+import { removeMyResource } from '@/api/dict';
 import { getProvinceList, getCityList} from '@/api/location';
 import simplified from '@/assets/simplified_document_icon.svg?url';
 
@@ -100,10 +101,9 @@ const rightTabs = computed(() => {
   // 我收藏的资源场景
   if (activeIndex.value === 1) {
     return [
-      { name: '通用规范', icon: Setting },
-      { name: '通用图库', icon: Setting },
-      { name: '供应商图库', icon: Setting },
-      { name: '样例模板', icon: Setting }
+      { name: '打开', icon: View },
+      { name: '下载', icon: Download },
+      { name: '取消收藏', icon: Delete },
     ];
   }
 
@@ -134,7 +134,7 @@ const uploadFile = ref<File | null>(null)
 
 // 添加操作弹框相关的变量定义
 const operationDialogVisible = ref(false)
-const operationType = ref<'recover' | 'delete' | 'upload' | 'trash' | 'rename' | 'edit' | 'create'>('recover')
+const operationType = ref<'recover' | 'delete' | 'upload' | 'trash' | 'rename' | 'edit' | 'create' | 'removeFavorite'>('recover')
 
 // 添加重命名输入框的值
 const renameValue = ref('');
@@ -504,6 +504,10 @@ const handleFileOperation = async (tab: TabItem) => {
         }
       }
       break;
+    case '取消收藏':
+      operationDialogVisible.value = true;
+      operationType.value = 'removeFavorite';
+      break;
     case '还原':
       if (activeIndex.value === 2) {
         operationDialogVisible.value = true;
@@ -690,6 +694,11 @@ const handleConfirmOperation = async () => {
 
   try {
     switch (operationType.value) {
+      case 'removeFavorite':
+        await removeMyResource(file.id);
+        ElMessage.success('已取消收藏');
+        await getFavoriteList(searchValue.value);
+        break;
       case 'recover':
         if (!file.id) {
           throw new Error('文件ID不存在');
@@ -1085,7 +1094,8 @@ onUnmounted(() => {
       operationType === 'trash' ? '回收站确认' :
         operationType === 'rename' ? '重命名' :
           operationType === 'edit' ? '编辑项目' :
-            operationType === 'create' ? (fileLibraryStore.currentPath.length === 0 ? '创建项目' : '新建文件夹') : ''" width="30%" :close-on-click-modal="false">
+            operationType === 'removeFavorite' ? '取消收藏确认' :
+              operationType === 'create' ? (fileLibraryStore.currentPath.length === 0 ? '创建项目' : '新建文件夹') : ''" width="30%" :close-on-click-modal="false">
     <template v-if="operationType === 'rename' || operationType === 'create'">
       <el-input v-model="renameValue" :placeholder="operationType === 'create' ? 
         (fileLibraryStore.currentPath.length === 0 ? '请输入项目名称' : '请输入文件夹名称') : 
@@ -1135,7 +1145,8 @@ onUnmounted(() => {
     <template v-else>
       <span>{{ operationType === 'recover' ? '确定要还原该文件吗？' :
         operationType === 'delete' ? '确定要彻底删除该文件吗？此操作不可恢复！' :
-          '确定要删除文件吗？若删除文件，之后可以在回收站中还原。' }}</span>
+          operationType === 'removeFavorite' ? '确定要取消收藏该文件吗？' :
+            '确定要删除文件吗？若删除文件，之后可以在回收站中还原。' }}</span>
     </template>
     <template #footer>
       <span class="dialog-footer">

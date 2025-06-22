@@ -7,25 +7,6 @@ const Api = {
   BeeUrl: '/bee/resource',
   ProfessionalUrl: '/dict/professional-qualification',
 };
-
-// // 获取字典数据
-// export function getDictList(code: any) {
-//   return request.get<ProjectListResult>({
-//     url: `${Api.DictUrl}${code}`,
-//   });
-// }
-// // 获取字典数据树结构
-// export function getDictTreePathList(data: any) {
-//   return request.get<ProjectListResult>({
-//     url: `${Api.DictUrl}${data.code}/tree/${data.path}`,
-//   });
-// }
-// // 获取字典数据树结构
-// export function getDictTreeList(code: any) {
-//   return request.get<ProjectListResult>({
-//     url: `${Api.DictUrl}${code}/tree`,
-//   });
-// }
 // 获取专业身份列表
 export function getProfessionList() {
   return request.get<ProjectListResult>({
@@ -98,7 +79,13 @@ export function downloadFile(id: any) {
 
 // 把资源加入我的资源
 export function addMyResource(fileId: any) {
-  return request.post<ProjectListResult>({
+  return request.post({
     url: `${Api.BeeUrl}/file/${fileId}/my`,
-  });
+  })
+}
+
+export function removeMyResource(fileId: any) {
+  return request.delete({
+    url: `${Api.BeeUrl}/file/${fileId}/my`,
+  })
 }

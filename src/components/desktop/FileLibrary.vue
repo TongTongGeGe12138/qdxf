@@ -488,8 +488,8 @@ const handleContainerClick = () => {
       }
 
       .file-item {
-        width: 120px;
-        height: 170px;
+        width: 170px;
+        height: 172px;
         display: flex;
         flex-direction: column;
         align-items: center;

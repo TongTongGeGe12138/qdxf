@@ -9,37 +9,21 @@
                 </div>
                 <div class="search-section">
                     <div class="search-input">
-                        <el-input
-                            v-model="searchText"
-                            placeholder="搜索应用..."
-                            :prefix-icon="Search"
-                        />
+                        <el-input v-model="searchText" placeholder="搜索应用..." :prefix-icon="Search" />
                     </div>
                     <div class="tags">
-                        <el-tag
-                            v-for="tag in tags"
-                            :key="tag.name"
-                            :class="{ 'is-active': activeTag === tag.name }"
-                            @click="handleTagClick(tag.name)"
-                        >
+                        <el-tag v-for="tag in tags" :key="tag.name" :class="{ 'is-active': activeTag === tag.name }"
+                            @click="handleTagClick(tag.name)">
                             {{ tag.name }}
                         </el-tag>
                     </div>
                 </div>
                 <div class="card-grid">
-                    <div class="card" 
-                        v-for="(item, index) in filteredSecondaryList" 
-                        :key="index"
-                        @click="handleCardClick(item)"
-                    >
+                    <div class="card" v-for="(item, index) in filteredSecondaryList" :key="index"
+                        @click="handleCardClick(item)">
                         <div class="fire-icon-container" :class="isDark ? 'dark-mode' : 'light-mode'">
-                            <img 
-                                v-if="item.value"
-                                :src="getIconUrl(item.value)"
-                                :alt="item.name"
-                                class="fire-icon"
-                                @error="console.log('Failed to load image:', item.value)"
-                            />
+                            <img v-if="item.value" :src="getIconUrl(item.value)" :alt="item.name" class="fire-icon"
+                                @error="console.log('Failed to load image:', item.value)" />
                         </div>
                         <div class="card-content">
                             <div class="card-title">{{ item.name }}</div>
@@ -57,14 +41,10 @@
                     <div class="sub-title">专注服务于建筑设计的云端应用</div>
                 </div>
                 <div class="card-grid">
-                    <div class="card" v-for="(item, index) in hvacCardList" :key="index" @click="handleMoreAppCardClick(item)">
+                    <div class="card" v-for="(item, index) in hvacCardList" :key="index"
+                        @click="handleMoreAppCardClick(item)">
                         <div class="fire-icon-container" :class="isDark ? 'dark-mode' : 'light-mode'">
-                            <img
-                                v-if="item.icon"
-                                :src="getIconUrl(item.icon)"
-                                :alt="item.title"
-                                class="fire-icon"
-                            />
+                            <img v-if="item.icon" :src="getIconUrl(item.icon)" :alt="item.title" class="fire-icon" />
                         </div>
                         <div class="card-content">
                             <div class="card-title">{{ item.title }}</div>
@@ -80,39 +60,34 @@
                 </div>
                 <div class="equipment-list">
                     <div class="list-header">
-                        <img 
-                            :src="getIconUrl('Setting')"
-                            alt="设置"
-                            class="header-icon"
-                            :class="{ 'dark-icon': isDark, 'light-icon': !isDark }"
-                        />
+                        <img :src="getIconUrl('Setting')" alt="设置" class="header-icon"
+                            :class="{ 'dark-icon': isDark, 'light-icon': !isDark }" />
                         <span>消防设备选型</span>
-                        <el-icon class="expand-icon"><MoreFilled /></el-icon>
+                        <el-icon class="expand-icon">
+                            <MoreFilled />
+                        </el-icon>
                     </div>
                     <div class="list-items">
                         <div class="list-item" v-for="item in equipmentList" :key="item">
                             <div class="dot"></div>{{ item }}
                         </div>
-                        <div class="list-item more">更多选型 <el-icon class="double-arrow"><DArrowRight /></el-icon></div>
+                        <div class="list-item more">更多选型 <el-icon class="double-arrow">
+                                <DArrowRight />
+                            </el-icon></div>
                     </div>
                 </div>
                 <div class="supplier-list">
                     <div class="list-header">
-                        <img 
-                            :src="getIconUrl('Shop')"
-                            alt="商店"
-                            class="header-icon"
-                            :class="{ 'dark-icon': isDark, 'light-icon': !isDark }"
-                        />
+                        <img :src="getIconUrl('Shop')" alt="商店" class="header-icon"
+                            :class="{ 'dark-icon': isDark, 'light-icon': !isDark }" />
                         <span>消防认证供应商</span>
-                        <el-icon class="expand-icon"><MoreFilled /></el-icon>
+                        <el-icon class="expand-icon">
+                            <MoreFilled />
+                        </el-icon>
                     </div>
                     <div class="supplier-grid">
-                        <div class="supplier-item" 
-                            v-for="supplier in supplierList" 
-                            :key="supplier.name"
-                            @click="handleSupplierClick(supplier.url)"
-                        >
+                        <div class="supplier-item" v-for="supplier in supplierList" :key="supplier.name"
+                            @click="handleSupplierClick(supplier.url)">
                             <img :src="supplier.imageUrl" :alt="supplier.name">
                             <span>{{ supplier.name }}</span>
                         </div>
@@ -124,13 +99,8 @@
     </div>
 
     <!-- 标准说明弹框 -->
-    <el-dialog
-        v-model="dialogVisible"
-        title="撬点智能绘制平台上传图纸标准"
-        width="800px"
-        :close-on-click-modal="false"
-        class="standard-dialog"
-    >
+    <el-dialog v-model="dialogVisible" title="撬点智能绘制平台上传图纸标准" width="800px" :close-on-click-modal="false"
+        class="standard-dialog">
         <el-scrollbar height="calc(100vh - 200px)">
             <div class="operate-box">
                 <div class="text-box">
@@ -187,23 +157,14 @@
     </el-dialog>
 
     <!-- 添加卡片详情弹框 -->
-    <el-dialog
-        v-model="cardDialogVisible"
-        width="700px"
-        :close-on-click-modal="false"
-        class="standard-dialog app-dialog"
-    >
-        <el-scrollbar >
+    <el-dialog v-model="cardDialogVisible" width="700px" :close-on-click-modal="false"
+        class="standard-dialog app-dialog">
+        <el-scrollbar>
             <div class="app-dialog-content">
                 <div class="app-header">
                     <div class="app-icon fire-icon-container" :class="isDark ? 'dark-mode' : 'light-mode'">
-                        <img 
-                            v-if="currentCard?.value"
-                            :src="getIconUrl(currentCard.value)"
-                            :alt="currentCard.name"
-                            class="fire-icon"
-                            @error="console.log('Failed to load image:', currentCard.value)"
-                        />
+                        <img v-if="currentCard?.value" :src="getIconUrl(currentCard.value)" :alt="currentCard.name"
+                            class="fire-icon" @error="console.log('Failed to load image:', currentCard.value)" />
                     </div>
                     <div class="app-title">
                         <div class="name">{{ currentCard?.name }}</div>
@@ -212,15 +173,19 @@
                     <el-button type="primary" class="launch-btn" @click="handleLaunchClick">启动应用</el-button>
                 </div>
                 <div class="app-desc">
-                    {{ currentCard?.description || (currentCard?.name + '，无需本地部署，通过云端在线服务，实现智能给排水调试、喷头一键生成、管线自动布置。基于消防规范与智能算法，快速生成合规设计方案，支持多场景应用，助力企业高效完成消防系统设计与运维，降低成本与安全风险。') }}
+                    {{ currentCard?.description || (currentCard?.name +
+                    '，无需本地部署，通过云端在线服务，实现智能给排水调试、喷头一键生成、管线自动布置。基于消防规范与智能算法，快速生成合规设计方案，支持多场景应用，助力企业高效完成消防系统设计与运维，降低成本与安全风险。')
+                    }}
                 </div>
                 <div class="app-preview">
                     <div class="app-preview-header">
-                      <span class="app-preview-title">应用介绍</span>
-                      <span class="app-preview-standard" @click="handleStandardClick">
-                        <el-icon><QuestionFilled /></el-icon>
-                        智能绘制平台上传图纸标准
-                      </span>
+                        <span class="app-preview-title">应用介绍</span>
+                        <span class="app-preview-standard" @click="handleStandardClick">
+                            <el-icon>
+                                <QuestionFilled />
+                            </el-icon>
+                            智能绘制平台上传图纸标准
+                        </span>
                     </div>
                     <div class="preview-container">
                         <img src="@/assets/operate/one.png" alt="应用截图" class="preview-image" />
@@ -237,20 +202,21 @@
     <el-dialog
         v-model="permissionDialogVisible"
         title="暂无权限"
-        width="600px"
+        width="400px"
         :close-on-click-modal="false"
-        class="permission-dialog"
     >
-        <div class="permission-dialog-content">
-            <!-- <p class="permission-title">权限不足</p> -->
-            <p class="permission-text">此版块功能仅限于企业版，您暂未获得使用资格</p>
-            <el-button type="primary" class="permission-btn" @click="handlePermissionClick">我已知晓</el-button>
-        </div>
+        <p style="text-align: center;">此版块功能仅限于企业版，您暂未获得使用资格</p>
+        <template #footer>
+          <span class="dialog-footer">
+            <!-- <div class="dialog-button cancel" @click="permissionDialogVisible = false">取消</div> -->
+            <div class="dialog-button confirm" @click="handlePermissionClick">我已知晓</div>
+          </span>
+        </template>
     </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { Search, Monitor, Setting, Shop, MoreFilled, ArrowRight, Timer, Warning, Notification, Operation, ScaleToOriginal, Switch, Aim, Cpu, Smoking, Connection, Link, Microphone, OfficeBuilding, House, Management, Right, DArrowRight, CircleCheck, CirclePlus, Star, QuestionFilled } from '@element-plus/icons-vue'
+import { Search, Monitor, MoreFilled, Timer, Warning, Notification, Operation, ScaleToOriginal, Switch, Aim, Cpu, Smoking, Connection, Link, Right, DArrowRight,  QuestionFilled } from '@element-plus/icons-vue'
 import { computed, ref, onMounted, watch } from 'vue'
 import { isDark } from '../../utils/theme'
 import { getAigcPrimaryList, getAigcChildrenList } from '@/api/aigc'
@@ -290,16 +256,16 @@ interface ProjectItemExtended extends ProjectItem {
 }
 
 interface AigcModuleComponent {
-  title: string;
-  description: string;
-  content?: string;
-  name?: string;
+    title: string;
+    description: string;
+    content?: string;
+    name?: string;
 }
 
 interface Supplier {
-  name: string;
-  imageUrl: string;
-  url: string;
+    name: string;
+    imageUrl: string;
+    url: string;
 }
 
 const searchText = ref('')
@@ -323,53 +289,53 @@ const AIGC_MODULES = {
 
 // 定义 AIGC 模块列表
 const aigcModuleSkuList = [
-  {
-    name: '智能消防',
-    content: 'AigcCmpPkgFirefighting',
-    components: [] as AigcModuleComponent[]
-  },
-  {
-    name: '装饰消防',
-    content: 'AigcCmpPkgDecoration',
-    components: [] as AigcModuleComponent[]
-  },
-  {
-    name: '智能给排水',
-    content: 'AigcCmpPkgPlumbing',
-    components: [
-      { title: '给排水1', content: 'plumbing1', status: 1, description: '智能给排水・喷头一键生成，管线自动布置' } as AigcModuleComponent,
-      { title: '给排水2', content: 'plumbing2', status: 1, description: '智能给排水・消火栓布置，管线智能连接' } as AigcModuleComponent
-    ]
-  },
-  {
-    name: '智能暖通',
-    content: 'AigcCmpPkgHvac',
-    components: [
-      { title: '暖通1', content: 'hvac1', status: 1, description: '智能暖通・排烟设计，风管智能布置' } as AigcModuleComponent,
-      { title: '暖通2', content: 'hvac2', status: 1, description: '智能暖通・防烟分区，系统自动设计' } as AigcModuleComponent
-    ]
-  },
-  {
-    name: '智能电气',
-    content: 'AigcCmpPkgElectrical',
-    components: [
-      { title: '电气1', content: 'electrical1', status: 1, description: '智能电气・探测器布置，线路智能连接' } as AigcModuleComponent,
-      { title: '电气2', content: 'electrical2', status: 1, description: '智能电气・应急照明，疏散指示设计' } as AigcModuleComponent
-    ]
-  }
+    {
+        name: '智能消防',
+        content: 'AigcCmpPkgFirefighting',
+        components: [] as AigcModuleComponent[]
+    },
+    {
+        name: '装饰消防',
+        content: 'AigcCmpPkgDecoration',
+        components: [] as AigcModuleComponent[]
+    },
+    {
+        name: '智能给排水',
+        content: 'AigcCmpPkgPlumbing',
+        components: [
+            { title: '给排水1', content: 'plumbing1', status: 1, description: '智能给排水・喷头一键生成，管线自动布置' } as AigcModuleComponent,
+            { title: '给排水2', content: 'plumbing2', status: 1, description: '智能给排水・消火栓布置，管线智能连接' } as AigcModuleComponent
+        ]
+    },
+    {
+        name: '智能暖通',
+        content: 'AigcCmpPkgHvac',
+        components: [
+            { title: '暖通1', content: 'hvac1', status: 1, description: '智能暖通・排烟设计，风管智能布置' } as AigcModuleComponent,
+            { title: '暖通2', content: 'hvac2', status: 1, description: '智能暖通・防烟分区，系统自动设计' } as AigcModuleComponent
+        ]
+    },
+    {
+        name: '智能电气',
+        content: 'AigcCmpPkgElectrical',
+        components: [
+            { title: '电气1', content: 'electrical1', status: 1, description: '智能电气・探测器布置，线路智能连接' } as AigcModuleComponent,
+            { title: '电气2', content: 'electrical2', status: 1, description: '智能电气・应急照明，疏散指示设计' } as AigcModuleComponent
+        ]
+    }
 ];
 
 // 获取数据的方法
 const fetchData = async () => {
     try {
         const primaryRes = await getAigcPrimaryList();
-        
+
         if (primaryRes?.code !== 200 || !Array.isArray(primaryRes?.data)) {
             throw new Error('获取主分类数据失败');
         }
 
         const list = primaryRes.data;
-        
+
         const componentsList = [
             ...aigcModuleSkuList[2].components,
             ...aigcModuleSkuList[3].components,
@@ -381,7 +347,7 @@ const fetchData = async () => {
         }
 
         allList.value = list;
-        
+
         await handleFireApplication(list, componentsList);
 
     } catch (error) {
@@ -397,7 +363,7 @@ const handleAigcListData = (list: ProjectItem[], componentsList: AigcModuleCompo
 
             key.content = element.content;
             updateFireList(key.name);
-            
+
             if (fireList.value.length === componentsList.length && key.name === AIGC_MODULES.FIRE) {
                 key.content = 'AigcCmpPkgFirefighting';
             }
@@ -422,23 +388,23 @@ const updateFireList = (moduleName: string) => {
 
 // 处理智能消防应用
 const handleFireApplication = async (list: ProjectItem[], componentsList: AigcModuleComponent[]) => {
-  const fireApps = list.filter((item: ProjectItem) => item.name === '智能消防');
-  applicationList.value = fireApps;
-  
-  const fireApp = fireApps[0];
-  if (!fireApp?.value) return;
-  
-  const childrenRes = await getAigcChildrenList(fireApp.value);
-  if (childrenRes.code === 200) {
-    current.value = fireApp.value;
-    const childrenData = Array.isArray(childrenRes.data) ? childrenRes.data : [];
-    if (childrenData.length > 0) {
-      secondary.value = childrenData[0].value;
-      const processedData = getAigcCadStatus(childrenData);
-      secondaryList.value = processedData;
-      threeStatus.value = true;
+    const fireApps = list.filter((item: ProjectItem) => item.name === '智能消防');
+    applicationList.value = fireApps;
+
+    const fireApp = fireApps[0];
+    if (!fireApp?.value) return;
+
+    const childrenRes = await getAigcChildrenList(fireApp.value);
+    if (childrenRes.code === 200) {
+        current.value = fireApp.value;
+        const childrenData = Array.isArray(childrenRes.data) ? childrenRes.data : [];
+        if (childrenData.length > 0) {
+            secondary.value = childrenData[0].value;
+            const processedData = getAigcCadStatus(childrenData);
+            secondaryList.value = processedData;
+            threeStatus.value = true;
+        }
     }
-  }
 };
 
 // 弹框相关
@@ -458,7 +424,7 @@ const tags = [
 
 // 计算样式
 const searchInputBorderColor = computed(() => isDark.value ? 'rgba(34, 34, 34, 0.3)' : 'rgba(51, 51, 51, 0.3)');
-const menuTextColor = computed(() => isDark.value ?'#EDEDED' : '#13343C')
+const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#A1A1A1')
 const vTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const borderColor = computed(() => isDark.value ? 'transparent' : 'rgba(228, 231, 237, 0.3)')
@@ -485,8 +451,8 @@ const appPreviewStandardColor = computed(() => isDark.value ? '#a3a6ad' : '#6062
 
 const hvacCardList = [
     {
-        title: 'CloudBeeCAD',
-        description: '基于云架构，完全自主产权的新一代 CAD',
+        title: 'BeesCAD',
+        description: '基于云架构，完全自主产权',
         icon: 'cloud_cad',
         action: 'open_app'
     },
@@ -580,36 +546,36 @@ const closeHoverColor = computed(() => isDark.value ? '#f3cc2e' : '#409eff')
 
 // 获取并处理子分类数据
 const getAigcChildren = async (val: any) => {
-  try {
-    const { data, code } = await getAigcChildrenList(val.value);
-    
-    if (code === 200) {
-      current.value = val.value;
-      if (Array.isArray(data) && data.length > 0) {
-        const uniqueData = unique(data);
-        secondary.value = uniqueData[0]?.value || '';
-        const processedData = getAigcCadStatus(uniqueData);
-        secondaryList.value = processedData;
-        threeStatus.value = true;
-      }
+    try {
+        const { data, code } = await getAigcChildrenList(val.value);
+
+        if (code === 200) {
+            current.value = val.value;
+            if (Array.isArray(data) && data.length > 0) {
+                const uniqueData = unique(data);
+                secondary.value = uniqueData[0]?.value || '';
+                const processedData = getAigcCadStatus(uniqueData);
+                secondaryList.value = processedData;
+                threeStatus.value = true;
+            }
+        }
+    } catch (error) {
+        ElMessage.error(error instanceof Error ? error.message : '获取子分类数据失败');
     }
-  } catch (error) {
-    ElMessage.error(error instanceof Error ? error.message : '获取子分类数据失败');
-  }
 };
 
 // 处理 CAD 状态
 const getAigcCadStatus = (data: ProjectItem[]) => {
     console.log('进入 getAigcCadStatus 函数，原始数据:', data);
-    
+
     const val = allList.value.filter((key: any) => key.value === current.value)[0];
     console.log('找到的当前项:', val);
-    
+
     if (!val) {
         console.warn('未找到匹配的当前项，返回原始数据');
         return data;
     }
-    
+
     // 首先过滤掉没有 version 的项目
     const filteredData = data.filter(item => item.extra && item.extra.version);
     console.log('过滤后的数据:', filteredData);
@@ -651,7 +617,7 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
         'ventilation_pressurization': '智能暖通',
         'smoke_control': '智能暖通'
     };
-    
+
     const result = filteredData.map((item: any) => {
         const newItem = { ...item };
         if (val.name === '智能消防' || val.name === '装饰消防') {
@@ -670,7 +636,7 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
         }
         return newItem;
     });
-    
+
     console.log('最终处理后的数据:', result);
     return result;
 };
@@ -696,60 +662,60 @@ function unique(arr: any) {
 
 // 添加启动应用点击处理函数
 const handleLaunchClick = async () => {
-  const card = currentCard.value;
-  console.log('启动应用数据:', {
-    名称: card?.name,
-    值: card?.value,
-    描述: card?.description,
-    额外信息: {
-      版本: card?.extra?.version,
-      链接: card?.extra?.url,
-      提示: card?.extra?.tip,
-      英文名: card?.extra?.englishName,
-      分组: card?.extra?.group
-    },
-    显示状态: card?.contentShow
-  });
-
-  if (!card?.extra?.url) {
-    ElMessage.info('未配置跳转链接');
-    cardDialogVisible.value = false;
-    return;
-  }
-
-  try {
-    const { data, code } = await stashToken({
-      accessToken: userStore.accessToken,
-      refreshToken: userStore.refreshToken,
+    const card = currentCard.value;
+    console.log('启动应用数据:', {
+        名称: card?.name,
+        值: card?.value,
+        描述: card?.description,
+        额外信息: {
+            版本: card?.extra?.version,
+            链接: card?.extra?.url,
+            提示: card?.extra?.tip,
+            英文名: card?.extra?.englishName,
+            分组: card?.extra?.group
+        },
+        显示状态: card?.contentShow
     });
 
-    if (code === 200) {
-      const path = `${card.extra.group || ''}/${card.extra.englishName || ''}`;
-      const extraQuery = card.extra.url.split('?')[1];
-      const query = `id=${data}&path=${path}${extraQuery ? `&${extraQuery}` : ''}`;
-      const encodedQuery = `sign=${encodeURIComponent(RC4Encrypt(query))}`;
-
-      const baseUrl = 'http://cloud.dev.ifeng.com';
-      const basePath = card.extra.url.split('?')[0] || card.extra.url;
-      const fullUrl = `${baseUrl}${basePath}#/UploadFiles?${encodedQuery}`;
-
-      logPost({ event: 'APP_LAUNCH_CLICK', category: path });
-
-      window.open(fullUrl, '_blank', 'noopener,noreferrer');
-    } else {
-      ElMessage.error('获取身份凭证失败');
+    if (!card?.extra?.url) {
+        ElMessage.info('未配置跳转链接');
+        cardDialogVisible.value = false;
+        return;
     }
-  } catch (error) {
-    ElMessage.error('跳转失败');
-    console.error(error);
-  }
 
-  cardDialogVisible.value = false;
+    try {
+        const { data, code } = await stashToken({
+            accessToken: userStore.accessToken,
+            refreshToken: userStore.refreshToken,
+        });
+
+        if (code === 200) {
+            const path = `${card.extra.group || ''}/${card.extra.englishName || ''}`;
+            const extraQuery = card.extra.url.split('?')[1];
+            const query = `id=${data}&path=${path}${extraQuery ? `&${extraQuery}` : ''}`;
+            const encodedQuery = `sign=${encodeURIComponent(RC4Encrypt(query))}`;
+
+            const baseUrl = 'http://cloud.dev.ifeng.com';
+            const basePath = card.extra.url.split('?')[0] || card.extra.url;
+            const fullUrl = `${baseUrl}${basePath}#/UploadFiles?${encodedQuery}`;
+
+            logPost({ event: 'APP_LAUNCH_CLICK', category: path });
+
+            window.open(fullUrl, '_blank', 'noopener,noreferrer');
+        } else {
+            ElMessage.error('获取身份凭证失败');
+        }
+    } catch (error) {
+        ElMessage.error('跳转失败');
+        console.error(error);
+    }
+
+    cardDialogVisible.value = false;
 };
 
 // 添加点击标准说明的处理函数
 const handleStandardClick = () => {
-  dialogVisible.value = true;
+    dialogVisible.value = true;
 };
 
 const toggleIconMode = () => {
@@ -804,8 +770,8 @@ const filteredSecondaryList = computed(() => {
         const searchLower = searchText.value.toLowerCase();
         filtered = filtered.filter(item => {
             return item.name.toLowerCase().includes(searchLower) ||
-                   (item.description && item.description.toLowerCase().includes(searchLower)) ||
-                   (item.value && item.value.toLowerCase().includes(searchLower));
+                (item.description && item.description.toLowerCase().includes(searchLower)) ||
+                (item.value && item.value.toLowerCase().includes(searchLower));
         });
     }
 
@@ -821,27 +787,27 @@ const handleTagClick = (tagName: string) => {
 
 // 处理更多应用卡片点击
 const handleMoreAppCardClick = (item: any) => {
-  if (item.action === 'open_app') {
-    const mockItem = {
-      name: item.title,
-      value: item.icon,
-      description: item.description,
-      extra: {
-        englishName: 'Next Generation CAD based on Cloud',
-        version: '1.0.0',
-        url: null,
-        group: 'CloudBeeCAD'
-      }
-    };
-    handleCardClick(mockItem as any);
-  } else if (item.action === 'show_permission_denied') {
-    permissionDialogVisible.value = true;
-  }
+    if (item.action === 'open_app') {
+        const mockItem = {
+            name: item.title,
+            value: item.icon,
+            description: item.description,
+            extra: {
+                englishName: 'Next Generation CAD based on Cloud',
+                version: '1.0.0',
+                url: null,
+                group: 'CloudBeeCAD'
+            }
+        };
+        handleCardClick(mockItem as any);
+    } else if (item.action === 'show_permission_denied') {
+        permissionDialogVisible.value = true;
+    }
 };
 
 // 处理权限点击
 const handlePermissionClick = () => {
-  permissionDialogVisible.value = false;
+    permissionDialogVisible.value = false;
 };
 </script>
 
@@ -884,7 +850,8 @@ const handlePermissionClick = () => {
     flex-direction: column;
     justify-content: flex-start;
 }
-.right-title{
+
+.right-title {
     margin: 0 16px;
 
 }
@@ -1080,7 +1047,8 @@ const handlePermissionClick = () => {
     text-overflow: ellipsis;
 }
 
-.equipment-list, .supplier-list {
+.equipment-list,
+.supplier-list {
     background-color: v-bind(menuBgColor);
     border-radius: 8px;
     margin-bottom: 20px;
@@ -1306,7 +1274,7 @@ const handlePermissionClick = () => {
     :deep(.el-dialog__header) {
         display: none !important;
     }
-    
+
     :deep(.el-dialog__body) {
         padding: 0 !important;
         margin: 0 !important;
@@ -1472,7 +1440,8 @@ const handlePermissionClick = () => {
     display: flex;
     align-items: center;
     padding: 20px 0;
-    flex-shrink: 0; /* 防止收缩 */
+    flex-shrink: 0;
+    /* 防止收缩 */
 }
 
 /* 关闭按钮样式 */
@@ -1579,11 +1548,13 @@ const handlePermissionClick = () => {
 }
 
 .dark-icon {
-    filter: brightness(0) invert(1); /* 将图标变为白色 #FFFFFF */
+    filter: brightness(0) invert(1);
+    /* 将图标变为白色 #FFFFFF */
 }
 
 .light-icon {
-    filter: invert(15%) sepia(19%) saturate(934%) hue-rotate(155deg) brightness(94%) contrast(95%); /* 将图标变为 #13343C */
+    filter: invert(15%) sepia(19%) saturate(934%) hue-rotate(155deg) brightness(94%) contrast(95%);
+    /* 将图标变为 #13343C */
 }
 
 .search-icon {
@@ -1602,149 +1573,149 @@ const handlePermissionClick = () => {
 }
 
 .login-footer {
-  text-align: center;
-  margin-top: 20px;
+    text-align: center;
+    margin-top: 20px;
 
-  :deep(.el-link) {
-    color: #A1A1A1 !important;
-    text-decoration: none !important;
-    border-bottom: 1px solid #FFEA65 !important;
-    font-size: 12px !important;
-
-    &:hover {
-      color: #FFEA65 !important;
-      border-bottom: 1px solid #FFEA65 !important;
-    }
-
-    span {
-      color: #A1A1A1 !important;
-      text-decoration: none !important;
-      border-bottom: 1px solid #FFEA65 !important;
-
-      &:hover {
-        color: #FFEA65 !important;
+    :deep(.el-link) {
+        color: #A1A1A1 !important;
+        text-decoration: none !important;
         border-bottom: 1px solid #FFEA65 !important;
-      }
-    }
-  }
+        font-size: 12px !important;
 
-  :deep(.el-link--primary) {
-    color: #A1A1A1 !important;
-    text-decoration: none !important;
-    border-bottom: 1px solid #FFEA65 !important;
+        &:hover {
+            color: #FFEA65 !important;
+            border-bottom: 1px solid #FFEA65 !important;
+        }
 
-    &:hover {
-      color: #FFEA65 !important;
-      border-bottom: 1px solid #FFEA65 !important;
+        span {
+            color: #A1A1A1 !important;
+            text-decoration: none !important;
+            border-bottom: 1px solid #FFEA65 !important;
+
+            &:hover {
+                color: #FFEA65 !important;
+                border-bottom: 1px solid #FFEA65 !important;
+            }
+        }
     }
-  }
+
+    :deep(.el-link--primary) {
+        color: #A1A1A1 !important;
+        text-decoration: none !important;
+        border-bottom: 1px solid #FFEA65 !important;
+
+        &:hover {
+            color: #FFEA65 !important;
+            border-bottom: 1px solid #FFEA65 !important;
+        }
+    }
 }
 
 // 错误提示框样式
 :deep(.el-popper.error-tooltip) {
-  background-color: #303133 !important;
-  border: 1px solid #797979 !important;
-  color: #FFFFFF !important;
-  font-size: 12px !important;
-  padding: 6px 12px !important;
+    background-color: #303133 !important;
+    border: 1px solid #797979 !important;
+    color: #FFFFFF !important;
+    font-size: 12px !important;
+    padding: 6px 12px !important;
 
-  .el-popper__arrow {
-    &::before {
-      background-color: #303133 !important;
-      border: 1px solid #797979 !important;
-    }
-  }
-
-  &[data-popper-placement^='bottom'] {
     .el-popper__arrow {
-      &::before {
-        border-bottom: none !important;
-        border-right: none !important;
-      }
+        &::before {
+            background-color: #303133 !important;
+            border: 1px solid #797979 !important;
+        }
     }
-  }
 
-  &[data-popper-placement^='top'] {
-    .el-popper__arrow {
-      &::before {
-        border-top: none !important;
-        border-left: none !important;
-      }
+    &[data-popper-placement^='bottom'] {
+        .el-popper__arrow {
+            &::before {
+                border-bottom: none !important;
+                border-right: none !important;
+            }
+        }
     }
-  }
+
+    &[data-popper-placement^='top'] {
+        .el-popper__arrow {
+            &::before {
+                border-top: none !important;
+                border-left: none !important;
+            }
+        }
+    }
 }
 
 // 右上角提示框样式
 :deep(.el-popper.custom-tooltip) {
-  background-color: #FFBD33 !important;
-  font-size: 12px !important;
-  color: #FFFFFF !important;
-  border: none !important;
-  padding: 0 !important;
-  width: 68px !important;
-  height: 35px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-
-  .el-tooltip__content {
+    background-color: #FFBD33 !important;
+    font-size: 12px !important;
     color: #FFFFFF !important;
-    line-height: 35px !important;
-  }
+    border: none !important;
+    padding: 0 !important;
+    width: 68px !important;
+    height: 35px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 
-  .el-popper__arrow {
-    &::before {
-      background-color: #FFBD33 !important;
-      border-right-color: #FFBD33 !important;
+    .el-tooltip__content {
+        color: #FFFFFF !important;
+        line-height: 35px !important;
     }
-  }
+
+    .el-popper__arrow {
+        &::before {
+            background-color: #FFBD33 !important;
+            border-right-color: #FFBD33 !important;
+        }
+    }
 }
 
 // 用户协议和隐私设置样式
 :deep(.el-link.yellow-link) {
-  color: #FFEA65 !important;
-  font-size: 12px !important;
-  text-decoration: none !important;
-  
-  &:hover {
     color: #FFEA65 !important;
-    text-decoration: underline !important;
-  }
+    font-size: 12px !important;
+    text-decoration: none !important;
+
+    &:hover {
+        color: #FFEA65 !important;
+        text-decoration: underline !important;
+    }
 }
 
 // 登录和注册按钮样式
 :deep(.el-button.login-button) {
-  color: #000 !important;
-  font-size: 16px !important;
-  font-weight: 500 !important;
-  width: 100% !important;
-  height: 40px !important;
-  background-color: rgba(249, 222, 74, 1) !important;
-  border: none !important;
-  
-  &:hover {
-    background-color: rgba(255, 234, 101, 1) !important;
-  }
-  
-  &:disabled {
-    background-color: #CCCCCC !important;
-    color: #FFFFFF !important;
-  }
+    color: #000 !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    width: 100% !important;
+    height: 40px !important;
+    background-color: rgba(249, 222, 74, 1) !important;
+    border: none !important;
+
+    &:hover {
+        background-color: rgba(255, 234, 101, 1) !important;
+    }
+
+    &:disabled {
+        background-color: #CCCCCC !important;
+        color: #FFFFFF !important;
+    }
 }
 
 // 复选框文字样式
 :deep(.dark-checkbox) {
-  .el-checkbox__label {
-    display: inline-flex !important;
-    align-items: center !important;
-    line-height: 1 !important;
-  }
+    .el-checkbox__label {
+        display: inline-flex !important;
+        align-items: center !important;
+        line-height: 1 !important;
+    }
 }
 
 // 链接样式
 :deep(.yellow-link) {
-  display: inline-flex !important;
-  align-items: center !important;
+    display: inline-flex !important;
+    align-items: center !important;
 }
 
 // // 覆盖全局样式
@@ -1755,35 +1726,38 @@ const handlePermissionClick = () => {
 // }
 
 :deep(.el-link--primary) {
-  color: #FFEA65 !important;
+    color: #FFEA65 !important;
 }
 
 .app-preview-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
 }
+
 .app-preview-title {
-  font-weight: bold;
-  font-size: 16px;
-  color: v-bind(appPreviewTitleColor);
+    font-weight: bold;
+    font-size: 16px;
+    color: v-bind(appPreviewTitleColor);
 }
+
 .app-preview-standard {
-  display: flex;
-  align-items: center;
-  color: v-bind(appPreviewStandardColor);
-  font-size: 14px;
-  cursor: pointer;
-  transition: color 0.3s ease;
-  
-  &:hover {
-    color: #F9DE4A;
-  }
+    display: flex;
+    align-items: center;
+    color: v-bind(appPreviewStandardColor);
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+
+    &:hover {
+        color: #F9DE4A;
+    }
 }
+
 .app-preview-standard .el-icon {
-  margin-right: 4px;
-  font-size: 16px;
+    margin-right: 4px;
+    font-size: 16px;
 }
 
 .dialog-scroll-container {
@@ -1820,40 +1794,63 @@ const handlePermissionClick = () => {
     opacity: 0.5;
 }
 
-.permission-dialog :deep(.el-dialog) {
-  border-radius: 12px;
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+
+  .dialog-button {
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+
+    &.cancel {
+      background-color: #F5F5F5;
+      color: #666666;
+      border: 1px solid #E4E4E4;
+
+      &:hover {
+        background-color: #E8E8E8;
+        border-color: #D4D4D4;
+      }
+    }
+
+    &.confirm {
+      background-color: rgba(249, 222, 74, 1);
+      color: #1B2126;
+
+      &:hover {
+        background-color: rgba(249, 222, 74, 0.8);
+      }
+    }
+  }
 }
-.permission-dialog :deep(.el-dialog__header) {
-  display: none;
-}
-.permission-dialog :deep(.el-dialog__body) {
-  padding: 0 !important;
-}
-.permission-dialog-content {
-  padding: 30px;
-  text-align: center;
-  color: v-bind(menuTextColor);
-}
-.permission-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 20px;
-}
-.permission-text {
-  font-size: 14px;
-  color: v-bind(subTextColor);
-  margin-bottom: 30px;
-}
-.permission-btn {
-  width: 120px;
-  height: 40px;
-  background-color: rgba(249, 222, 74, 1) !important;
-  color: #000 !important;
-  border: none;
-  border-radius: 5px;
-  font-weight: 500;
-}
-.permission-btn:hover {
-  background-color: rgba(249, 222, 74, 0.8) !important;
+
+html.dark {
+  .dialog-footer {
+    .dialog-button {
+      &.cancel {
+        background-color: #2B2B2B;
+        color: #C4C4D3;
+        border: 1px solid #3B3B3B;
+
+        &:hover {
+          background-color: #3B3B3B;
+          border-color: #4B4B4B;
+        }
+      }
+
+      &.confirm {
+        background-color: rgba(249, 222, 74, 1);
+        color: #1B2126;
+
+        &:hover {
+          background-color: rgba(249, 222, 74, 0.8);
+        }
+      }
+    }
+  }
 }
 </style>

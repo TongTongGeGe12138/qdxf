@@ -28,40 +28,49 @@ const routes: Array<RouteRecordRaw> = [
         }
       },
       {
-        path: '/collaboration',
-        name: 'Collaboration',
-        component: () => import('../views/collaboration/index.vue'),
+        path: '/knowledge-base',
+        name: 'KnowledgeBase',
+        component: () => import('../views/knowledge-base/index.vue'),
         meta: {
-          title: '协同空间',
-          icon: '左栏 - 团队协同'
-        },
-        children: [
-          {
-            path: 'members',
-            name: 'Members',
-            component: () => import('../views/collaboration/members/index.vue'),
-            meta: {
-              title: '人员管理'
-            }
-          },
-          {
-            path: 'tasks',
-            name: 'Tasks',
-            component: () => import('../views/collaboration/tasks/index.vue'),
-            meta: {
-              title: '任务管理'
-            }
-          },
-          {
-            path: 'board',
-            name: 'Board',
-            component: () => import('../views/collaboration/board/index.vue'),
-            meta: {
-              title: '进度看板'
-            }
-          }
-        ]
-      }
+          title: '知识库',
+          icon: '左栏 - 知识库'
+        }
+      },
+      // {
+      //   path: '/collaboration',
+      //   name: 'Collaboration',
+      //   component: () => import('../views/collaboration/index.vue'),
+      //   meta: {
+      //     title: '协同空间',
+      //     icon: '左栏 - 团队协同'
+      //   },
+      //   children: [
+      //     {
+      //       path: 'members',
+      //       name: 'Members',
+      //       component: () => import('../views/collaboration/members/index.vue'),
+      //       meta: {
+      //         title: '人员管理'
+      //       }
+      //     },
+      //     {
+      //       path: 'tasks',
+      //       name: 'Tasks',
+      //       component: () => import('../views/collaboration/tasks/index.vue'),
+      //       meta: {
+      //         title: '任务管理'
+      //       }
+      //     },
+      //     {
+      //       path: 'board',
+      //       name: 'Board',
+      //       component: () => import('../views/collaboration/board/index.vue'),
+      //       meta: {
+      //         title: '进度看板'
+      //       }
+      //     }
+      //   ]
+      // }
     ]
   },
   {
