@@ -104,6 +104,13 @@
       </div>
     </div>
   </div>
+
+  <!-- CAD查看器 -->
+  <CadViewer
+    v-model:visible="cadViewerVisible"
+    :file-id="currentCadFile?.id || ''"
+    :file-name="currentCadFile?.name || ''"
+  />
 </template>
 
 <script setup lang="ts">
@@ -123,6 +130,7 @@ import {
 } from '@/api/dict';
 import { getMyResourcesInfo, deleteResourcesFile } from '@/api/resource';
 import folder from '@/assets/wjj.svg?component';
+import CadViewer from '@/components/CadViewer.vue';
 
 // 文件类型接口
 interface FileItem {
@@ -175,6 +183,10 @@ const filterGroups = ref([
     filters: ['全部']
   }
 ]);
+
+// CAD查看器相关状态
+const cadViewerVisible = ref(false);
+const currentCadFile = ref<FileItem | null>(null);
 
 // 计算属性：显示的文件列表（包含返回上级按钮）
 const displayFileList = computed(() => {
@@ -467,22 +479,23 @@ const downloadFile = async (fileId: string) => {
 // 在新窗口预览文件
 const viewFile = async (file: FileItem) => {
   try {
-    const res = await getMyResourcesInfo(file.id);
-    if (res.code === 200 && res.data.url) {
-      // 检查文件类型，如果是DWG格式，使用CAD查看器
-      if (file.contentType === 141 || file.type?.toLowerCase() === 'dwg') {
-        // 使用CAD查看器逻辑
-        const cadViewerUrl = `/cad-viewer?fileId=${file.id}&fileName=${encodeURIComponent(file.name)}`;
-        window.open(cadViewerUrl, '_blank');
-      } else {
-        // 其他文件类型直接在新窗口打开
-        window.open(res.data.url, '_blank');
-      }
+    // 检查文件类型，如果是DWG格式，使用CAD查看器
+    if (file.contentType === 141 || file.type?.toLowerCase() === 'dwg') {
+      // 使用CAD查看器组件
+      currentCadFile.value = file;
+      cadViewerVisible.value = true;
     } else {
-      ElMessage.warning('获取文件链接失败或链接不存在');
+      // 其他文件类型获取链接后在新窗口打开
+      const res = await getMyResourcesInfo(file.id);
+      if (res.code === 200 && res.data.url) {
+        window.open(res.data.url, '_blank');
+      } else {
+        ElMessage.warning('获取文件链接失败或链接不存在');
+      }
     }
   } catch (error) {
     console.error('获取文件链接失败:', error);
+    ElMessage.error('获取文件链接失败');
   }
 };
 
