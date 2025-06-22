@@ -19,7 +19,7 @@
           placeholder="搜索项目或文件"
           :prefix-icon="Search"
           class="search-input"
-          @input="handleSearch"
+          clearable
         />
       </div>
 
@@ -226,7 +226,14 @@ const fetchFileList = async () => {
       console.log('二级分类数据:', normativeClassification.value);
       
       // 过滤掉"全部"选项，只显示实际的二级分类
-      const folders = normativeClassification.value.filter(item => item.name !== '全部');
+      let folders = normativeClassification.value.filter(item => item.name !== '全部');
+      
+      // 如果有搜索关键词，在本地过滤文件夹名称
+      if (searchQuery.value.trim()) {
+        folders = folders.filter(item => 
+          item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+        );
+      }
       
       fileList.value = folders.map((item: any, index: number) => {
         console.log(`处理第${index}项:`, item);
@@ -412,6 +419,7 @@ const handleFilterChange = (groupIndex: number, filter: string) => {
 
 // 处理搜索
 const handleSearch = () => {
+  console.log('执行搜索，关键词:', searchQuery.value);
   currentPage.value = 1;
   fetchFileList();
 };
@@ -589,6 +597,7 @@ watch(searchQuery, () => {
   // 防抖处理
   clearTimeout((window as any).searchTimer);
   (window as any).searchTimer = setTimeout(() => {
+    currentPage.value = 1; // 重置页码
     handleSearch();
   }, 500);
 });

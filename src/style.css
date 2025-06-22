@@ -374,3 +374,273 @@ html:not(.dark) .el-dropdown-menu__item {
   color: #F9DE4A !important;
 }
 
+/* 分页组件样式 */
+.el-pagination {
+  background-color: transparent !important;
+}
+
+.el-pagination .el-pager li {
+  background-color: transparent !important;
+  color: var(--el-text-color-primary) !important;
+}
+
+.el-pagination .el-pager li.is-active {
+  background-color: transparent !important;
+  color: #ff9900 !important;
+  font-weight: bold !important;
+}
+
+.el-pagination .el-pager li:hover {
+  background-color: transparent !important;
+  color: #ff9900 !important;
+}
+
+.el-pagination .btn-prev,
+.el-pagination .btn-next {
+  background-color: transparent !important;
+  color: var(--el-text-color-primary) !important;
+}
+
+.el-pagination .btn-prev:hover,
+.el-pagination .btn-next:hover {
+  background-color: transparent !important;
+  color: #ff9900 !important;
+}
+
+.el-pagination .el-pagination__total,
+.el-pagination .el-pagination__jump {
+  color: var(--el-text-color-primary) !important;
+}
+
+/* 页面大小选择框 */
+.el-pagination .el-pagination__sizes .el-select .el-input .el-input__wrapper {
+  background-color: transparent !important;
+  border-color: var(--el-border-color) !important;
+  box-shadow: none !important;
+}
+
+.el-pagination .el-pagination__sizes .el-select .el-input .el-input__inner {
+  background-color: transparent !important;
+  color: var(--el-text-color-primary) !important;
+}
+
+/* 专门针对el-pagination__sizes的样式 */
+.el-pagination__sizes .el-select .el-input__wrapper {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.el-pagination__sizes .el-select .el-input__inner {
+  background-color: transparent !important;
+}
+
+.el-pagination__sizes .el-select .el-input__wrapper.is-focus {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* 跳转页面输入框 */
+.el-pagination .el-pagination__jump .el-input .el-input__wrapper {
+  background-color: transparent !important;
+  border-color: var(--el-border-color) !important;
+  box-shadow: none !important;
+}
+
+.el-pagination .el-pagination__jump .el-input .el-input__inner {
+  background-color: transparent !important;
+  color: var(--el-text-color-primary) !important;
+}
+
+/* 下拉选择框的弹出层 */
+.el-pagination .el-select .el-select-dropdown {
+  background-color: rgba(231, 232, 235, 1) !important;
+  box-shadow: none !important;
+}
+
+.el-pagination .el-select .el-select-dropdown .el-select-dropdown__item {
+  background-color: transparent !important;
+  color: var(--el-text-color-primary) !important;
+}
+
+.el-pagination .el-select .el-select-dropdown .el-select-dropdown__item:hover {
+  background-color: transparent !important;
+  color: #ff9900 !important;
+}
+
+.el-pagination .el-select .el-select-dropdown .el-select-dropdown__item.selected {
+  background-color: transparent !important;
+  color: #ff9900 !important;
+  font-weight: bold !important;
+}
+
+/* 全局el-select样式 */
+.el-select .el-input .el-input__wrapper {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.el-select .el-input .el-input__inner {
+  background-color: transparent !important;
+}
+
+/* 更强的el-select透明样式 */
+.el-select .el-input__wrapper {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.el-select .el-input__wrapper.is-focus {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.el-select .el-input__wrapper:hover {
+  background-color: transparent !important;
+}
+
+/* 确保所有el-select相关元素都透明 */
+.el-select .el-input {
+  background-color: transparent !important;
+}
+
+.el-select .el-input .el-input__wrapper {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.el-select .el-input .el-input__inner {
+  background-color: transparent !important;
+}
+
+/* 更具体的el-select样式覆盖 */
+.el-select .el-input__wrapper,
+.el-select .el-input .el-input__wrapper,
+.el-select .el-input__wrapper.is-focus,
+.el-select .el-input__wrapper:hover {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border-color: var(--el-border-color) !important;
+}
+
+.el-select .el-input__inner,
+.el-select .el-input .el-input__inner {
+  background-color: transparent !important;
+  color: var(--el-text-color-primary) !important;
+}
+
+/* 针对分页中的el-select特别处理 */
+.el-pagination .el-select .el-input__wrapper,
+.el-pagination .el-select .el-input .el-input__wrapper {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.el-pagination .el-select .el-input__inner,
+.el-pagination .el-select .el-input .el-input__inner {
+  background-color: transparent !important;
+}
+
+/* el-select__wrapper样式 */
+.el-select__wrapper {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.el-select__wrapper .el-input__wrapper {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.el-select__wrapper .el-input__inner {
+  background-color: transparent !important;
+}
+
+/* 全局下拉选择框弹出层样式 */
+.el-select-dropdown {
+  background-color: rgba(231, 232, 235, 1) !important;
+  border-color: var(--el-border-color) !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item {
+  background-color: transparent !important;
+  color: var(--el-text-color-primary) !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item:hover {
+  background-color: transparent !important;
+  color: #ff9900 !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item.selected {
+  background-color: transparent !important;
+  color: #ff9900 !important;
+  font-weight: bold !important;
+}
+
+.el-select-dropdown .el-select-dropdown__item.is-selected {
+  background-color: transparent !important;
+  color: #ff9900 !important;
+  font-weight: bold !important;
+}
+
+/* 移除所有可能的阴影效果 */
+.el-select-dropdown,
+.el-select-dropdown *,
+.el-pagination .el-select .el-select-dropdown,
+.el-pagination .el-select .el-select-dropdown * {
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+/* 针对Element Plus的popper样式 */
+.el-popper.el-select__popper {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.el-popper.el-select__popper .el-select-dropdown {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* 移除所有可能的阴影效果 - 更强版本 */
+.el-select-dropdown,
+.el-select-dropdown *,
+.el-pagination .el-select .el-select-dropdown,
+.el-pagination .el-select .el-select-dropdown *,
+.el-popper,
+.el-popper *,
+.el-popper.el-select__popper,
+.el-popper.el-select__popper * {
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+}
+
+/* 针对Element Plus的默认阴影样式 */
+.el-popper.is-light {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.el-popper.is-light .el-select-dropdown {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* 移除所有popper相关的阴影 */
+[data-popper-placement] {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.el-overlay {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
