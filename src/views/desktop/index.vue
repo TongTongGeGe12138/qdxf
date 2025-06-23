@@ -23,7 +23,7 @@ import {
   addProjectResource,
   editProjectResource
 } from '@/api/project';
-import { getResourceFiles, deleteResourcesFile } from '@/api/resource';
+import { getResourceFiles, deleteResourcesFile, getMyResourcesInfo, downloadResourcesFile } from '@/api/resource';
 import { removeMyResource } from '@/api/dict';
 import { getProvinceList, getCityList} from '@/api/location';
 import simplified from '@/assets/simplified_document_icon.svg?url';
@@ -48,6 +48,7 @@ interface FileItem {
   address?: string;
   addressId?: string | number;
   clientName?: string;
+  contentType?: number;
 }
 
 interface TabItem {
@@ -102,7 +103,6 @@ const rightTabs = computed(() => {
   if (activeIndex.value === 1) {
     return [
       { name: '打开', icon: View },
-      { name: '下载', icon: Download },
       { name: '取消收藏', icon: Delete },
     ];
   }
@@ -231,7 +231,7 @@ watch(activeIndex, (newIndex) => {
         if (res.code === 200) {
           const list = res.data.data.map((item: any) => ({
             ...item,
-            type: item.length === 0 ? 'folder' : 'file'
+            type: isFolder(item) ? 'folder' : 'file'
           }));
           fileLibraryStore.setLibraryList(list || []);
           fileLibraryStore.setTotal(res.data.total || 0);
@@ -275,7 +275,7 @@ const getTrashList = async (search = '') => {
     if (res.code === 200) {
       const list = res.data.data.map((item: any) => ({
         ...item,
-        type: item.length === 0 ? 'folder' : 'file'
+        type: isFolder(item) ? 'folder' : 'file'
       }));
       fileLibraryStore.setLibraryList(list || []);
       fileLibraryStore.setTotal(res.data.total || 0);
@@ -303,7 +303,7 @@ const getFavoriteList = async (search = '') => {
     if (res.code === 200) {
       const list = res.data.data.map((item: any) => ({
         ...item,
-        type: item.length === 0 ? 'folder' : 'file'
+        type: isFolder(item) ? 'folder' : 'file'
       }));
       fileLibraryStore.setLibraryList(list || []);
       fileLibraryStore.setTotal(res.data.total || 0);
@@ -319,6 +319,11 @@ const getFavoriteList = async (search = '') => {
     fileLibraryStore.setTotal(0);
   }
 }
+
+// 辅助函数：判断是否为文件夹
+const isFolder = (item: any) => {
+  return item.length === 0 || item.contentType === 0 || item.type === 'folder';
+};
 
 // 处理文件选中
 const handleFileSelected = (file: FileItem) => {
@@ -408,7 +413,12 @@ const handleUpload = async () => {
         search: ''
       })
       if (res.code === 200) {
-        setStoreDataFromResponse(res);
+        const list = res.data.data.map((item: any) => ({
+          ...item,
+          type: isFolder(item) ? 'folder' : 'file'
+        }));
+        fileLibraryStore.setLibraryList(list || []);
+        fileLibraryStore.setTotal(res.data.total || 0);
       }
     } else {
       const res = await getProjectResourceFile({
@@ -421,10 +431,10 @@ const handleUpload = async () => {
       if (res.code === 200) {
         const list = res.data.data.map((item: any) => ({
           ...item,
-          type: item.length === 0 ? 'folder' : 'file'
-        }))
-        fileLibraryStore.setLibraryList(list || [])
-        fileLibraryStore.setTotal(res.data.total || 0)
+          type: isFolder(item) ? 'folder' : 'file'
+        }));
+        fileLibraryStore.setLibraryList(list || []);
+        fileLibraryStore.setTotal(res.data.total || 0);
       }
     }
   } catch (error) {
@@ -459,6 +469,8 @@ const handleFileOperation = async (tab: TabItem) => {
           listLoading.value = true;
           if (activeIndex.value === 2) {
             await getTrashList(searchValue.value);
+          } else if (activeIndex.value === 1) {
+            await getFavoriteList(searchValue.value);
           } else {
             const res = await getProjectFile({
               page: 1,
@@ -468,7 +480,7 @@ const handleFileOperation = async (tab: TabItem) => {
             if (res.code === 200) {
               const list = res.data.data.map((item: any) => ({
                 ...item,
-                type: item.length === 0 ? 'folder' : 'file'
+                type: isFolder(item) ? 'folder' : 'file'
               }));
               fileLibraryStore.setLibraryList(list || []);
               fileLibraryStore.setTotal(res.data.total || 0);
@@ -498,7 +510,30 @@ const handleFileOperation = async (tab: TabItem) => {
       if (fileLibraryRef.value) {
         operationLoading.value = true;
         try {
-          await fileLibraryRef.value.openFile(file);
+          // 如果是收藏资源场景，先获取文件详细信息
+          if (activeIndex.value === 1) {
+            try {
+              const detailRes = await getMyResourcesInfo(file.id);
+              if (detailRes.code === 200) {
+                // 合并详细信息到文件对象
+                const detailedFile = {
+                  ...file,
+                  ...detailRes.data
+                };
+                await fileLibraryRef.value.openFile(detailedFile);
+              } else {
+                // 如果获取详细信息失败，使用原始文件
+                await fileLibraryRef.value.openFile(file);
+              }
+            } catch (error) {
+              console.error('获取文件详细信息失败:', error);
+              // 如果获取详细信息失败，使用原始文件
+              await fileLibraryRef.value.openFile(file);
+            }
+          } else {
+            // 其他场景直接使用原始文件
+            await fileLibraryRef.value.openFile(file);
+          }
         } finally {
           operationLoading.value = false;
         }
@@ -557,6 +592,12 @@ const handleFileOperation = async (tab: TabItem) => {
       }
       break;
     case '下载':
+      // 如果是收藏资源场景，禁用下载功能
+      if (activeIndex.value === 1) {
+        ElMessage.warning('收藏资源暂不支持下载');
+        return;
+      }
+      
       try {
         // 如果是文件夹，提示不能下载
         if (file.type === 'folder') {
@@ -566,6 +607,7 @@ const handleFileOperation = async (tab: TabItem) => {
         
         operationLoading.value = true;
         
+        // 其他场景：使用原有的项目文件下载逻辑
         // 根据当前路径层级选择不同的下载参数
         let downloadParams;
         if (fileLibraryStore.currentPath.length === 0) {
@@ -636,7 +678,7 @@ const handleConfirmOperation = async () => {
         if (listRes.code === 200) {
           const list = listRes.data.data.map((item: any) => ({
             ...item,
-            type: item.length === 0 ? 'folder' : 'file'
+            type: isFolder(item) ? 'folder' : 'file'
           }));
           fileLibraryStore.setLibraryList(list || []);
         }
@@ -669,7 +711,7 @@ const handleConfirmOperation = async () => {
         if (res.code === 200) {
           const list = res.data.data.map((item: any) => ({
             ...item,
-            type: item.length === 0 ? 'folder' : 'file'
+            type: isFolder(item) ? 'folder' : 'file'
           }));
           fileLibraryStore.setLibraryList(list || []);
         }
@@ -759,7 +801,7 @@ const handleConfirmOperation = async () => {
           // 根据 length 是否为 0 来判断类型
           const list = res.data.data.map((item: any) => ({
             ...item,
-            type: item.length === 0 ? 'folder' : 'file'
+            type: isFolder(item) ? 'folder' : 'file'
           }));
           fileLibraryStore.setLibraryList(list || []);
         }
@@ -782,7 +824,7 @@ const handleConfirmOperation = async () => {
           // 根据 length 是否为 0 来判断类型
           const list = res2.data.data.map((item: any) => ({
             ...item,
-            type: item.length === 0 ? 'folder' : 'file'
+            type: isFolder(item) ? 'folder' : 'file'
           }));
           fileLibraryStore.setLibraryList(list || []);
         }
@@ -893,12 +935,14 @@ watch(searchValue, async (newValue) => {
       if (res.code === 200) {
         const list = res.data.data.map((item: any) => ({
           ...item,
-          type: item.length === 0 ? 'folder' : 'file'
+          type: isFolder(item) ? 'folder' : 'file'
         }));
         fileLibraryStore.setLibraryList(list || []);
+        fileLibraryStore.setTotal(res.data.total || 0);
       } else {
         // API调用成功但返回错误状态码时，清空列表
         fileLibraryStore.setLibraryList([]);
+        fileLibraryStore.setTotal(0);
       }
     } else if (activeIndex.value === 2) {
       // 回收站搜索
@@ -926,18 +970,6 @@ watch(searchValue, async (newValue) => {
     searchLoading.value = false;
   }
 });
-
-// 辅助函数：统一处理API响应和设置store数据
-const setStoreDataFromResponse = (res: any) => {
-  if (res.code === 200) {
-    const list = res.data.data.map((item: any) => ({
-      ...item,
-      type: item.type || (item.isFolder ? 'folder' : 'file')
-    }));
-    fileLibraryStore.setLibraryList(list || []);
-    fileLibraryStore.setTotal(res.data.total || 0);
-  }
-};
 
 // 辅助函数：清空store数据
 const clearStoreData = () => {
@@ -1024,7 +1056,7 @@ onUnmounted(() => {
         </div>
         <div class="dcontent-cont">
           <div class="dcontent-cont-left" v-loading="listLoading || searchLoading">
-            <FileLibrary ref="fileLibraryRef" @fileSelected="handleFileSelected" />
+            <FileLibrary ref="fileLibraryRef" @fileSelected="handleFileSelected" :activeIndex="activeIndex" />
           </div>
           <div class="dcontent-cont-right" v-if="selectedFile">
             <div class="file-detail">

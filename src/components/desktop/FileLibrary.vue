@@ -61,6 +61,7 @@ import { ref, computed, onUnmounted, watch, onMounted, nextTick } from 'vue';
 import folder from '@/assets/wjj.svg?component';
 import { useFileLibraryStore } from '@/store/modules/fileLibrary';
 import { getProjectResourceFileInfo } from '@/api/project';
+import { getMyResourcesInfo } from '@/api/resource';
 import { getP2d } from '@/api/cad';
 import { ElMessage } from 'element-plus';
 import { EngineContext } from '@/vendor/CadEngine/EngineContext.js';
@@ -91,6 +92,15 @@ interface FileItem {
 
 const fileLibraryStore = useFileLibraryStore();
 const emit = defineEmits(['fileSelected', 'openFile']);
+
+// 添加props定义
+interface Props {
+  activeIndex?: number;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  activeIndex: 0
+});
 
 const filePath = computed(() => ['我的桌面', ...fileLibraryStore.currentPath]);
 const currentPage = ref(1);
@@ -197,119 +207,138 @@ const handleFileDblClick = async (item: FileItem) => {
   } else {
     // 处理文件双击
     try {
-      // 判断是否在第一层目录
-      const isFirstLevel = fileLibraryStore.currentPath.length === 0;
-      const params = isFirstLevel ? {
-        projectId: item.id,
-        fileId: item.id
-      } : {
-        projectId: fileLibraryStore.projectId,
-        fileId: item.id
-      };
+      // 判断是否在收藏资源场景
+      const isFavoriteResource = fileLibraryStore.currentPath.length === 0 && props.activeIndex === 1;
       
-      const res = await getProjectResourceFileInfo(params);
-      if (res.code === 200) {
-        // 更新选中文件的信息
-        const updatedFile = {
-          ...item,
-          ...res.data
+      let fileInfo;
+      if (isFavoriteResource) {
+        // 收藏资源场景：使用 getMyResourcesInfo 接口
+        const res = await getMyResourcesInfo(item.id);
+        if (res.code === 200) {
+          fileInfo = res.data;
+        } else {
+          ElMessage.error('获取文件信息失败');
+          return;
+        }
+      } else {
+        // 其他场景：使用原有的 getProjectResourceFileInfo 接口
+        const isFirstLevel = fileLibraryStore.currentPath.length === 0;
+        const params = isFirstLevel ? {
+          projectId: item.id,
+          fileId: item.id
+        } : {
+          projectId: fileLibraryStore.projectId,
+          fileId: item.id
         };
-        selectedItem.value = updatedFile;
-        emit('fileSelected', updatedFile);
+        
+        const res = await getProjectResourceFileInfo(params);
+        if (res.code === 200) {
+          fileInfo = res.data;
+        } else {
+          ElMessage.error('获取文件信息失败');
+          return;
+        }
+      }
 
-        // 根据文件类型处理
-        if (updatedFile.contentType === 141) {  // DWG 文件
-          // 显示CAD查看器
-          showCadViewer.value = true;
-          cadLoading.value = true;
-          await nextTick();
-          const container = document.getElementById('ibp-2d-container');
-          if (container) {
-            EngineContext.AttachContainer(container);
-          }
+      // 更新选中文件的信息
+      const updatedFile = {
+        ...item,
+        ...fileInfo
+      };
+      selectedItem.value = updatedFile;
+      emit('fileSelected', updatedFile);
 
-          // 如果有 url，获取 P2D 文件
-          if (updatedFile.url) {
-            try {
-              // 添加超时处理
-              const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('请求超时')), 30000); // 30秒超时
-              });
-              
-              const p2dPromise = getP2d({ DwgUrl: updatedFile.url });
-              const p2dRes = await Promise.race([p2dPromise, timeoutPromise]) as P2dResponse;
-              
-              if (p2dRes.Code === 0) {
-                const loading = ref(true);
-                const finish = (e: any) => {
-                  if (e.isComplete === false) {
-                    ElMessage.error('该路径无法打开');
-                    loading.value = false;
-                    cadLoading.value = false;
-                    return;
-                  }
-                  if (e.isComplete === true) {
-                    EngineContext.ViewManager.ZoomToFit();
-                    EngineContext.LoadManager.removeEventListener('finish', finish);
-                    loading.value = false;
-                    cadLoading.value = false;
-                    EngineContext.init();
-                  }
-                };
-                EngineContext.LoadManager.addEventListener('finish', finish);
-                EngineContext.LoadManager.LoadModel({
-                  url: p2dRes.Data,
-                  type: 'p2d',
-                });
-                // ElMessage.success('获取P2D文件成功');
-              } else {
-                console.error('P2D接口返回错误:', p2dRes);
-                ElMessage.error(p2dRes.Msg || '获取P2D文件失败');
-                // 如果是dwg地址错误，尝试直接加载dwg文件
-                if (p2dRes.Msg === 'dwg地址错误' && updatedFile.url) {
-                  ElMessage.info('尝试直接加载DWG文件...');
-                  EngineContext.LoadManager.LoadModel({
-                    url: updatedFile.url,
-                    type: 'dwg',
-                  });
+      // 根据文件类型处理
+      if (updatedFile.contentType === 141) {  // DWG 文件
+        // 显示CAD查看器
+        showCadViewer.value = true;
+        cadLoading.value = true;
+        await nextTick();
+        const container = document.getElementById('ibp-2d-container');
+        if (container) {
+          EngineContext.AttachContainer(container);
+        }
+
+        // 如果有 url，获取 P2D 文件
+        if (updatedFile.url) {
+          try {
+            // 添加超时处理
+            const timeoutPromise = new Promise((_, reject) => {
+              setTimeout(() => reject(new Error('请求超时')), 30000); // 30秒超时
+            });
+            
+            const p2dPromise = getP2d({ DwgUrl: updatedFile.url });
+            const p2dRes = await Promise.race([p2dPromise, timeoutPromise]) as P2dResponse;
+            
+            if (p2dRes.Code === 0) {
+              const loading = ref(true);
+              const finish = (e: any) => {
+                if (e.isComplete === false) {
+                  ElMessage.error('该路径无法打开');
+                  loading.value = false;
+                  cadLoading.value = false;
+                  return;
                 }
-              }
-            } catch (error) {
-              console.error('P2D文件加载失败:', error);
-              if (error.message === '请求超时') {
-                ElMessage.error('P2D文件加载超时，请稍后重试');
-              } else {
-                ElMessage.error('获取P2D文件失败，请稍后重试');
-              }
-              // 尝试直接加载DWG文件作为备用方案
-              try {
+                if (e.isComplete === true) {
+                  EngineContext.ViewManager.ZoomToFit();
+                  EngineContext.LoadManager.removeEventListener('finish', finish);
+                  loading.value = false;
+                  cadLoading.value = false;
+                  EngineContext.init();
+                }
+              };
+              EngineContext.LoadManager.addEventListener('finish', finish);
+              EngineContext.LoadManager.LoadModel({
+                url: p2dRes.Data,
+                type: 'p2d',
+              });
+              // ElMessage.success('获取P2D文件成功');
+            } else {
+              console.error('P2D接口返回错误:', p2dRes);
+              ElMessage.error(p2dRes.Msg || '获取P2D文件失败');
+              // 如果是dwg地址错误，尝试直接加载dwg文件
+              if (p2dRes.Msg === 'dwg地址错误' && updatedFile.url) {
                 ElMessage.info('尝试直接加载DWG文件...');
                 EngineContext.LoadManager.LoadModel({
                   url: updatedFile.url,
                   type: 'dwg',
                 });
-              } catch (dwgError) {
-                console.error('DWG文件加载也失败:', dwgError);
-                ElMessage.error('无法加载CAD文件，请检查文件是否有效');
-                cadLoading.value = false;
               }
             }
-          } else {
-            ElMessage.warning('文件URL不存在，无法预览');
-            cadLoading.value = false;
+          } catch (error) {
+            console.error('P2D文件加载失败:', error);
+            if (error instanceof Error && error.message === '请求超时') {
+              ElMessage.error('P2D文件加载超时，请稍后重试');
+            } else {
+              ElMessage.error('获取P2D文件失败，请稍后重试');
+            }
+            // 尝试直接加载DWG文件作为备用方案
+            try {
+              ElMessage.info('尝试直接加载DWG文件...');
+              EngineContext.LoadManager.LoadModel({
+                url: updatedFile.url,
+                type: 'dwg',
+              });
+            } catch (dwgError) {
+              console.error('DWG文件加载也失败:', dwgError);
+              ElMessage.error('无法加载CAD文件，请检查文件是否有效');
+              cadLoading.value = false;
+            }
           }
-        } else {  // 非 DWG 文件
-          // 在新窗口打开文件
-          if (updatedFile.url) {
-            window.open(updatedFile.url, '_blank');
-          } else {
-            ElMessage.warning('文件URL不存在，无法预览');
-          }
+        } else {
+          ElMessage.warning('文件URL不存在，无法预览');
+          cadLoading.value = false;
         }
-      } else {
-        ElMessage.error('获取文件信息失败');
+      } else {  // 非 DWG 文件（包括PDF等）
+        // 在新窗口打开文件
+        if (updatedFile.url) {
+          window.open(updatedFile.url, '_blank');
+        } else {
+          ElMessage.warning('文件URL不存在，无法预览');
+        }
       }
     } catch (error) {
+      console.error('文件处理失败:', error);
       ElMessage.error('获取文件信息失败');
     }
   }

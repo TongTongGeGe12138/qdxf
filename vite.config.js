@@ -60,7 +60,8 @@ export default defineConfig({
         },
         proxy: (_a = {},
             _a[VITE_API_URL_PREFIX] = {
-                target: 'http://192.168.15.200:9100',
+                // target: 'http://192.168.15.200:9100',
+                target: 'http://api-work.dev.ifeng.com',
                 changeOrigin: true,
                 // rewrite: (path) => path.replace(/^\/api/, ''),
             },

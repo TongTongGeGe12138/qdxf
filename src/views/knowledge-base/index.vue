@@ -59,16 +59,16 @@
             v-for="file in displayFileList"
             :key="file.id"
             class="file-item"
-            :class="{ 'is-selected': selectedFile?.id === file.id }"
+            :class="{ 'is-selected': selectedFile?.id === file.id  }"
             @click.stop="handleFileClick(file)"
             @dblclick.stop="handleFileDblClick(file)"
           >
             <div class="file-icon">
-              <template v-if="file.type === 'back' || file.type === 'folder'">
+              <template v-if="file.type === 'back' || file.type === 'folder' || file.contentType === 0">
                 <folder />
               </template>
               <img 
-                v-else-if="file.thumbUrl && file.type !== 'folder'" 
+                v-else-if="file.thumbUrl && file.type !== 'folder' && file.contentType !== 0" 
                 :src="file.thumbUrl" 
                 :alt="file.name"
                 @error="handleImageError"
@@ -82,7 +82,7 @@
             <div class="file-info">
               <div class="file-name">{{ file.name || '未命名文件' }}</div>
             </div>
-            <div class="file-actions" v-if="file.type !== 'folder' && file.type !== 'back'">
+            <div class="file-actions" v-if="file.type !== 'folder' && file.type !== 'back' && file.contentType !== 0">
               <button class="action-btn" @click.stop="viewFile(file)">查看</button>
               <button class="action-btn" @click.stop="addToMyResource(file.id)">收藏资源</button>
             </div>
@@ -165,6 +165,10 @@ const selectedFile = ref<FileItem | null>(null);
 const currentCategory = ref('');
 const currentLv1 = ref('');
 
+// 添加独立文件夹状态
+const isInIndependentFolder = ref(false);
+const currentFolderId = ref('');
+
 // 分类相关数据
 const standardClassificationList = ref<ClassificationItem[]>([]);
 const normativeClassification = ref<ClassificationItem[]>([]);
@@ -190,8 +194,8 @@ const currentCadFile = ref<FileItem | null>(null);
 
 // 计算属性：显示的文件列表（包含返回上级按钮）
 const displayFileList = computed(() => {
-  // 如果当前在二级分类中（不是"全部"），显示返回上级按钮
-  if (filterGroups.value[1].activeFilter && filterGroups.value[1].activeFilter !== '全部') {
+  // 如果当前在二级分类中（不是"全部"）或在独立文件夹中，显示返回上级按钮
+  if ((filterGroups.value[1].activeFilter && filterGroups.value[1].activeFilter !== '全部') || isInIndependentFolder.value) {
     const backItem: FileItem = {
       id: 'back',
       name: '返回上级',
@@ -371,6 +375,10 @@ const handleTabChange = (index: number) => {
   filterGroups.value[0].activeFilter = '';
   filterGroups.value[1].activeFilter = '';
   
+  // 重置独立文件夹状态
+  isInIndependentFolder.value = false;
+  currentFolderId.value = '';
+  
   // 获取分类数据
   getBeeResourcesFn();
 };
@@ -385,6 +393,10 @@ const getCategoryByTab = (tabIndex: number) => {
 // 处理筛选条件变化
 const handleFilterChange = (groupIndex: number, filter: string) => {
   filterGroups.value[groupIndex].activeFilter = filter;
+  
+  // 重置独立文件夹状态
+  isInIndependentFolder.value = false;
+  currentFolderId.value = '';
   
   if (groupIndex === 0) {
     // 标准分类（一级分类）
@@ -433,7 +445,7 @@ const handleFileClick = (file: FileItem) => {
 };
 
 // 处理文件双击事件
-const handleFileDblClick = (file: FileItem) => {
+const handleFileDblClick = async (file: FileItem) => {
   console.log('双击文件:', file);
   
   // 如果双击的是返回上级按钮
@@ -444,16 +456,20 @@ const handleFileDblClick = (file: FileItem) => {
   }
   
   // 如果双击的是文件夹，进入该文件夹
-  if (file.type === 'folder') {
+  if (file.type === 'folder' || file.contentType === 0) {
     console.log('进入文件夹:', file.name);
     
-    // 找到对应的二级分类
+    // 如果是通过二级分类创建的文件夹，使用原来的逻辑
     const selectedCategory = normativeClassification.value.find(item => item.name === file.name);
     if (selectedCategory) {
       // 设置选中的二级分类
       filterGroups.value[1].activeFilter = selectedCategory.name;
       // 获取该分类下的文件
       fetchFileList();
+    } else {
+      // 如果是独立的文件夹（contentType为0），直接使用文件夹ID获取内容
+      console.log('使用文件夹ID获取内容:', file.id);
+      enterFolder(file.id);
     }
     return;
   }
@@ -527,7 +543,7 @@ const getFileIcon = (fileType: string, contentType?: number) => {
   }
   
   // 如果是文件夹，返回文件夹图标
-  if (fileType === 'folder') {
+  if (fileType === 'folder' || contentType === 0) {
     return '/src/assets/file-icons/folder-large.svg';
   }
   
@@ -613,7 +629,7 @@ onMounted(() => {
 
 // Style-related computed properties
 const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C');
-const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#A1A1A1');
+const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#13343C');
 const borderColor = computed(() => isDark.value ? 'rgba(231, 231, 224, 0.2)' : 'rgba(0, 0, 0, 0.1)');
 const menuBgColor = computed(() => isDark.value ? '#0A0A0A' : '#FFFFFF');
 const tagHoverBgColor = computed(() => isDark.value ? '#2b2b2b' : '#f0f0f0');
@@ -743,10 +759,19 @@ const handleNormativeChange = (index: number) => {
 
 // 返回上一级
 const handleBackToParent = () => {
-  filterGroups.value[1].activeFilter = '';
-  currentLv1.value = '';
-  currentPage.value = 1;
-  fetchFileList();
+  if (isInIndependentFolder.value) {
+    // 如果是在独立文件夹中，返回到原来的状态
+    isInIndependentFolder.value = false;
+    currentFolderId.value = '';
+    // 重新获取原来的数据
+    fetchFileList();
+  } else {
+    // 原来的逻辑：返回到二级分类的"全部"状态
+    filterGroups.value[1].activeFilter = '';
+    currentLv1.value = '';
+    currentPage.value = 1;
+    fetchFileList();
+  }
 };
 
 // 添加到我的资源
@@ -761,6 +786,58 @@ const addToMyResource = async (fileId: string) => {
   } catch (error) {
     console.error('添加失败:', error);
     ElMessage.error('添加失败');
+  }
+};
+
+// 进入独立文件夹
+const enterFolder = async (folderId: string) => {
+  loading.value = true;
+  
+  // 设置独立文件夹状态
+  isInIndependentFolder.value = true;
+  currentFolderId.value = folderId;
+  
+  try {
+    const params = {
+      all: false,
+      search: searchQuery.value,
+      page: currentPage.value,
+      pageSize: pageSize.value
+    };
+
+    // 使用文件夹ID获取文件夹内容
+    const response = await getSecondLevelListApi({
+      id: folderId,
+      ...params
+    });
+    
+    if (response && response.code === 200) {
+      console.log('获取文件夹内容:', response.data);
+      let fileData = [];
+      if (response.data?.data && Array.isArray(response.data.data)) {
+        fileData = response.data.data;
+      } else if (response.data?.list && Array.isArray(response.data.list)) {
+        fileData = response.data.list;
+      } else if (Array.isArray(response.data)) {
+        fileData = response.data;
+      }
+      
+      if (Array.isArray(fileData)) {
+        fileList.value = fileData;
+        total.value = response.data?.total || fileData.length;
+      } else {
+        console.error('文件夹数据不是数组:', fileData);
+        fileList.value = [];
+        total.value = 0;
+      }
+    } else {
+      ElMessage.error(response?.message || '获取文件夹内容失败');
+    }
+  } catch (error) {
+    console.error('获取文件夹内容失败:', error);
+    ElMessage.error('获取文件夹内容失败');
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -849,7 +926,7 @@ const addToMyResource = async (fileId: string) => {
 
 .filter-group {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   min-height: 30px;
 
   .filter-title {
@@ -857,12 +934,16 @@ const addToMyResource = async (fileId: string) => {
     color: v-bind(menuTextColor);
     margin-right: 30px;
     white-space: nowrap;
+    font-weight: 700;
+    flex-shrink: 0;
+    padding-top: 3px;
   }
 
   .tags {
     display: flex;
     flex-wrap: wrap;
     gap: 10px 20px;
+    align-items: flex-start;
 
     .tag {
       font-size: 14px;
@@ -940,7 +1021,7 @@ const addToMyResource = async (fileId: string) => {
   }
 
   // 文件夹样式 - 参考桌面页面
-  &:has(.file-icon svg) {
+  &:has(.file-icon svg), &:has(.file-icon img[alt*="folder"]) {
     width: 170px;
     height: 172px;
     padding: 16px;
@@ -1126,7 +1207,7 @@ html.dark {
       }
       
       // 文件夹在深色主题下的样式
-      &:has(.file-icon svg) {
+      &:has(.file-icon svg), &:has(.file-icon img[alt*="folder"]) {
         &:hover {
           background-color: #1B2126;
         }
@@ -1156,7 +1237,7 @@ html:not(.dark) {
       }
       
       // 文件夹在浅色主题下的样式
-      &:has(.file-icon svg) {
+      &:has(.file-icon svg), &:has(.file-icon img[alt*="folder"]) {
         &:hover {
           background-color: #E5F6E6;
         }

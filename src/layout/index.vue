@@ -42,7 +42,7 @@
                         </span>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item>
+                                <el-dropdown-item @click="goToAccount">
                                     <div class="icon-container">
                                         <img :src="getIconUrl('zhgl')" alt="账户管理" class="dropdown-icon" />
                                     </div>
@@ -220,6 +220,10 @@ const handleLogout = async () => {
     } catch (error) {
         console.error('退出登录失败:', error)
     }
+}
+
+const goToAccount = () => {
+    router.push('/account')
 }
 </script>
 

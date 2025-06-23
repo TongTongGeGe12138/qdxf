@@ -36,6 +36,15 @@ const routes: Array<RouteRecordRaw> = [
           icon: '左栏 - 知识库'
         }
       },
+      {
+        path: '/account',
+        name: 'Account',
+        component: () => import('../views/account/index.vue'),
+        meta: {
+          title: '账户管理',
+          icon: 'zhgl'
+        }
+      },
       // {
       //   path: '/collaboration',
       //   name: 'Collaboration',
