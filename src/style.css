@@ -529,7 +529,7 @@ html:not(.dark) .el-dropdown-menu__item {
 }
 
 /* 针对分页中的el-select特别处理 */
-.el-pagination .el-select .el-input__wrapper,
+/* .el-pagination .el-select .el-input__wrapper,
 .el-pagination .el-select .el-input .el-input__wrapper {
   background-color: transparent !important;
   box-shadow: none !important;
@@ -538,10 +538,10 @@ html:not(.dark) .el-dropdown-menu__item {
 .el-pagination .el-select .el-input__inner,
 .el-pagination .el-select .el-input .el-input__inner {
   background-color: transparent !important;
-}
+} */
 
 /* el-select__wrapper样式 */
-.el-select__wrapper {
+/* .el-select__wrapper {
   background-color: transparent !important;
   box-shadow: none !important;
 }
@@ -553,10 +553,10 @@ html:not(.dark) .el-dropdown-menu__item {
 
 .el-select__wrapper .el-input__inner {
   background-color: transparent !important;
-}
+} */
 
 /* 全局下拉选择框弹出层样式 */
-.el-select-dropdown {
+/* .el-select-dropdown {
   background-color: rgba(231, 232, 235, 1) !important;
   border-color: var(--el-border-color) !important;
   box-shadow: none !important;
@@ -583,10 +583,10 @@ html:not(.dark) .el-dropdown-menu__item {
   background-color: transparent !important;
   color: #ff9900 !important;
   font-weight: bold !important;
-}
+} */
 
 /* 移除所有可能的阴影效果 */
-.el-select-dropdown,
+/* .el-select-dropdown,
 .el-select-dropdown *,
 .el-pagination .el-select .el-select-dropdown,
 .el-pagination .el-select .el-select-dropdown * {
@@ -596,7 +596,7 @@ html:not(.dark) .el-dropdown-menu__item {
 }
 
 /* 针对Element Plus的popper样式 */
-.el-popper.el-select__popper {
+/* .el-popper.el-select__popper {
   box-shadow: none !important;
   filter: none !important;
 }
@@ -604,10 +604,10 @@ html:not(.dark) .el-dropdown-menu__item {
 .el-popper.el-select__popper .el-select-dropdown {
   box-shadow: none !important;
   filter: none !important;
-}
+} */ */
 
 /* 移除所有可能的阴影效果 - 更强版本 */
-.el-select-dropdown,
+/* .el-select-dropdown,
 .el-select-dropdown *,
 .el-pagination .el-select .el-select-dropdown,
 .el-pagination .el-select .el-select-dropdown *,
@@ -620,10 +620,10 @@ html:not(.dark) .el-dropdown-menu__item {
   text-shadow: none !important;
   -webkit-box-shadow: none !important;
   -moz-box-shadow: none !important;
-}
+} */
 
 /* 针对Element Plus的默认阴影样式 */
-.el-popper.is-light {
+/* .el-popper.is-light {
   box-shadow: none !important;
   filter: none !important;
 }
@@ -631,10 +631,10 @@ html:not(.dark) .el-dropdown-menu__item {
 .el-popper.is-light .el-select-dropdown {
   box-shadow: none !important;
   filter: none !important;
-}
+} */
 
 /* 移除所有popper相关的阴影 */
-[data-popper-placement] {
+/* [data-popper-placement] {
   box-shadow: none !important;
   filter: none !important;
 }
@@ -642,5 +642,5 @@ html:not(.dark) .el-dropdown-menu__item {
 .el-overlay {
   box-shadow: none !important;
   filter: none !important;
-}
+} */
 

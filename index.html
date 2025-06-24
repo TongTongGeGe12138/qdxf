@@ -3,6 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.ico" />
+    <!-- 预加载样式 -->
+    <link rel="preload" href="/src/style.css" as="style">
+
+    <!-- 默认启用的主题样式，稍后会禁用并在样式加载后重新启用 -->
+    <link id="theme-stylesheet" rel="stylesheet" href="/src/style.css" disabled>
+
     <script type="text/javascript" src="./vendor/CadEngine.js" charset="utf-8"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BeesFPD - 只关注消防领域的智慧云平台</title>
@@ -10,9 +16,81 @@
     <script src="https://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js"></script>
     <!-- 引入CAD引擎 -->
     <!-- <script src="/vendor/CadEngine/EngineContext.js"></script> -->
+    
+    <!-- 百度统计 -->
+    <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?d69aa95b639868860f168f88f0d0b4e3";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+    
+    <style>
+      /* 加载动画的样式 */
+      #loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(231, 232, 235, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+
+      .loader {
+        border: 16px solid #f3f3f3;
+        border-top: 16px solid #3498db;
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        animation: spin 2s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* 在样式加载前隐藏内容 */
+      body {
+        visibility: hidden;
+      }
+       /* 防止闪烁，加载完毕后才显示内容 */
+       #app {
+        display: none;
+      }
+    </style>
+    <!-- <link id="theme-stylesheet" rel="stylesheet" href="/src/style.css" onload="document.body.style.visibility = 'visible';"> -->
   </head>
   <body>
-    <div id="app"></div>
+     <!-- 加载动画 -->
+     <div id="loading">
+      <div class="loader"></div>
+    </div>
+
+    <div id="app" style="display: none;"></div>
     <script type="module" src="/src/main.ts"></script>
+    <script>
+      // 等待文档加载完后，启用样式并移除加载动画
+      window.addEventListener('load', function () {
+        // 启用主题样式
+        document.getElementById('theme-stylesheet').disabled = false;
+
+        // 隐藏加载动画
+        document.getElementById('loading').style.display = 'none';
+
+        // 显示页面内容
+        document.getElementById('app').style.display = 'block';
+
+        // 使页面内容可见
+        document.body.style.visibility = 'visible';
+      });
+    </script>
   </body>
 </html>

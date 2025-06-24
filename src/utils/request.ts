@@ -5,11 +5,35 @@ import { CreateAxiosOptions } from './axiosTransform';
 import { ContentTypeEnum } from './httpEnum';
 import { merge } from 'lodash-es';
 import { transform } from './axiosTransform';
+import { UserRefresh } from '@/api/userCenter';
+import { useUserStore } from '@/stores/user';
+import router from '@/router';
 
 // 环境变量
 const host = import.meta.env.VITE_API_BASE_URL || '/api';
 const externalhost = import.meta.env.VITE_EXTERNAL_API_BASE_URL;
 const cadhost = import.meta.env.VITE_CAD_API_BASE_URL;
+
+// 标记是否正在刷新token
+let isRefreshing = false;
+// 存储等待中的请求
+let failedQueue: Array<{
+  resolve: (value?: any) => void;
+  reject: (error?: any) => void;
+}> = [];
+
+// 处理等待中的请求
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
 
 // 创建 axios 实例
 const service: AxiosInstance = axios.create({
@@ -22,7 +46,7 @@ const service: AxiosInstance = axios.create({
 service.interceptors.request.use(
   (config) => {
     // 定义不需要 token 的接口白名单
-    const whiteList = ['/signup', '/auth/signin']; 
+    const whiteList = ['/signup', '/auth/signin', '/auth/token/refresh']; 
 
     // 在这里可以添加token等认证信息
     const token = localStorage.getItem('token');
@@ -67,13 +91,82 @@ service.interceptors.response.use(
 
     return Promise.reject(new Error(res.msg || '请求失败'));
   },
-  (error) => {
+  async (error) => {
     console.error('Response error:', error);
+    
+    const originalRequest = error.config;
     
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          ElMessage.error('未授权，请重新登录');
+          // 如果是刷新token的请求失败，直接跳转登录页
+          if (originalRequest.url?.includes('/auth/token/refresh')) {
+            const userStore = useUserStore();
+            userStore.clearUserInfo();
+            ElMessage.error('登录已过期，请重新登录');
+            router.push('/login');
+            return Promise.reject(error);
+          }
+          
+          // 如果正在刷新token，将请求加入队列
+          if (isRefreshing) {
+            return new Promise((resolve, reject) => {
+              failedQueue.push({ resolve, reject });
+            }).then(token => {
+              originalRequest.headers['Authorization'] = `Bearer ${token}`;
+              return service(originalRequest);
+            }).catch(err => {
+              return Promise.reject(err);
+            });
+          }
+          
+          originalRequest._retry = true;
+          isRefreshing = true;
+          
+          try {
+            const userStore = useUserStore();
+            const refreshToken = userStore.refreshToken;
+            
+            if (!refreshToken) {
+              throw new Error('No refresh token available');
+            }
+            
+            const res = await UserRefresh({ refreshToken });
+            
+            if (res.code === 200 && res.data?.accessToken) {
+              // 更新token
+              userStore.setUserInfo({
+                accessToken: res.data.accessToken,
+                refreshToken: res.data.refreshToken || refreshToken
+              });
+              
+              // 更新当前请求的token
+              originalRequest.headers['Authorization'] = `Bearer ${res.data.accessToken}`;
+              
+              // 处理等待中的请求
+              processQueue(null, res.data.accessToken);
+              
+              // 重试当前请求
+              return service(originalRequest);
+            } else {
+              throw new Error('Token refresh failed');
+            }
+          } catch (refreshError) {
+            console.error('Token refresh error:', refreshError);
+            
+            // 处理等待中的请求
+            processQueue(refreshError, null);
+            
+            // 清除用户信息并跳转登录页
+            const userStore = useUserStore();
+            userStore.clearUserInfo();
+            ElMessage.error('登录已过期，请重新登录');
+            router.push('/login');
+            
+            return Promise.reject(refreshError);
+          } finally {
+            isRefreshing = false;
+          }
           break;
         case 403:
           ElMessage.error('没有权限访问');

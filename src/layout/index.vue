@@ -3,22 +3,15 @@
         <ThemeTransition ref="themeTransitionRef" />
         <el-aside :width="isCollapse ? '64px' : '200px'">
             <div class="logo-container">
-                <img 
-                    :src="getIconUrl('beesfqd_ai_logo')" 
-                    alt="BeesFQD Logo" 
-                    class="logo-icon"
-                />
+                <img :src="getIconUrl('beesfqd_ai_logo')" alt="BeesFQD Logo" class="logo-icon" />
                 <!-- <span v-show="!isCollapse" class="logo-text">BeesFQD</span> -->
             </div>
             <el-menu :default-active="route.path" class="el-menu-vertical" :collapse="isCollapse" router
-                :background-color="menuBgColor" :text-color="menuTextColor" :active-text-color="menuActiveTextColor" style="padding: 20px;">
-                <el-menu-item v-for="route in routes" :key="route.path" :index="route.path" v-if="route.meta?.title">
-                    <img 
-                        :src="getIconUrl(route.meta?.icon as string)"
-                        :alt="route.meta?.title as string"
-                        class="menu-icon"
-                        @click.stop
-                    />
+                :background-color="menuBgColor" :text-color="menuTextColor" :active-text-color="menuActiveTextColor"
+                style="padding: 20px;">
+                <el-menu-item v-for="route in visibleRoutes" :key="route.path" :index="route.path">
+                    <img :src="getIconUrl(route.meta?.icon as string)"
+                        :alt="route.meta?.title as string" class="menu-icon" @click.stop />
                     <span>{{ route.meta?.title }}</span>
                 </el-menu-item>
             </el-menu>
@@ -75,15 +68,9 @@
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>
-                    <el-button
-                        class="theme-button"
-                        @click="handleThemeSwitch"
-                    >
-                        <img 
-                            :src="getIconUrl(darkMode ? 'Darkmode' : 'lightmode')"
-                            :alt="darkMode ? '暗色模式' : '亮色模式'"
-                            class="theme-icon"
-                        />
+                    <el-button class="theme-button" @click="handleThemeSwitch">
+                        <img :src="getIconUrl(darkMode ? 'Darkmode' : 'lightmode')" :alt="darkMode ? '暗色模式' : '亮色模式'"
+                            class="theme-icon" />
                     </el-button>
                 </div>
             </el-header>
@@ -146,6 +133,11 @@ const routes = computed(() => {
     return mainRoute?.children || []
 })
 
+// 过滤出应该显示的菜单项
+const visibleRoutes = computed(() => {
+    return routes.value.filter(route => route.meta?.title && route.meta?.hidden !== true)
+})
+
 const toggleCollapse = () => {
     isCollapse.value = !isCollapse.value
 }
@@ -156,18 +148,18 @@ const handleThemeSwitch = (event: MouseEvent) => {
     const rect = switchEl.getBoundingClientRect()
     const x = rect.left + rect.width / 2
     const y = rect.top + rect.height / 2
-    
+
     // 触发过渡动画
     if (themeTransitionRef.value) {
         themeTransitionRef.value.startTransition({ clientX: x, clientY: y })
     }
-    
+
     toggleDark()
 }
 
 const getIconUrl = (name: string) => {
     if (!name) return '';
-    
+
     // 特殊处理logo图标，根据主题模式返回不同的图标
     if (name === 'beesfqd_ai_logo') {
         const logoName = isDark.value ? 'text_only_logo - dark' : 'beesfqd_ai_logo';
@@ -178,7 +170,7 @@ const getIconUrl = (name: string) => {
             return '';
         }
     }
-    
+
     try {
         return new URL(`../assets/tb/${name}.svg`, import.meta.url).href;
     } catch (error) {
@@ -190,7 +182,7 @@ const getIconUrl = (name: string) => {
 const toggleIconMode = () => {
     const containers = document.querySelectorAll('.icon-container');
     const isDarkMode = document.body.classList.contains('dark-mode');
-    
+
     containers.forEach(container => {
         if (isDarkMode) {
             container.classList.remove('light-mode');
@@ -236,7 +228,7 @@ const goToAccount = () => {
 
 .el-aside {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
+    /* overflow: hidden; */
     border-right: 1px solid v-bind(borderColor);
     background-color: v-bind(menuBgColor);
 }
@@ -424,7 +416,8 @@ const goToAccount = () => {
     width: 16px;
     height: 16px;
     margin-right: 8px;
-    pointer-events: none;  /* 禁止图标的点击事件 */
+    pointer-events: none;
+    /* 禁止图标的点击事件 */
     filter: v-bind(menuIconFilter);
 }
 
@@ -439,7 +432,8 @@ const goToAccount = () => {
     display: flex;
     align-items: center;
 }
-.icon-container:hover{
+
+.icon-container:hover {
     color: #F9DE4A !important;
 }
 
@@ -448,11 +442,13 @@ const goToAccount = () => {
 }
 
 .icon-container.dark-mode .dropdown-icon {
-    filter: brightness(0) invert(1); /* 将图标变为白色 */
+    filter: brightness(0) invert(1);
+    /* 将图标变为白色 */
 }
 
 .icon-container.light-mode .dropdown-icon {
-    filter: invert(20%) sepia(0%) saturate(0%) hue-rotate(241deg) brightness(98%) contrast(94%); /* 将图标变为 #333333 */
+    filter: invert(20%) sepia(0%) saturate(0%) hue-rotate(241deg) brightness(98%) contrast(94%);
+    /* 将图标变为 #333333 */
 }
 
 .logo-icon {

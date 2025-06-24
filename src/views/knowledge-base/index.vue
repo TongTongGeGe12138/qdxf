@@ -1,43 +1,23 @@
-<template>
+div.controls-header<template>
   <div class="knowledge-base-container">
-    <h1 class="page-title">知识库</h1>
+    <div class="page-title">行业资源</div>
     <div class="main-panel">
       <div class="controls-header">
         <div class="main-tabs">
-          <div
-            v-for="(tab, index) in mainTabs"
-            :key="index"
-            class="tab"
-            :class="{ active: activeMainTab === index }"
-            @click="handleTabChange(index)"
-          >
+          <div v-for="(tab, index) in mainTabs" :key="index" class="tab" :class="{ active: activeMainTab === index }"
+            @click="handleTabChange(index)">
             {{ tab }}
           </div>
         </div>
-        <el-input
-          v-model="searchQuery"
-          placeholder="搜索项目或文件"
-          :prefix-icon="Search"
-          class="search-input"
-          clearable
-        />
+        <el-input v-model="searchQuery" placeholder="搜索" :prefix-icon="Search" class="search-input" clearable />
       </div>
 
       <div class="filter-section">
-        <div
-          v-for="(group, groupIndex) in filterGroups"
-          :key="groupIndex"
-          class="filter-group"
-        >
+        <div v-for="(group, groupIndex) in filterGroups" :key="groupIndex" class="filter-group">
           <div class="filter-title">{{ group.title }}</div>
           <div class="tags">
-            <div
-              v-for="(tag, tagIndex) in group.filters"
-              :key="tagIndex"
-              class="tag"
-              :class="{ active: group.activeFilter === tag }"
-              @click="handleFilterChange(groupIndex, tag)"
-            >
+            <div v-for="(tag, tagIndex) in group.filters" :key="tagIndex" class="tag"
+              :class="{ active: group.activeFilter === tag }" @click="handleFilterChange(groupIndex, tag)">
               {{ tag }}
             </div>
           </div>
@@ -49,35 +29,22 @@
           <el-loading-spinner />
           <p>加载中...</p>
         </div>
-        
+
         <div v-else-if="displayFileList.length === 0" class="empty-container">
           <el-empty description="暂无数据" />
         </div>
-        
+
         <div v-else class="file-list">
-          <div
-            v-for="file in displayFileList"
-            :key="file.id"
-            class="file-item"
-            :class="{ 'is-selected': selectedFile?.id === file.id  }"
-            @click.stop="handleFileClick(file)"
-            @dblclick.stop="handleFileDblClick(file)"
-          >
+          <div v-for="file in displayFileList" :key="file.id" class="file-item"
+            :class="{ 'is-selected': selectedFile?.id === file.id }" @click.stop="handleFileClick(file)"
+            @dblclick.stop="handleFileDblClick(file)">
             <div class="file-icon">
               <template v-if="file.type === 'back' || file.type === 'folder' || file.contentType === 0">
                 <folder />
               </template>
-              <img 
-                v-else-if="file.thumbUrl && file.type !== 'folder' && file.contentType !== 0" 
-                :src="file.thumbUrl" 
-                :alt="file.name"
-                @error="handleImageError"
-              />
-              <img 
-                v-else
-                :src="getFileIcon(file.type || '', file.contentType)" 
-                :alt="file.type || 'file'" 
-              />
+              <img v-else-if="file.thumbUrl && file.type !== 'folder' && file.contentType !== 0" :src="file.thumbUrl"
+                :alt="file.name" @error="handleImageError" />
+              <img v-else :src="getFileIcon(file.type || '', file.contentType)" :alt="file.type || 'file'" />
             </div>
             <div class="file-info">
               <div class="file-name">{{ file.name || '未命名文件' }}</div>
@@ -91,26 +58,17 @@
 
         <!-- 分页 -->
         <div v-if="fileList.length > 0" class="pagination-container">
-          <el-pagination
-            v-model:current-page="currentPage"
-            v-model:page-size="pageSize"
-            :page-sizes="[10, 20, 50, 100]"
-            :total="total"
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
+          <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]"
+            :total="total" layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange"
+            @current-change="handleCurrentChange" />
         </div>
       </div>
     </div>
   </div>
 
   <!-- CAD查看器 -->
-  <CadViewer
-    v-model:visible="cadViewerVisible"
-    :file-id="currentCadFile?.id || ''"
-    :file-name="currentCadFile?.name || ''"
-  />
+  <CadViewer v-model:visible="cadViewerVisible" :file-id="currentCadFile?.id || ''"
+    :file-name="currentCadFile?.name || ''" />
 </template>
 
 <script setup lang="ts">
@@ -213,7 +171,7 @@ const displayFileList = computed(() => {
 // 获取文件列表
 const fetchFileList = async () => {
   loading.value = true;
-  
+
   try {
     let response;
     const params = {
@@ -228,17 +186,17 @@ const fetchFileList = async () => {
       // 如果选择了一级分类且二级分类为空或选择"全部"，显示该分类下的二级分类作为文件夹
       console.log('显示二级分类作为文件夹');
       console.log('二级分类数据:', normativeClassification.value);
-      
+
       // 过滤掉"全部"选项，只显示实际的二级分类
       let folders = normativeClassification.value.filter(item => item.name !== '全部');
-      
+
       // 如果有搜索关键词，在本地过滤文件夹名称
       if (searchQuery.value.trim()) {
-        folders = folders.filter(item => 
+        folders = folders.filter(item =>
           item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
         );
       }
-      
+
       fileList.value = folders.map((item: any, index: number) => {
         console.log(`处理第${index}项:`, item);
         return {
@@ -261,13 +219,13 @@ const fetchFileList = async () => {
           total.value = 0;
           return;
         }
-        
+
         // 使用getSecondLevelListApi获取二级分类下的文件
         response = await getSecondLevelListApi({
           id: selectedCategory.id,
           ...params
         });
-        
+
         if (response && response.code === 200) {
           console.log('获取二级分类文件数据:', response.data);
           let fileData = [];
@@ -278,7 +236,7 @@ const fetchFileList = async () => {
           } else if (Array.isArray(response.data)) {
             fileData = response.data;
           }
-          
+
           if (Array.isArray(fileData)) {
             fileList.value = fileData;
             total.value = response.data?.total || fileData.length;
@@ -298,7 +256,7 @@ const fetchFileList = async () => {
             second: filterGroups.value[1].activeFilter,
             ...params
           });
-          
+
           if (response && response.code === 200) {
             console.log('获取二级分类文件数据(备用方法):', response.data);
             let fileData = [];
@@ -309,7 +267,7 @@ const fetchFileList = async () => {
             } else if (Array.isArray(response.data)) {
               fileData = response.data;
             }
-            
+
             if (Array.isArray(fileData)) {
               fileList.value = fileData;
               total.value = response.data?.total || fileData.length;
@@ -330,7 +288,7 @@ const fetchFileList = async () => {
         category: currentCategory.value,
         ...params
       });
-      
+
       if (response && response.code === 200) {
         console.log('获取顶级分类文件数据:', response.data);
         let fileData = [];
@@ -341,7 +299,7 @@ const fetchFileList = async () => {
         } else if (Array.isArray(response.data)) {
           fileData = response.data;
         }
-        
+
         if (Array.isArray(fileData)) {
           fileList.value = fileData;
           total.value = response.data?.total || fileData.length;
@@ -370,15 +328,15 @@ const handleTabChange = (index: number) => {
   currentCategory.value = getCategoryByTab(index);
   currentLv1.value = '';
   currentPage.value = 1;
-  
+
   // 重置筛选条件
   filterGroups.value[0].activeFilter = '';
   filterGroups.value[1].activeFilter = '';
-  
+
   // 重置独立文件夹状态
   isInIndependentFolder.value = false;
   currentFolderId.value = '';
-  
+
   // 获取分类数据
   getBeeResourcesFn();
 };
@@ -392,12 +350,15 @@ const getCategoryByTab = (tabIndex: number) => {
 
 // 处理筛选条件变化
 const handleFilterChange = (groupIndex: number, filter: string) => {
-  filterGroups.value[groupIndex].activeFilter = filter;
+  console.log(groupIndex, filter,9999999);
   
+  filterGroups.value[groupIndex].activeFilter = filter;
+
   // 重置独立文件夹状态
   isInIndependentFolder.value = false;
   currentFolderId.value = '';
   
+
   if (groupIndex === 0) {
     // 标准分类（一级分类）
     // 找到对应的分类对象以获取ID
@@ -421,7 +382,7 @@ const handleFilterChange = (groupIndex: number, filter: string) => {
       fetchFileList();
     }
   }
-  
+
   currentPage.value = 1;
   // 只有在选择具体二级分类时才调用fetchFileList
   if (groupIndex !== 1 || filter !== '全部') {
@@ -439,7 +400,7 @@ const handleSearch = () => {
 // 处理文件点击
 const handleFileClick = (file: FileItem) => {
   console.log('点击文件:', file);
-  
+
   // 设置选中状态
   selectedFile.value = file;
 };
@@ -447,18 +408,18 @@ const handleFileClick = (file: FileItem) => {
 // 处理文件双击事件
 const handleFileDblClick = async (file: FileItem) => {
   console.log('双击文件:', file);
-  
+
   // 如果双击的是返回上级按钮
   if (file.type === 'back') {
     console.log('返回上级');
     handleBackToParent();
     return;
   }
-  
+
   // 如果双击的是文件夹，进入该文件夹
   if (file.type === 'folder' || file.contentType === 0) {
     console.log('进入文件夹:', file.name);
-    
+
     // 如果是通过二级分类创建的文件夹，使用原来的逻辑
     const selectedCategory = normativeClassification.value.find(item => item.name === file.name);
     if (selectedCategory) {
@@ -541,12 +502,12 @@ const getFileIcon = (fileType: string, contentType?: number) => {
   if (!fileType) {
     return '/src/assets/file-icons/fileSvg.svg';
   }
-  
+
   // 如果是文件夹，返回文件夹图标
   if (fileType === 'folder' || contentType === 0) {
     return '/src/assets/file-icons/folder-large.svg';
   }
-  
+
   // 如果有contentType，优先使用contentType映射
   if (contentType) {
     const contentTypeMap: Record<number, string> = {
@@ -568,7 +529,7 @@ const getFileIcon = (fileType: string, contentType?: number) => {
     };
     return contentTypeMap[contentType] || '/src/assets/file-icons/fileSvg.svg';
   }
-  
+
   const iconMap: Record<string, string> = {
     'pdf': '/src/assets/file-icons/PDF.png',
     'doc': '/src/assets/file-icons/DOC.png',
@@ -622,7 +583,7 @@ watch(searchQuery, () => {
 onMounted(() => {
   // 设置初始分类
   currentCategory.value = getCategoryByTab(activeMainTab.value);
-  
+
   // 获取分类数据，这个函数会接着调用 fetchFileList
   getBeeResourcesFn();
 });
@@ -682,7 +643,7 @@ const getBeeResourcesSecondFn = async (fist: string) => {
 const updateFilterGroups = () => {
   // 根据当前页面标题动态设置筛选组标题
   const pageTitle = mainTabs.value[activeMainTab.value];
-  
+
   if (pageTitle === '通用规范') {
     filterGroups.value[0].title = '标准分类';
     filterGroups.value[1].title = '规范分类';
@@ -696,7 +657,7 @@ const updateFilterGroups = () => {
     filterGroups.value[0].title = '专业分类';
     filterGroups.value[1].title = '建筑类别';
   }
-  
+
   // 更新一级分类筛选条件
   if (standardClassificationList.value.length > 0) {
     filterGroups.value[0].filters = standardClassificationList.value.map(item => item.name);
@@ -706,13 +667,23 @@ const updateFilterGroups = () => {
       console.log('自动选择第一个一级分类:', filterGroups.value[0].activeFilter);
     }
   }
-  
+
   // 更新二级分类筛选条件
   if (normativeClassification.value.length > 0) {
     filterGroups.value[1].filters = ['全部', ...normativeClassification.value.map(item => item.name)];
+    // 自动选择"全部"
+    if (!filterGroups.value[1].activeFilter) {
+      filterGroups.value[1].activeFilter = '全部';
+      console.log('自动选择二级分类"全部"');
+    }
   } else {
     // 即使没有二级分类数据，也要显示"全部"选项
     filterGroups.value[1].filters = ['全部'];
+    // 自动选择"全部"
+    if (!filterGroups.value[1].activeFilter) {
+      filterGroups.value[1].activeFilter = '全部';
+      console.log('自动选择二级分类"全部"');
+    }
   }
 };
 
@@ -720,9 +691,9 @@ const updateFilterGroups = () => {
 const handleStandardChange = async (item: any, index: number) => {
   if (item.name !== standardClassificationList.value[activeStandard.value]?.name) {
     try {
-      const { data, code } = await getBeeResourcesSecond({ 
-        category: currentCategory.value, 
-        lv1: item.name 
+      const { data, code } = await getBeeResourcesSecond({
+        category: currentCategory.value,
+        lv1: item.name
       });
       if (code === 200) {
         normativeClassification.value = data;
@@ -792,11 +763,11 @@ const addToMyResource = async (fileId: string) => {
 // 进入独立文件夹
 const enterFolder = async (folderId: string) => {
   loading.value = true;
-  
+
   // 设置独立文件夹状态
   isInIndependentFolder.value = true;
   currentFolderId.value = folderId;
-  
+
   try {
     const params = {
       all: false,
@@ -810,7 +781,7 @@ const enterFolder = async (folderId: string) => {
       id: folderId,
       ...params
     });
-    
+
     if (response && response.code === 200) {
       console.log('获取文件夹内容:', response.data);
       let fileData = [];
@@ -821,7 +792,7 @@ const enterFolder = async (folderId: string) => {
       } else if (Array.isArray(response.data)) {
         fileData = response.data;
       }
-      
+
       if (Array.isArray(fileData)) {
         fileList.value = fileData;
         total.value = response.data?.total || fileData.length;
@@ -846,7 +817,7 @@ const enterFolder = async (folderId: string) => {
 <style scoped lang="less">
 .knowledge-base-container {
   padding: 20px;
-  width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
   box-sizing: border-box;
 
@@ -854,13 +825,19 @@ const enterFolder = async (folderId: string) => {
     font-size: 24px;
     color: v-bind(menuTextColor);
     margin-bottom: 20px;
+
   }
 }
 
 .main-panel {
   border: 1px solid v-bind(borderColor);
   border-radius: 8px;
-  padding: 20px;
+  // max-width: 1200px;
+  margin: 0 auto;
+  // padding: 20px;
+  // padding-top: 0;
+  // padding-left: 20px;
+
 }
 
 .controls-header {
@@ -868,8 +845,10 @@ const enterFolder = async (folderId: string) => {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid v-bind(borderColor);
-  padding-bottom: 20px;
-  margin-bottom: 20px;
+  height: 55px;
+  padding-left: 20px;
+  // padding-bottom: 20px;
+  // margin-bottom: 20px;
 }
 
 .main-tabs {
@@ -877,11 +856,11 @@ const enterFolder = async (folderId: string) => {
   gap: 30px;
 
   .tab {
-    font-size: 16px;
+    font-size: 18px;
     color: v-bind(subTextColor);
     cursor: pointer;
     position: relative;
-    padding-bottom: 10px;
+    // padding-bottom: 10px;
 
     &.active {
       color: v-bind(menuTextColor);
@@ -890,9 +869,9 @@ const enterFolder = async (folderId: string) => {
       &::after {
         content: '';
         position: absolute;
-        bottom: -1px;
-        left: 0;
-        right: 0;
+        bottom: -15px;
+        left: -2px;
+        right: -2px;
         height: 2px;
         background-color: v-bind(menuTextColor);
       }
@@ -902,6 +881,7 @@ const enterFolder = async (folderId: string) => {
 
 .search-input {
   width: 300px;
+  padding-right: 30px;
 
   :deep(.el-input__wrapper) {
     background-color: v-bind(menuBgColor);
@@ -922,6 +902,8 @@ const enterFolder = async (folderId: string) => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-top: 20px;
+  padding-left: 30px;
 }
 
 .filter-group {
@@ -942,16 +924,17 @@ const enterFolder = async (folderId: string) => {
   .tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px 20px;
+    // gap: 10px 10px;
     align-items: flex-start;
 
     .tag {
       font-size: 14px;
       color: v-bind(subTextColor);
       cursor: pointer;
-      padding: 3px 8px;
+      padding: 3px 10px;
       border-radius: 4px;
       transition: all 0.2s ease;
+
 
       &:hover {
         color: v-bind(menuTextColor);
@@ -967,7 +950,7 @@ const enterFolder = async (folderId: string) => {
 }
 
 .content-area {
-  margin-top: 30px;
+  // margin-top: 30px;
 }
 
 .loading-container {
@@ -1021,31 +1004,32 @@ const enterFolder = async (folderId: string) => {
   }
 
   // 文件夹样式 - 参考桌面页面
-  &:has(.file-icon svg), &:has(.file-icon img[alt*="folder"]) {
+  &:has(.file-icon svg),
+  &:has(.file-icon img[alt*="folder"]) {
     width: 170px;
     height: 172px;
     padding: 16px;
-    
+
     &:hover {
       background-color: var(--el-fill-color-light);
       transform: none;
       box-shadow: none;
-      
+
       .file-info {
         display: block !important;
       }
     }
-    
+
     &.is-selected {
       transform: scale(1.1);
       background-color: var(--el-fill-color-light);
       box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-      
+
       .file-info {
         display: block !important;
       }
     }
-    
+
     .file-icon {
       width: 100px;
       height: 100px;
@@ -1056,20 +1040,20 @@ const enterFolder = async (folderId: string) => {
       padding: 12px;
       background-color: transparent;
       margin-bottom: 12px;
-      
+
       :deep(svg) {
         width: 100%;
         height: 100%;
       }
     }
-    
+
     .file-info {
       position: static;
       color: var(--el-text-color-primary);
       padding: 0;
       text-align: center;
       display: block !important;
-      
+
       .file-name {
         font-size: 14px;
         color: var(--el-text-color-primary);
@@ -1084,7 +1068,7 @@ const enterFolder = async (folderId: string) => {
         line-height: 1.4;
       }
     }
-    
+
     .file-actions {
       display: none !important;
     }
@@ -1124,7 +1108,7 @@ const enterFolder = async (folderId: string) => {
     padding: 12px 8px;
     min-width: 0;
     text-align: center;
-    
+
     .file-name {
       font-size: 14px;
       color: #FFFFFF;
@@ -1150,7 +1134,7 @@ const enterFolder = async (folderId: string) => {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-    align-items:  flex-end;
+    align-items: flex-end;
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
@@ -1164,7 +1148,7 @@ const enterFolder = async (folderId: string) => {
   &:hover .file-info {
     display: none;
   }
-  
+
   .action-btn {
     width: 64px;
     height: 32px;
@@ -1188,6 +1172,7 @@ const enterFolder = async (folderId: string) => {
   display: flex;
   justify-content: center;
   margin-top: 20px;
+  margin-bottom: 30px;
 }
 
 // 深色主题
@@ -1205,9 +1190,10 @@ html.dark {
       .file-icon {
         background-color: transparent;
       }
-      
+
       // 文件夹在深色主题下的样式
-      &:has(.file-icon svg), &:has(.file-icon img[alt*="folder"]) {
+      &:has(.file-icon svg),
+      &:has(.file-icon img[alt*="folder"]) {
         &:hover {
           background-color: #1B2126;
         }
@@ -1235,9 +1221,10 @@ html:not(.dark) {
       .file-icon {
         background-color: transparent;
       }
-      
+
       // 文件夹在浅色主题下的样式
-      &:has(.file-icon svg), &:has(.file-icon img[alt*="folder"]) {
+      &:has(.file-icon svg),
+      &:has(.file-icon img[alt*="folder"]) {
         &:hover {
           background-color: #E5F6E6;
         }
@@ -1249,4 +1236,4 @@ html:not(.dark) {
     }
   }
 }
-</style> 
+</style>

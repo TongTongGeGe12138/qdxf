@@ -9,26 +9,27 @@
           </el-breadcrumb-item>
         </el-breadcrumb>
       </div>
-      <div class="file-grid">
+      <div class="file-grid" v-loading="isLoading" element-loading-text="加载中..." element-loading-background="rgba(231, 232, 235, 1) !important">
         <!-- 空状态显示 -->
-        <div v-if="files.length === 0" class="empty-state">
+        <div v-if="files.length === 0 && !isLoading" class="empty-state">
           <el-empty description="暂无数据"  :image-size="40" :image="simplified" />
-
         </div>
         <!-- 文件列表 -->
-        <div v-else v-for="item in currentPageData" :key="item.id" class="file-item"
-          :class="{ 'is-selected': selectedItem?.id === item.id }" @click.stop="handleFileClick(item)"
-          @dblclick.stop="handleFileDblClick(item)">
-          <div class="file-preview">
-            <template v-if="item.type === 'back' || item.type === 'folder'">
-              <folder />
-            </template>
-            <template v-else>
-              <img :src="getFileIcon(item.contentType)" :alt="item.name" />
-            </template>
+        <transition-group v-else name="file-list" tag="div" class="file-list-container">
+          <div v-for="item in currentPageData" :key="item.id" class="file-item"
+            :class="{ 'is-selected': selectedItem?.id === item.id }" @click.stop="handleFileClick(item)"
+            @dblclick.stop="handleFileDblClick(item)">
+            <div class="file-preview">
+              <template v-if="item.type === 'back' || item.type === 'folder'">
+                <folder />
+              </template>
+              <template v-else>
+                <img :src="getFileIcon(item.contentType)" :alt="item.name" />
+              </template>
+            </div>
+            <div class="file-name">{{ item.name }}</div>
           </div>
-          <div class="file-name">{{ item.name }}</div>
-        </div>
+        </transition-group>
       </div>
     </div>
 
@@ -108,6 +109,7 @@ const pageSize = ref(20);
 const selectedItem = ref<FileItem | null>(null);
 const showCadViewer = ref(false);
 const cadLoading = ref(false);
+const isLoading = ref(false);
 
 // 导入所有文件图标
 const fileIcons = {
@@ -171,8 +173,22 @@ const total = computed(() => {
   return fileLibraryStore.total;
 });
 
+// 添加加载状态管理
+const setLoading = (loading: boolean) => {
+  isLoading.value = loading;
+};
+
+// 监听store数据变化，自动设置加载状态
+watch(() => fileLibraryStore.libraryList, (newList) => {
+  if (newList.length > 0) {
+    setLoading(false);
+  }
+}, { immediate: true });
+
+// 修改分页方法，添加加载状态
 const onPageChange = async (page: number) => {
   currentPage.value = page;
+  setLoading(true);
   // 重新请求数据
   await fileLibraryStore.refreshCurrentList(page, pageSize.value);
 };
@@ -180,6 +196,7 @@ const onPageChange = async (page: number) => {
 const onSizeChange = async (size: number) => {
   pageSize.value = size;
   currentPage.value = 1; // 重置到第一页
+  setLoading(true);
   // 重新请求数据
   await fileLibraryStore.refreshCurrentList(1, size);
 };
@@ -193,17 +210,27 @@ const handleFileClick = (item: FileItem) => {
 // 双击进入文件夹或返回上级
 const handleFileDblClick = async (item: FileItem) => {
   if (item.type === 'back') {
-    fileLibraryStore.navigateUp();
-    // 返回上级时取消选中状态
-    selectedItem.value = null;
-    emit('fileSelected', null);
+    setLoading(true);
+    try {
+      fileLibraryStore.navigateUp();
+      // 返回上级时取消选中状态
+      selectedItem.value = null;
+      emit('fileSelected', null);
+    } finally {
+      setLoading(false);
+    }
   } else if (item.type === 'folder') {
-    fileLibraryStore.navigateToFolder({
-      id: item.id,
-      name: item.name,
-      type: 'folder'
-    });
-    // 进入文件夹时不取消选中状态，让用户可以继续操作
+    setLoading(true);
+    try {
+      fileLibraryStore.navigateToFolder({
+        id: item.id,
+        name: item.name,
+        type: 'folder'
+      });
+      // 进入文件夹时不取消选中状态，让用户可以继续操作
+    } finally {
+      setLoading(false);
+    }
   } else {
     // 处理文件双击
     try {
@@ -346,16 +373,26 @@ const handleFileDblClick = async (item: FileItem) => {
 
 // 面包屑点击
 const handleBreadcrumbClick = async (index: number) => {
-  if (index === 0) {
-    await fileLibraryStore.clearCurrentPath(true); // ✅ 等待加载完成，自动刷新
-  } else {
-    await fileLibraryStore.navigateToPath(index - 1); // ✅ 正确跳转层级
-  }
+  // 阻止事件冒泡，避免触发容器的点击事件
+  event?.stopPropagation();
+  
+  setLoading(true);
+  try {
+    if (index === 0) {
+      await fileLibraryStore.clearCurrentPath(true); // ✅ 等待加载完成，自动刷新
+    } else {
+      await fileLibraryStore.navigateToPath(index - 1); // ✅ 正确跳转层级
+    }
 
-  // 路径变化时取消选中状态
-  selectedItem.value = null;
-  emit('fileSelected', null);
-  currentPage.value = 1;
+    // 路径变化时取消选中状态
+    selectedItem.value = null;
+    emit('fileSelected', null);
+    currentPage.value = 1;
+  } catch (error) {
+    console.error('面包屑导航失败:', error);
+  } finally {
+    setLoading(false);
+  }
 };
 
 // 关闭CAD查看器
@@ -379,11 +416,30 @@ onMounted(async () => {
 
 // 卸载时清理
 onUnmounted(() => {
-  fileLibraryStore.clearCurrentPath(false); // 不自动刷新
+  // 移除自动清空store的逻辑，避免路由切换时清空数据
+  // fileLibraryStore.clearCurrentPath(false); // 不自动刷新
   if (EngineContext.Container) {
     EngineContext.Container.style.display = 'none';
   }
 });
+
+// 添加组件激活时的处理
+const onActivated = () => {
+  // 组件被激活时，如果store中没有数据，则重新加载
+  if (fileLibraryStore.libraryList.length === 0) {
+    fileLibraryStore.refreshCurrentList();
+  }
+};
+
+// 添加组件停用时的处理
+const onDeactivated = () => {
+  // 组件停用时，不清空数据，只隐藏CAD查看器
+  if (EngineContext.Container) {
+    EngineContext.Container.style.display = 'none';
+  }
+  showCadViewer.value = false;
+  cadLoading.value = false;
+};
 
 // 添加一个公开的方法来处理文件打开
 const openFile = async (item: FileItem) => {
@@ -407,7 +463,8 @@ const handleContainerClick = () => {
 .file-library {
   width: 100%;
   height: 100%;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   position: relative;
 
   .cad-viewer {
@@ -478,11 +535,15 @@ const handleContainerClick = () => {
   }
 
   .file-section {
-    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; // 重要：让flex子元素可以收缩
     border-radius: 20px;
 
     .section-header {
-      padding-left: 10px;
+      padding: 10px 10px 0 10px;
+      flex-shrink: 0; // 不收缩
 
       :deep(.el-breadcrumb) {
         .el-breadcrumb__item {
@@ -497,15 +558,15 @@ const handleContainerClick = () => {
     }
 
     .file-grid {
-      // display: grid;
-      // grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      // gap: 24px;
-      display: flex;
+      flex: 1;
+      overflow-y: auto; // 内容超出时滚动
       padding: 24px;
+      display: flex;
       flex-wrap: wrap;
       flex-direction: row;
       justify-content: flex-start;
-      min-height: 200px; // 确保有足够的高度显示空状态
+      min-height: 0; // 重要：让flex子元素可以收缩
+      position: relative; // 为loading状态添加定位
 
       .empty-state {
         width: 100%;
@@ -514,6 +575,12 @@ const handleContainerClick = () => {
         align-items: center;
         min-height: 200px;
         color: var(--el-text-color-secondary);
+      }
+
+      .file-list-container {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
       }
 
       .file-item {
@@ -579,11 +646,33 @@ const handleContainerClick = () => {
     }
   }
 
+  // 添加文件列表过渡动画
+  .file-list-enter-active,
+  .file-list-leave-active {
+    transition: all 0.3s ease;
+  }
+
+  .file-list-enter-from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .file-list-leave-to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  .file-list-move {
+    transition: transform 0.3s ease;
+  }
+
   .pagination {
+    flex-shrink: 0; // 不收缩，固定在底部
     display: flex;
     justify-content: center;
-    margin-top: 20px;
-    padding: 20px;
+    padding: 20px 0;
+    border-top: 1px solid var(--el-border-color-light);
+    // background-color: var(--el-bg-color);
     
     :deep(.el-pagination) {
       --el-pagination-bg-color: transparent;

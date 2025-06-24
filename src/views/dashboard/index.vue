@@ -205,11 +205,25 @@
         width="400px"
         :close-on-click-modal="false"
     >
-        <p style="text-align: center;">此版块功能仅限于企业版，您暂未获得使用资格</p>
+        <p style="text-align: left;">此版块功能仅限于企业版，您暂未获得使用资格</p>
         <template #footer>
           <span class="dialog-footer">
             <!-- <div class="dialog-button cancel" @click="permissionDialogVisible = false">取消</div> -->
             <div class="dialog-button confirm" @click="handlePermissionClick">我已知晓</div>
+          </span>
+        </template>
+    </el-dialog>
+    <el-dialog
+        v-model="permissionDialogVisibless"
+        title="内测中"
+        width="400px"
+        :close-on-click-modal="false"
+    >
+        <p style="text-align: left;">此版块功能内测中，即将开放</p>
+        <template #footer>
+          <span class="dialog-footer">
+            <!-- <div class="dialog-button cancel" @click="permissionDialogVisible = false">取消</div> -->
+            <div class="dialog-button confirm" @click="handlePermissionClickss">我已知晓</div>
           </span>
         </template>
     </el-dialog>
@@ -530,6 +544,7 @@ const handleSupplierClick = (url: string) => {
 // 添加新的响应式变量
 const cardDialogVisible = ref(false)
 const permissionDialogVisible = ref(false)
+const permissionDialogVisibless = ref(false)
 const currentCard = ref<any>(null)
 
 // 添加卡片点击事件处理函数
@@ -787,27 +802,36 @@ const handleTagClick = (tagName: string) => {
 
 // 处理更多应用卡片点击
 const handleMoreAppCardClick = (item: any) => {
-    if (item.action === 'open_app') {
-        const mockItem = {
-            name: item.title,
-            value: item.icon,
-            description: item.description,
-            extra: {
-                englishName: 'Next Generation CAD based on Cloud',
-                version: '1.0.0',
-                url: null,
-                group: 'CloudBeeCAD'
-            }
-        };
-        handleCardClick(mockItem as any);
-    } else if (item.action === 'show_permission_denied') {
-        permissionDialogVisible.value = true;
+    if(item.action === 'open_app'){
+        permissionDialogVisibless.value = true;
+    }else{
+    permissionDialogVisible.value = true;
+
     }
+    // if (item.action === 'open_app') {
+    //     const mockItem = {
+    //         name: item.title,
+    //         value: item.icon,
+    //         description: item.description,
+    //         extra: {
+    //             englishName: 'Next Generation CAD based on Cloud',
+    //             version: '1.0.0',
+    //             url: null,
+    //             group: 'CloudBeeCAD'
+    //         }
+    //     };
+    //     handleCardClick(mockItem as any);
+    // } else if (item.action === 'show_permission_denied') {
+    //     permissionDialogVisible.value = true;
+    // }
 };
 
 // 处理权限点击
 const handlePermissionClick = () => {
     permissionDialogVisible.value = false;
+};
+const handlePermissionClickss = () => {
+    permissionDialogVisibless.value = false;
 };
 </script>
 
@@ -1852,5 +1876,31 @@ html.dark {
       }
     }
   }
+}
+
+.welcome-card {
+  background-color: v-bind(cardBgColor);
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  color: v-bind(textColor);
+}
+
+.welcome-card h2 {
+  margin: 0 0 10px;
+}
+
+.welcome-card p {
+  margin: 0;
+}
+
+.welcome-card .highlight {
+  color: #ff9900;
+  font-weight: bold;
+}
+
+.stat-cards {
+  display: grid;
+  // ... existing code ...
 }
 </style>

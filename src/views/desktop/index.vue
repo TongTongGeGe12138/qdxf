@@ -5,7 +5,7 @@ import { computed } from 'vue'
 import { Refresh, UploadFilled, FolderAdd, Search, View, Edit, Download, Delete, Setting, Tickets } from '@element-plus/icons-vue'
 import FileLibrary from '@/components/desktop/FileLibrary.vue';
 import { useFileLibraryStore } from '@/store/modules/fileLibrary';
-import { ElMessage,  } from 'element-plus';
+import { ElMessage, } from 'element-plus';
 import {
   getProjectFile,
   addProjectFolder,
@@ -21,11 +21,12 @@ import {
   addProjectResourceFile,
   getProjectResourceFile,
   addProjectResource,
-  editProjectResource
+  editProjectResource,
+  getProjectFoldeInfo
 } from '@/api/project';
 import { getResourceFiles, deleteResourcesFile, getMyResourcesInfo, downloadResourcesFile } from '@/api/resource';
 import { removeMyResource } from '@/api/dict';
-import { getProvinceList, getCityList} from '@/api/location';
+import { getProvinceList, getCityList } from '@/api/location';
 import simplified from '@/assets/simplified_document_icon.svg?url';
 
 
@@ -49,6 +50,7 @@ interface FileItem {
   addressId?: string | number;
   clientName?: string;
   contentType?: number;
+  locationId?: string | number;
 }
 
 interface TabItem {
@@ -65,7 +67,7 @@ const defaultTabs = computed(() => {
   const tabs = [
     { name: '刷新列表', icon: Refresh }
   ];
-  
+
   // 只有在我的项目场景下才显示上传和创建按钮
   if (activeIndex.value === 0) {
     // 第一层目录显示上传文件和创建项目按钮
@@ -79,7 +81,7 @@ const defaultTabs = computed(() => {
       tabs.push({ name: '新建文件夹', icon: FolderAdd });
     }
   }
-  
+
   return tabs;
 });
 
@@ -157,14 +159,18 @@ const formDatassss = ref<any>({
   resourceId: null,
 });
 
-// 添加地址选项数据
-// const addressOptions = ref<AddressOption[]>([]);
-// const selectedAddress = ref<(string | number)[]>([]);
+// 添加创建项目表单数据
+const createProjectForm = ref<any>({
+  name: '',
+  address: '中国',
+  clientName: '',
+  locationId: null,
+});
 
 // 地址选择相关
 const country = ref('中国');
-const selectedProvince = ref('');
-const selectedCity = ref('');
+const selectedProvince = ref<string | number>('');
+const selectedCity = ref<string | number>('');
 const provinceOptions = ref<AddressOption[]>([]);
 const cityOptions = ref<AddressOption[]>([]);
 
@@ -211,10 +217,10 @@ const onProvinceChange = async (provinceId: string | number) => {
 watch(activeIndex, (newIndex) => {
   selectedFile.value = null;
   rightActiveTab.value = 0;
-  
+
   // 先清空文件列表，避免显示错误的数据
   fileLibraryStore.setLibraryList([]);
-  
+
   // 重置文件路径（但不触发refreshCurrentList）
   fileLibraryStore.currentPath = [];
   fileLibraryStore.projectId = null;
@@ -326,10 +332,26 @@ const isFolder = (item: any) => {
 };
 
 // 处理文件选中
-const handleFileSelected = (file: FileItem) => {
+const handleFileSelected = async (file: FileItem) => {
   // 允许在所有层级选中文件，但只在第一层目录显示项目详情
   selectedFile.value = file;
   rightActiveTab.value = 0;
+  
+  // 如果是第一层目录的文件夹，获取详细信息
+  if (file.type === 'folder' && fileLibraryStore.currentPath.length === 0) {
+    try {
+      const res = await getProjectFoldeInfo(file.id);
+      if (res.code === 200) {
+        // 合并详细信息到文件对象
+        selectedFile.value = {
+          ...file,
+          ...res.data
+        };
+      }
+    } catch (error) {
+      console.error('获取项目详细信息失败:', error);
+    }
+  }
 }
 
 // 计算背景色
@@ -338,7 +360,7 @@ const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 // const navTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const desktopBboder = computed(() => isDark.value ? 'rgba(231,231,224,.3)' : '#D7D7D7')//11111
 const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#A1A1A1')
-// const vTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
+const vTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const borderColor = computed(() => isDark.value ? 'transparent' : 'rgba(228, 231, 237, 0.6)')
 // const menuBgColor = computed(() => isDark.value ? '#000' : '#ffffff')
 
@@ -347,14 +369,23 @@ const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
   const fileGrid = document.querySelector('.file-grid')
   const rightTabsElement = document.querySelector('.right-tabs')
-  const operationDialog = document.querySelector('.el-dialog')
-  const uploadDialog = document.querySelector('.el-dialog')
+  
+  // 检查是否在任何弹框内（包括对话框、下拉菜单、选择器等）
+  const isInAnyDialog = target.closest('.el-dialog') || 
+                       target.closest('.el-select-dropdown') || 
+                       target.closest('.el-select') ||
+                       target.closest('.el-popper') ||
+                       target.closest('.el-message-box') ||
+                       target.closest('.el-notification') ||
+                       target.closest('.el-loading-mask') ||
+                       target.closest('.el-upload') ||
+                       target.closest('.el-form') ||
+                       target.closest('.el-form-item')
 
-  // 检查点击是否在文件网格内、操作按钮区域内或操作弹框内
+  // 检查点击是否在文件网格内、操作按钮区域内或任何弹框内
   const isClickInside = (fileGrid && fileGrid.contains(target)) ||
     (rightTabsElement && rightTabsElement.contains(target)) ||
-    (operationDialog && operationDialog.contains(target)) ||
-    (uploadDialog && uploadDialog.contains(target))
+    isInAnyDialog
 
   if (!isClickInside) {
     selectedFile.value = null
@@ -388,13 +419,13 @@ const handleUpload = async () => {
       if (!fileLibraryStore.projectId) {
         throw new Error('项目ID不存在')
       }
-      
+
       // 获取当前文件夹ID（面包屑最后一级）
       const currentFolderId = fileLibraryStore.folderPath[fileLibraryStore.folderPath.length - 1]?.id
       if (!currentFolderId) {
         throw new Error('当前文件夹ID不存在')
       }
-      
+
       await addProjectResourceFile({
         projectId: fileLibraryStore.projectId,
         folderId: currentFolderId,
@@ -457,7 +488,16 @@ const handleFileOperation = async (tab: TabItem) => {
       case '创建项目':
         operationDialogVisible.value = true;
         operationType.value = 'create';
-        renameValue.value = '';
+        // 重置创建项目表单
+        createProjectForm.value = {
+          name: '',
+          address: '中国',
+          clientName: '',
+          locationId: null,
+        };
+        selectedProvince.value = '';
+        selectedCity.value = '';
+        cityOptions.value = [];
         break;
       case '新建文件夹':
         operationDialogVisible.value = true;
@@ -577,16 +617,40 @@ const handleFileOperation = async (tab: TabItem) => {
           clientName: file.clientName || '',
           createdAt: file.createdAt || ''
         };
-        // 这里可根据 file.address 进行省市初始化
-        // 假设 file.address 形如 "中国,省份,城市"
-        if (file.address) {
-          const arr = file.address.split(',');
-          if (arr.length >= 2) {
-            selectedProvince.value = arr[1];
-            getCityData(arr[1]);
-          }
-          if (arr.length >= 3) {
-            selectedCity.value = arr[2];
+        
+        // 先清空之前的选择
+        selectedProvince.value = '';
+        selectedCity.value = '';
+        cityOptions.value = [];
+        
+        // 通过 locationId 回显省市信息
+        if (file.locationId) {
+          // 先检查是否是省份ID
+          const provinceOption = provinceOptions.value.find(province => 
+            province.value.toString() === file.locationId?.toString()
+          );
+          
+          if (provinceOption) {
+            // 如果是省份ID
+            selectedProvince.value = provinceOption.value;
+            selectedCity.value = '';
+            // 获取该省份的城市列表
+            await getCityData(provinceOption.value);
+          } else {
+            // 如果不是省份ID，可能是城市ID，需要遍历所有省份的城市
+            for (const province of provinceOptions.value) {
+              // 获取该省份的城市列表
+              await getCityData(province.value);
+              // 在城市列表中查找
+              const cityOption = cityOptions.value.find(city => 
+                city.value.toString() === file.locationId?.toString()
+              );
+              if (cityOption) {
+                selectedProvince.value = province.value;
+                selectedCity.value = cityOption.value;
+                break;
+              }
+            }
           }
         }
       }
@@ -597,16 +661,16 @@ const handleFileOperation = async (tab: TabItem) => {
         ElMessage.warning('收藏资源暂不支持下载');
         return;
       }
-      
+
       try {
         // 如果是文件夹，提示不能下载
         if (file.type === 'folder') {
           ElMessage.warning('文件夹不能下载');
           return;
         }
-        
+
         operationLoading.value = true;
-        
+
         // 其他场景：使用原有的项目文件下载逻辑
         // 根据当前路径层级选择不同的下载参数
         let downloadParams;
@@ -626,7 +690,7 @@ const handleFileOperation = async (tab: TabItem) => {
             fileId: file.id
           };
         }
-        
+
         const res = await downProjectResourceFile(downloadParams);
         if (res.code === 200) {
           // 创建下载链接
@@ -654,19 +718,27 @@ const handleFileOperation = async (tab: TabItem) => {
 // 修改确认操作处理函数
 const handleConfirmOperation = async () => {
   operationLoading.value = true;
-  
+
   if (operationType.value === 'create') {
-    if (!renameValue.value) {
-      ElMessage.warning('请输入名称');
-      operationLoading.value = false;
-      return;
-    }
-    try {
-      // 根据当前路径层级选择不同的创建接口
-      if (fileLibraryStore.currentPath.length === 0) {
-        // 一级目录创建项目
+    // 根据当前路径层级选择不同的创建逻辑
+    if (fileLibraryStore.currentPath.length === 0) {
+      // 一级目录创建项目
+      if (!createProjectForm.value.name) {
+        ElMessage.warning('请输入项目名称');
+        operationLoading.value = false;
+        return;
+      }
+      if (!selectedProvince.value) {
+        ElMessage.warning('请选择项目地址');
+        operationLoading.value = false;
+        return;
+      }
+
+      try {
         const res = await addProjectFolder({
-          name: renameValue.value
+          name: createProjectForm.value.name,
+          locationId: selectedCity.value || selectedProvince.value,
+          clientName: createProjectForm.value.clientName
         });
         ElMessage.success('创建成功');
         // 刷新列表
@@ -682,18 +754,29 @@ const handleConfirmOperation = async () => {
           }));
           fileLibraryStore.setLibraryList(list || []);
         }
-      } else {
-        // 二级及n级目录创建文件夹
+      } catch (error) {
+        ElMessage.error('创建失败');
+      } finally {
+        operationLoading.value = false;
+      }
+    } else {
+      // 二级及n级目录创建文件夹
+      if (!renameValue.value) {
+        ElMessage.warning('请输入文件夹名称');
+        operationLoading.value = false;
+        return;
+      }
+      try {
         if (!fileLibraryStore.projectId) {
           throw new Error('项目ID不存在');
         }
-        
+
         // 获取当前文件夹ID（面包屑最后一级）
         const currentFolderId = fileLibraryStore.folderPath[fileLibraryStore.folderPath.length - 1]?.id;
         if (!currentFolderId) {
           throw new Error('当前文件夹ID不存在');
         }
-        
+
         // 使用addProjectResource接口创建文件夹
         await addProjectResource({
           projectId: fileLibraryStore.projectId,
@@ -715,14 +798,23 @@ const handleConfirmOperation = async () => {
           }));
           fileLibraryStore.setLibraryList(list || []);
         }
+      } catch (error) {
+        ElMessage.error('创建失败');
+      } finally {
+        operationLoading.value = false;
       }
-      operationDialogVisible.value = false;
-      renameValue.value = '';
-    } catch (error) {
-      ElMessage.error('创建失败');
-    } finally {
-      operationLoading.value = false;
     }
+    operationDialogVisible.value = false;
+    renameValue.value = '';
+    createProjectForm.value = {
+      name: '',
+      address: '中国',
+      clientName: '',
+      locationId: null,
+    };
+    selectedProvince.value = '';
+    selectedCity.value = '';
+    cityOptions.value = [];
     return;
   }
 
@@ -834,13 +926,13 @@ const handleConfirmOperation = async () => {
           // 如果是第一层文件夹（项目），使用 editProjectFoldeInfo
           if (fileLibraryStore.currentPath.length === 0) {
             await editProjectFoldeInfo({
-              id: file.id,
+              projectId: file.id,
               name: renameValue.value
             });
           } else {
             // 如果是子文件夹，使用 editProjectResource
             await editProjectResource({
-              projectId: fileLibraryStore.projectId,
+              projectId: fileLibraryStore.projectId || file.id,
               folderId: file.id,
               name: renameValue.value
             });
@@ -848,7 +940,7 @@ const handleConfirmOperation = async () => {
         } else {
           // 如果是文件，使用 editProjectResourceFile
           await editProjectResourceFile({
-            projectId: fileLibraryStore.projectId,
+            projectId: fileLibraryStore.projectId || file.id,
             fileId: file.id,
             name: renameValue.value
           });
@@ -860,9 +952,9 @@ const handleConfirmOperation = async () => {
       case 'edit':
         await editProjectFoldeInfo({
           projectId: formDatassss.value.id,
-          name: formDatassss.value.clientName,
-          address: [country.value, selectedProvince.value, selectedCity.value].filter(Boolean).join(','),
-          // clientName: formDatassss.value.clientName,
+          name: formDatassss.value.name,  // 使用项目名称
+          locationId: selectedCity.value || selectedProvince.value,
+          clientName: formDatassss.value.clientName,  // 建设方/委托方
           createdAt: formDatassss.value.createdAt
         });
         ElMessage.success('编辑成功');
@@ -1064,7 +1156,9 @@ onUnmounted(() => {
                 <img :src="selectedFile.preview" :alt="selectedFile.name">
               </div>
               <div class="file-info">
-                <h3 style="font-size: 14px;"><el-icon><Tickets /></el-icon> {{ fileLibraryStore.currentPath.length === 0 ? '项目详情' : '文件详情' }}</h3>
+                <h3 style="font-size: 14px;"><el-icon>
+                    <Tickets />
+                  </el-icon> {{ fileLibraryStore.currentPath.length === 0 ? '项目详情' : '文件详情' }}</h3>
                 <!-- <div class="info-item"> -->
                 <!-- <span class="label">项目详情</span> -->
                 <!-- <span class="value">{{ selectedFile.type === 'folder' ? '文件夹' : '文件' }}</span> -->
@@ -1081,12 +1175,16 @@ onUnmounted(() => {
                   <span class="label">大小：</span>
                   <span class="value">{{ formatFileSize(selectedFile.length) }}</span>
                 </div>
+                <div class="info-item" >
+                  <span class="label">建设方/委托方</span>
+                  <span class="value">{{ selectedFile.clientName }}</span>
+                </div>
               </div>
             </div>
           </div>
           <div class="dcontent-cont-right" v-else>
             <div class="empty-container">
-              <el-empty description="请选择一个文件或者文件夹预览"  :image-size="40" :image="simplified" />
+              <el-empty description="请选择一个文件或者文件夹预览" :image-size="40" :image="simplified" />
             </div>
           </div>
         </div>
@@ -1127,57 +1225,65 @@ onUnmounted(() => {
         operationType === 'rename' ? '重命名' :
           operationType === 'edit' ? '编辑项目' :
             operationType === 'removeFavorite' ? '取消收藏确认' :
-              operationType === 'create' ? (fileLibraryStore.currentPath.length === 0 ? '创建项目' : '新建文件夹') : ''" width="30%" :close-on-click-modal="false">
-    <template v-if="operationType === 'rename' || operationType === 'create'">
-      <el-input v-model="renameValue" :placeholder="operationType === 'create' ? 
-        (fileLibraryStore.currentPath.length === 0 ? '请输入项目名称' : '请输入文件夹名称') : 
-        '请输入新的名称'" />
+              operationType === 'create' ? (fileLibraryStore.currentPath.length === 0 ? '创建项目' : '新建文件夹') : ''"
+    width="30%" :close-on-click-modal="false">
+    <template v-if="operationType === 'rename'">
+      <el-input v-model="renameValue" placeholder="请输入新的名称" />
     </template>
-    <template v-else-if="operationType === 'edit'">
-      <el-form :model="formDatassss" label-width="130px">
+    <template v-else-if="operationType === 'create' && fileLibraryStore.currentPath.length === 0">
+      <el-form :model="createProjectForm" label-width="130px">
+        <el-form-item label="项目名称">
+          <el-input v-model="createProjectForm.name" placeholder="请输入项目名称" />
+        </el-form-item>
         <el-form-item label="项目地址">
           <el-select v-model="country" style="width: 130px; margin-right: 10px;" disabled>
             <el-option label="中国" value="中国" />
           </el-select>
-          <el-select
-            v-model="selectedProvince"
-            placeholder="选择省份"
-            style="width: 130px; margin-right: 10px;"
-            @change="onProvinceChange"
-          >
-            <el-option
-              v-for="item in provinceOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
+          <el-select v-model="selectedProvince" placeholder="选择省份" style="width: 130px; margin-right: 10px;"
+            @change="onProvinceChange">
+            <el-option v-for="item in provinceOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
-          <el-select
-            v-model="selectedCity"
-            placeholder="选择城市"
-            style="width: 130px;"
-            :disabled="!selectedProvince"
-          >
-            <el-option
-              v-for="item in cityOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
+          <el-select v-model="selectedCity" placeholder="选择城市" style="width: 130px;" :disabled="!selectedProvince">
+            <el-option v-for="item in cityOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="建设方/委托方">
+          <el-input v-model="createProjectForm.clientName" placeholder="请输入建设方/委托方" />
+        </el-form-item>
+      </el-form>
+    </template>
+    <template v-else-if="operationType === 'create' && fileLibraryStore.currentPath.length > 0">
+      <el-input v-model="renameValue" placeholder="请输入文件夹名称" />
+    </template>
+    <template v-else-if="operationType === 'edit'">
+      <el-form :model="formDatassss" label-width="130px">
+        <el-form-item label="项目名称">
+          <el-input v-model="formDatassss.name" />
+        </el-form-item>
+        <el-form-item label="项目地址">
+          <el-select v-model="country" style="width: 130px; margin-right: 10px;" disabled>
+            <el-option label="中国" value="中国" />
+          </el-select>
+          <el-select v-model="selectedProvince" placeholder="选择省份" style="width: 130px; margin-right: 10px;"
+            @change="onProvinceChange">
+            <el-option v-for="item in provinceOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+          <el-select v-model="selectedCity" placeholder="选择城市" style="width: 130px;" :disabled="!selectedProvince">
+            <el-option v-for="item in cityOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="建设方/委托方">
           <el-input v-model="formDatassss.clientName" />
         </el-form-item>
-        <el-form-item label="创建日期">
+        <!-- <el-form-item label="创建日期">
           <el-input v-model="formDatassss.createdAt" />
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
     </template>
     <template v-else>
       <span>{{ operationType === 'recover' ? '确定要还原该文件吗？' :
         operationType === 'delete' ? '确定要彻底删除该文件吗？此操作不可恢复！' :
-          operationType === 'removeFavorite' ? '确定要删除该文件吗？' :
+          operationType === 'removeFavorite' ? '确定要取消收藏该文件吗？' :
             '确定要删除文件吗？若删除文件，之后可以在回收站中还原。' }}</span>
     </template>
     <template #footer>
@@ -1194,7 +1300,7 @@ onUnmounted(() => {
   // padding: 20px;
   height: 100%;
   // background-color: var(--theme-background);
-  
+
   :deep(.el-card) {
     box-shadow: none !important;
   }
@@ -1264,16 +1370,16 @@ onUnmounted(() => {
             left: -2px;
             right: -2px;
             height: 2px;
-            background-color: #C4C4D3;
+            background-color: v-bind(vTextColor);
           }
         }
 
         span {
-          color: #C4C4D3;
+          // color: #C4C4D3;
         }
 
         &:not(.active) span {
-          color: #8E9094;
+          // color: #8E9094;
         }
       }
     }
@@ -1435,24 +1541,24 @@ onUnmounted(() => {
   :deep(.el-upload-dragger) {
     width: 100%;
   }
-  
+
   // 自定义上传文字颜色
   :deep(.el-upload__text) {
-    color: #F9DE4A !important;
-    
+    // color: #F9DE4A !important;
+
     em {
-      color: #F9DE4A !important;
+      color: #ff9900 !important;
     }
   }
-  
+
   // 自定义上传图标颜色
   :deep(.el-icon--upload) {
-    color: #F9DE4A !important;
+    // color: #F9DE4A !important;
   }
-  
+
   // 自定义提示文字颜色
   :deep(.el-upload__tip) {
-    color: #F9DE4A !important;
+    // color: #F9DE4A !important;
   }
 }
 
@@ -1488,7 +1594,7 @@ onUnmounted(() => {
       &:hover {
         background-color: #B4B4C3;
       }
-      
+
       // 自定义loading圈圈颜色
       :deep(.el-loading-spinner) {
         .circular {
@@ -1497,12 +1603,12 @@ onUnmounted(() => {
           }
         }
       }
-      
+
       // 更强的优先级选择器
       :deep(.el-loading-spinner .circular .path) {
         stroke: #F9DE4A !important;
       }
-      
+
       // 直接针对loading状态
       &.is-loading {
         :deep(.el-loading-spinner .circular .path) {
@@ -1534,7 +1640,7 @@ html.dark {
       &:hover {
         background-color: #B4B4C3;
       }
-      
+
       // 自定义loading圈圈颜色
       :deep(.el-loading-spinner) {
         .circular {
@@ -1621,7 +1727,7 @@ html.dark {
         &:hover {
           background-color: rgba(249, 222, 74, 0.8);
         }
-        
+
         // 自定义loading圈圈颜色
         :deep(.el-loading-spinner) {
           .circular {
@@ -1666,12 +1772,12 @@ html.dark {
 
 .empty-container {
   display: flex;
-    align-items: center;
-    height: 100%;
-    min-height: 400px;
-    align-content: flex-start;
-    flex-direction: column;
-    padding-top: 150px;
+  align-items: center;
+  height: 100%;
+  min-height: 400px;
+  align-content: flex-start;
+  flex-direction: column;
+  padding-top: 150px;
 }
 
 // 全局覆盖loading圈圈颜色
@@ -1687,5 +1793,24 @@ html.dark {
 // 针对对话框按钮的loading圈圈
 :deep(.dialog-button .el-loading-spinner .circular .path) {
   stroke: #F9DE4A !important;
+}
+
+.file-grid-item {
+
+  &.active,
+  &:hover {
+    .file-info {
+      display: flex;
+      align-items: center;
+
+      .file-name-input {
+        color: #ff9900 !important;
+      }
+    }
+  }
+
+  .file-name-input {
+    color: #ff9900 !important;
+  }
 }
 </style>

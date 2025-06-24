@@ -28,11 +28,20 @@ const routes: Array<RouteRecordRaw> = [
         }
       },
       {
+        path: '/smart-computing',
+        name: 'SmartComputing',
+        component: () => import('@/views/smart-computing/index.vue'),
+        meta: {
+          title: '团队协同',
+          icon: '左栏 - 团队协同',
+        }
+      },
+      {
         path: '/knowledge-base',
         name: 'KnowledgeBase',
         component: () => import('../views/knowledge-base/index.vue'),
         meta: {
-          title: '知识库',
+          title: '行业资源',
           icon: '左栏 - 知识库'
         }
       },
@@ -42,9 +51,20 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/account/index.vue'),
         meta: {
           title: '账户管理',
-          icon: 'zhgl'
+          icon: 'zhgl',
+          hidden: true
         }
       },
+      {
+        path: '/design-square',
+        name: 'DesignSquare',
+        component: () => import('@/views/design-square/index.vue'),
+        meta: {
+          title: '设计广场',
+          icon: '左栏 - 设计广场',
+        }
+      },
+
       // {
       //   path: '/collaboration',
       //   name: 'Collaboration',

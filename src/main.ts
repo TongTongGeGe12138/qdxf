@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import './style.css'
+// import './style.css'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
@@ -7,6 +7,7 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import { initTheme } from './utils/theme'
+import { useUserStore } from './stores/user'
 import { gsap } from 'gsap'
 window.gsap = gsap
 // 初始化主题
@@ -22,5 +23,9 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 app.use(ElementPlus)
 app.use(router)
 app.use(store)
+
+// 初始化用户信息
+const userStore = useUserStore()
+userStore.loadUserInfo()
 
 app.mount('#app')
