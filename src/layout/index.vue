@@ -4,7 +4,6 @@
         <el-aside :width="isCollapse ? '64px' : '200px'">
             <div class="logo-container">
                 <img :src="getIconUrl('beesfqd_ai_logo')" alt="BeesFQD Logo" class="logo-icon" />
-                <!-- <span v-show="!isCollapse" class="logo-text">BeesFQD</span> -->
             </div>
             <el-menu :default-active="route.path" class="el-menu-vertical" :collapse="isCollapse" router
                 :background-color="menuBgColor" :text-color="menuTextColor" :active-text-color="menuActiveTextColor"
@@ -20,12 +19,6 @@
         <el-container>
             <el-header height="60px">
                 <div class="header-left">
-                    <!-- <el-button type="text" @click="toggleCollapse">
-                        <el-icon :size="20">
-                            <Fold v-if="!isCollapse" />
-                            <Expand v-else />
-                        </el-icon>
-                    </el-button> -->
                 </div>
                 <div class="header-right">
                     <el-dropdown>
@@ -41,18 +34,6 @@
                                     </div>
                                     账户管理
                                 </el-dropdown-item>
-                                <!-- <el-dropdown-item>
-                                    <div class="icon-container">
-                                        <img :src="getIconUrl('dygl')" alt="订阅管理" class="dropdown-icon" />
-                                    </div>
-                                    订阅管理
-                                </el-dropdown-item>
-                                <el-dropdown-item>
-                                    <div class="icon-container">
-                                        <img :src="getIconUrl('ddgl')" alt="订单管理" class="dropdown-icon" />
-                                    </div>
-                                    订单管理
-                                </el-dropdown-item> -->
                                 <el-dropdown-item>
                                     <div class="icon-container">
                                         <img :src="getIconUrl('grzx')" alt="返回官网" class="dropdown-icon" />
@@ -68,6 +49,8 @@
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>
+                    <!-- 临时测试按钮 -->
+                    <el-button @click="testLoading" style="margin-right: 10px;">测试Loading</el-button>
                     <el-button class="theme-button" @click="handleThemeSwitch">
                         <img :src="getIconUrl(darkMode ? 'Darkmode' : 'lightmode')" :alt="darkMode ? '暗色模式' : '亮色模式'"
                             class="theme-icon" />
@@ -77,6 +60,8 @@
 
             <el-main>
                 <router-view />
+                <!-- 使用新的LogoAnimation组件 -->
+                <LogoAnimation :visible="loading" />
             </el-main>
         </el-container>
     </el-container>
@@ -88,6 +73,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { UserFilled } from '@element-plus/icons-vue'
 import { isDark, toggleDark, applyTheme } from '../utils/theme'
 import ThemeTransition from '../components/ThemeTransition.vue'
+import LogoAnimation from '../components/LogoAnimation.vue'
 import { useUserStore } from '../stores/user'
 
 const route = useRoute()
@@ -95,6 +81,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const isCollapse = ref(false)
 const themeTransitionRef = ref()
+const loading = ref(false)
 
 // 本地主题状态
 const darkMode = ref(isDark.value)
@@ -114,7 +101,7 @@ watch(isDark, (newValue) => {
 // 计算菜单样式
 const menuBgColor = computed(() => isDark.value ? '#000' : 'rgba(231, 232, 235, 1)')
 const mainBgColor = computed(() => isDark.value ? '#000' : 'rgba(231, 232, 235, 1)')
-const menuTextColor = computed(() => isDark.value ? '#a3a6ad' : '#606266')
+const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const menuActiveTextColor = computed(() => '#fff')
 const menuHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#f6f7f9')
 const borderColor = computed(() => isDark.value ? '#414243' : '#e4e7ed')
@@ -125,7 +112,7 @@ const themeButtonHoverBgColor = computed(() => darkMode.value ? '#1B2126' : '#FF
 
 const dropdownBgColor = computed(() => isDark.value ? 'var(--el-bg-color)' : '#E8E9E4')
 
-const menuIconFilter = computed(() => isDark.value ? 'brightness(0) invert(1)' : 'none')
+const menuIconFilter = computed(() => isDark.value ? 'brightness(0) invert(1)' : '#ffffff')
 
 // 获取路由配置中的菜单项
 const routes = computed(() => {
@@ -194,15 +181,20 @@ const toggleIconMode = () => {
     });
 }
 
-// 监听主题变化
-watch(isDark, (newValue) => {
-    document.body.classList.toggle('dark-mode', newValue);
-    toggleIconMode();
-});
-
 onMounted(() => {
     applyTheme()
     document.body.classList.toggle('dark-mode', isDark.value);
+    toggleIconMode();
+    
+    // 监听测试事件
+    window.addEventListener('test-logo-animation', () => {
+        testLoading()
+    })
+})
+
+// 监听主题变化，更新图标模式
+watch(isDark, (newValue) => {
+    document.body.classList.toggle('dark-mode', newValue);
     toggleIconMode();
 })
 
@@ -217,6 +209,23 @@ const handleLogout = async () => {
 const goToAccount = () => {
     router.push('/account')
 }
+
+// 监听路由变化，显示loading
+watch(() => route.path, () => {
+    loading.value = true
+    // 延迟关闭loading，确保页面内容加载完成
+    setTimeout(() => {
+        loading.value = false
+    }, 2000) // 增加到2000ms，确保动画完整播放
+}, { immediate: true })
+
+const testLoading = () => {
+    loading.value = true
+    // 2秒后关闭loading
+    setTimeout(() => {
+        loading.value = false
+    }, 2000)
+}
 </script>
 
 <style scoped>
@@ -228,7 +237,6 @@ const goToAccount = () => {
 
 .el-aside {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    /* overflow: hidden; */
     border-right: 1px solid v-bind(borderColor);
     background-color: v-bind(menuBgColor);
 }
@@ -236,22 +244,11 @@ const goToAccount = () => {
 .logo-container {
     height: 60px;
     display: flex;
-    /* align-items: center; */
     padding: 0 20px;
     overflow: hidden;
     background-color: v-bind(menuBgColor);
-    /* border-bottom: 1px solid v-bind(borderColor); */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     justify-content: center;
-
-    .logo-text {
-        font-size: 20px;
-        font-weight: bold;
-        color: v-bind(menuTextColor);
-        margin-left: 12px;
-        white-space: nowrap;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
 }
 
 .el-menu {
@@ -284,7 +281,6 @@ const goToAccount = () => {
     gap: 20px;
 }
 
-
 .el-dropdown-link {
     cursor: pointer;
     display: flex;
@@ -292,10 +288,6 @@ const goToAccount = () => {
     font-size: 14px;
     color: var(--el-text-color-primary);
     transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.el-dropdown-link .el-icon {
-    margin-left: 4px;
 }
 
 .theme-button {
@@ -326,6 +318,7 @@ const goToAccount = () => {
     height: calc(100vh - 60px);
     overflow-y: auto;
     transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
 }
 
 :deep(.el-menu) {
@@ -347,7 +340,6 @@ const goToAccount = () => {
     align-items: center;
     justify-content: flex-start;
     margin-top: 10px !important;
-    /* padding-left: 20px; */
 
     &.is-active {
         background-color: rgba(255, 189, 51, 1) !important;
@@ -394,30 +386,11 @@ const goToAccount = () => {
     }
 }
 
-:deep(.el-switch__core) {
-    background-color: v-bind(menuBgColor) !important;
-    border-color: v-bind(borderColor) !important;
-}
-
-:deep(.el-switch.is-checked .el-switch__core) {
-    background-color: #141414 !important;
-    border-color: #141414 !important;
-}
-
-:deep(.el-switch__core .el-switch__inner .is-icon) {
-    color: v-bind(menuTextColor) !important;
-}
-
-:deep(.el-switch.is-checked .el-switch__core .el-switch__inner .is-icon) {
-    color: #fff !important;
-}
-
 .menu-icon {
     width: 16px;
     height: 16px;
     margin-right: 8px;
     pointer-events: none;
-    /* 禁止图标的点击事件 */
     filter: v-bind(menuIconFilter);
 }
 
@@ -443,12 +416,10 @@ const goToAccount = () => {
 
 .icon-container.dark-mode .dropdown-icon {
     filter: brightness(0) invert(1);
-    /* 将图标变为白色 */
 }
 
 .icon-container.light-mode .dropdown-icon {
     filter: invert(20%) sepia(0%) saturate(0%) hue-rotate(241deg) brightness(98%) contrast(94%);
-    /* 将图标变为 #333333 */
 }
 
 .logo-icon {

@@ -331,8 +331,36 @@ const isFolder = (item: any) => {
   return item.length === 0 || item.contentType === 0 || item.type === 'folder';
 };
 
+// 添加获取客户端名称的辅助函数
+const getClientName = (file: FileItem) => {
+  // 如果是一级目录的项目文件夹，直接返回其clientName
+  if (file.type === 'folder' && fileLibraryStore.currentPath.length === 0) {
+    return file.clientName || '未设置';
+  }
+  
+  // 如果是子层级（文件或文件夹），从当前项目信息中获取建设方/委托方
+  if (fileLibraryStore.currentPath.length > 0) {
+    // 从store中获取当前项目信息
+    if (fileLibraryStore.currentProject && fileLibraryStore.currentProject.clientName) {
+      return fileLibraryStore.currentProject.clientName;
+    }
+    // 如果项目信息中没有，尝试从文件自身获取
+    return file.clientName || '未设置';
+  }
+  
+  // 如果都没有，返回默认值
+  return '未设置';
+};
+
 // 处理文件选中
 const handleFileSelected = async (file: FileItem) => {
+  // 检查file是否为null或undefined
+  if (!file) {
+    selectedFile.value = null;
+    rightActiveTab.value = 0;
+    return;
+  }
+
   // 允许在所有层级选中文件，但只在第一层目录显示项目详情
   selectedFile.value = file;
   rightActiveTab.value = 0;
@@ -343,10 +371,20 @@ const handleFileSelected = async (file: FileItem) => {
       const res = await getProjectFoldeInfo(file.id);
       if (res.code === 200) {
         // 合并详细信息到文件对象
-        selectedFile.value = {
+        const detailedFile = {
           ...file,
           ...res.data
         };
+        selectedFile.value = detailedFile;
+        
+        // 更新store中的项目信息
+        fileLibraryStore.setCurrentProject({
+          id: detailedFile.id,
+          name: detailedFile.name,
+          clientName: detailedFile.clientName,
+          address: detailedFile.address,
+          locationId: detailedFile.locationId
+        });
       }
     } catch (error) {
       console.error('获取项目详细信息失败:', error);
@@ -1177,7 +1215,7 @@ onUnmounted(() => {
                 </div>
                 <div class="info-item" >
                   <span class="label">建设方/委托方</span>
-                  <span class="value">{{ selectedFile.clientName }}</span>
+                  <span class="value">{{ getClientName(selectedFile) }}</span>
                 </div>
               </div>
             </div>

@@ -58,7 +58,7 @@ const handleApplyConfirm = () => {
     padding: 40px;
     min-height: 100vh;
     transition: background 0.3s;
-    max-width: 870px;
+    max-width: 900px;
     margin: 0 auto;
 }
 

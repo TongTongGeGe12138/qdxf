@@ -9,7 +9,7 @@
           </el-breadcrumb-item>
         </el-breadcrumb>
       </div>
-      <div class="file-grid" v-loading="isLoading" element-loading-text="加载中..." element-loading-background="rgba(231, 232, 235, 1) !important">
+      <div class="file-grid" v-loading="false" element-loading-text="加载中..." element-loading-background="rgba(231, 232, 235, 1) !important">
         <!-- 空状态显示 -->
         <div v-if="files.length === 0 && !isLoading" class="empty-state">
           <el-empty description="暂无数据"  :image-size="40" :image="simplified" />
@@ -185,10 +185,9 @@ watch(() => fileLibraryStore.libraryList, (newList) => {
   }
 }, { immediate: true });
 
-// 修改分页方法，添加加载状态
+// 修改分页方法，去掉加载状态
 const onPageChange = async (page: number) => {
   currentPage.value = page;
-  setLoading(true);
   // 重新请求数据
   await fileLibraryStore.refreshCurrentList(page, pageSize.value);
 };
@@ -196,31 +195,43 @@ const onPageChange = async (page: number) => {
 const onSizeChange = async (size: number) => {
   pageSize.value = size;
   currentPage.value = 1; // 重置到第一页
-  setLoading(true);
   // 重新请求数据
   await fileLibraryStore.refreshCurrentList(1, size);
 };
 
 // 单击选中
 const handleFileClick = (item: FileItem) => {
+  // 检查item是否为null或undefined
+  if (!item) {
+    selectedItem.value = null;
+    emit('fileSelected', null);
+    return;
+  }
+  
   selectedItem.value = item;
   emit('fileSelected', item);
 };
 
 // 双击进入文件夹或返回上级
 const handleFileDblClick = async (item: FileItem) => {
+  // 检查item是否为null或undefined
+  if (!item) {
+    console.warn('handleFileDblClick: item is null or undefined');
+    return;
+  }
+
   if (item.type === 'back') {
-    setLoading(true);
+    // setLoading(true); // 去掉loading
     try {
       fileLibraryStore.navigateUp();
       // 返回上级时取消选中状态
       selectedItem.value = null;
       emit('fileSelected', null);
     } finally {
-      setLoading(false);
+      // setLoading(false); // 去掉loading
     }
   } else if (item.type === 'folder') {
-    setLoading(true);
+    // setLoading(true); // 去掉loading
     try {
       fileLibraryStore.navigateToFolder({
         id: item.id,
@@ -229,7 +240,7 @@ const handleFileDblClick = async (item: FileItem) => {
       });
       // 进入文件夹时不取消选中状态，让用户可以继续操作
     } finally {
-      setLoading(false);
+      // setLoading(false); // 去掉loading
     }
   } else {
     // 处理文件双击
@@ -376,7 +387,7 @@ const handleBreadcrumbClick = async (index: number) => {
   // 阻止事件冒泡，避免触发容器的点击事件
   event?.stopPropagation();
   
-  setLoading(true);
+  // setLoading(true); // 去掉loading
   try {
     if (index === 0) {
       await fileLibraryStore.clearCurrentPath(true); // ✅ 等待加载完成，自动刷新
@@ -390,9 +401,7 @@ const handleBreadcrumbClick = async (index: number) => {
     currentPage.value = 1;
   } catch (error) {
     console.error('面包屑导航失败:', error);
-  } finally {
-    setLoading(false);
-  }
+  } // 去掉finally中的loading设置
 };
 
 // 关闭CAD查看器

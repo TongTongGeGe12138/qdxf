@@ -14,11 +14,22 @@ interface FileItem {
   fileId?: string | number;
   folderId?: string | number;
   contentType?: number;
+  clientName?: string;
+  address?: string;
+  locationId?: string | number;
 }
 
 interface FolderInfo {
   id: string | number;
   name: string;
+}
+
+interface ProjectInfo {
+  id: string | number;
+  name: string;
+  clientName?: string;
+  address?: string;
+  locationId?: string | number;
 }
 
 export const useFileLibraryStore = defineStore('fileLibrary', {
@@ -27,7 +38,8 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
     projectId: null as string | number | null,
     folderPath: [] as FolderInfo[],
     libraryList: [] as FileItem[],
-    total: 0
+    total: 0,
+    currentProject: null as ProjectInfo | null
   }),
   actions: {
     setCurrentPath(path: string[]) {
@@ -37,6 +49,7 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
       this.currentPath = [];
       this.projectId = null;
       this.folderPath = [];
+      this.currentProject = null;
       if (autoRefresh) {
         await this.refreshCurrentList(page, pageSize);
       }
@@ -47,12 +60,16 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
     setTotal(total: number) {
       this.total = total;
     },
+    setCurrentProject(project: ProjectInfo | null) {
+      this.currentProject = project;
+    },
     clearStore() {
       this.libraryList = [];
       this.currentPath = [];
       this.projectId = null;
       this.folderPath = [];
       this.total = 0;
+      this.currentProject = null;
     },
     async navigateUp(page = 1, pageSize = 20) {
       if (this.currentPath.length > 0) {
@@ -62,6 +79,7 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
         if (this.currentPath.length === 0) {
           this.projectId = null;
           this.folderPath = [];
+          this.currentProject = null;
           await this.refreshCurrentList(page, pageSize);
         } else {
           const currentFolder = this.folderPath[this.folderPath.length - 1];
@@ -93,6 +111,13 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
 
       if (this.currentPath.length === 1) {
         this.projectId = folder.id;
+        this.setCurrentProject({
+          id: folder.id,
+          name: folder.name,
+          clientName: folder.clientName,
+          address: folder.address,
+          locationId: folder.locationId
+        });
       }
       this.folderPath = [...this.folderPath, {
         id: folder.id,
@@ -110,6 +135,7 @@ export const useFileLibraryStore = defineStore('fileLibrary', {
         if (index === -1) {
           this.projectId = null;
           this.folderPath = [];
+          this.currentProject = null;
           await this.refreshCurrentList(page, pageSize);
         } else {
           if (!this.projectId) throw new Error('项目ID不存在');
