@@ -142,7 +142,6 @@ const operationType = ref<'recover' | 'delete' | 'upload' | 'trash' | 'rename' |
 const renameValue = ref('');
 
 // 添加loading状态
-const listLoading = ref(false)
 const operationLoading = ref(false)
 const searchLoading = ref(false)
 
@@ -157,6 +156,8 @@ const formDatassss = ref<any>({
   contentType: null,
   locationId: null,
   resourceId: null,
+  selectedProvince: '',
+  selectedCity: '',
 });
 
 // 添加创建项目表单数据
@@ -165,6 +166,8 @@ const createProjectForm = ref<any>({
   address: '中国',
   clientName: '',
   locationId: null,
+  selectedProvince: '',
+  selectedCity: '',
 });
 
 // 地址选择相关
@@ -209,8 +212,21 @@ const getCityData = async (provinceId: string | number) => {
 
 // 省份变化时
 const onProvinceChange = async (provinceId: string | number) => {
-  selectedCity.value = '';
+  console.log('省份变化，provinceId:', provinceId);
+  console.log('当前操作类型:', operationType.value);
+  console.log('当前路径长度:', fileLibraryStore.currentPath.length);
+  
+  // 如果是在创建项目表单中，清空城市选择
+  if (operationType.value === 'create' && fileLibraryStore.currentPath.length === 0) {
+    createProjectForm.value.selectedCity = '';
+    console.log('清空 createProjectForm.selectedCity');
+  } else {
+    selectedCity.value = '';
+    console.log('清空 selectedCity');
+  }
+  
   await getCityData(provinceId);
+  console.log('省份变化后，createProjectForm:', createProjectForm.value);
 };
 
 // 监听 activeIndex 变化
@@ -228,7 +244,6 @@ watch(activeIndex, (newIndex) => {
 
   switch (newIndex) {
     case 0: // 我的项目
-      listLoading.value = true;
       getProjectFile({
         page: 1,
         pageSize: 20,
@@ -251,21 +266,13 @@ watch(activeIndex, (newIndex) => {
         // API调用失败时，清空列表
         fileLibraryStore.setLibraryList([]);
         fileLibraryStore.setTotal(0);
-      }).finally(() => {
-        listLoading.value = false;
       });
       break;
     case 1: // 我收藏的资源
-      listLoading.value = true;
-      getFavoriteList(searchValue.value).finally(() => {
-        listLoading.value = false;
-      });
+      getFavoriteList(searchValue.value);
       break;
     case 2: // 回收站
-      listLoading.value = true;
-      getTrashList(searchValue.value).finally(() => {
-        listLoading.value = false;
-      });
+      getTrashList(searchValue.value);
       break;
   }
 });
@@ -532,6 +539,8 @@ const handleFileOperation = async (tab: TabItem) => {
           address: '中国',
           clientName: '',
           locationId: null,
+          selectedProvince: '',
+          selectedCity: '',
         };
         selectedProvince.value = '';
         selectedCity.value = '';
@@ -544,7 +553,6 @@ const handleFileOperation = async (tab: TabItem) => {
         break;
       case '刷新列表':
         try {
-          listLoading.value = true;
           if (activeIndex.value === 2) {
             await getTrashList(searchValue.value);
           } else if (activeIndex.value === 1) {
@@ -566,8 +574,6 @@ const handleFileOperation = async (tab: TabItem) => {
           }
         } catch (error) {
           ElMessage.error('刷新失败');
-        } finally {
-          listLoading.value = false;
         }
         break;
     }
@@ -753,6 +759,39 @@ const handleFileOperation = async (tab: TabItem) => {
   }
 };
 
+// 监听操作类型变化
+watch(operationType, (newType) => {
+  if (newType === 'rename' || newType === 'edit') {
+    renameValue.value = selectedFile.value?.name || '';
+  }
+});
+
+// 监听对话框关闭，清空表单数据
+watch(operationDialogVisible, (visible) => {
+  if (!visible && operationType.value === 'create') {
+    // 对话框关闭时清空创建项目表单
+    createProjectForm.value = {
+      name: '',
+      address: '中国',
+      clientName: '',
+      locationId: null,
+      selectedProvince: '',
+      selectedCity: '',
+    };
+    selectedProvince.value = '';
+    selectedCity.value = '';
+    cityOptions.value = [];
+  }
+});
+
+// 监听 createProjectForm 变化，用于调试
+watch(createProjectForm, (newVal, oldVal) => {
+  console.log('createProjectForm 发生变化:', {
+    old: oldVal,
+    new: newVal
+  });
+}, { deep: true });
+
 // 修改确认操作处理函数
 const handleConfirmOperation = async () => {
   operationLoading.value = true;
@@ -766,18 +805,38 @@ const handleConfirmOperation = async () => {
         operationLoading.value = false;
         return;
       }
-      if (!selectedProvince.value) {
+      if (!createProjectForm.value.selectedProvince) {
         ElMessage.warning('请选择项目地址');
         operationLoading.value = false;
         return;
       }
 
       try {
-        const res = await addProjectFolder({
+        console.log('开始创建项目...');
+        console.log('createProjectForm.value:', createProjectForm.value);
+        console.log('selectedProvince.value:', selectedProvince.value);
+        console.log('selectedCity.value:', selectedCity.value);
+        console.log('operationType.value:', operationType.value);
+        console.log('fileLibraryStore.currentPath.length:', fileLibraryStore.currentPath.length);
+        
+        // 检查表单数据的有效性
+        console.log('表单数据检查:');
+        console.log('- name:', createProjectForm.value.name);
+        console.log('- selectedProvince:', createProjectForm.value.selectedProvince);
+        console.log('- selectedCity:', createProjectForm.value.selectedCity);
+        console.log('- clientName:', createProjectForm.value.clientName);
+        
+        const params = {
           name: createProjectForm.value.name,
-          locationId: selectedCity.value || selectedProvince.value,
+          locationId: createProjectForm.value.selectedProvince,
           clientName: createProjectForm.value.clientName
-        });
+        };
+        console.log('创建项目参数:', params);
+        console.log('createProjectForm 完整数据:', createProjectForm.value);
+        const res = await addProjectFolder(params);
+        console.log('API 响应:', res);
+        console.log('API 响应 data:', res.data);
+        console.log('API 响应完整内容:', JSON.stringify(res, null, 2));
         ElMessage.success('创建成功');
         // 刷新列表
         const listRes = await getProjectFile({
@@ -794,8 +853,8 @@ const handleConfirmOperation = async () => {
         }
       } catch (error) {
         ElMessage.error('创建失败');
-      } finally {
         operationLoading.value = false;
+        return;
       }
     } else {
       // 二级及n级目录创建文件夹
@@ -838,21 +897,13 @@ const handleConfirmOperation = async () => {
         }
       } catch (error) {
         ElMessage.error('创建失败');
-      } finally {
         operationLoading.value = false;
+        return;
       }
     }
     operationDialogVisible.value = false;
     renameValue.value = '';
-    createProjectForm.value = {
-      name: '',
-      address: '中国',
-      clientName: '',
-      locationId: null,
-    };
-    selectedProvince.value = '';
-    selectedCity.value = '';
-    cityOptions.value = [];
+    operationLoading.value = false;
     return;
   }
 
@@ -1009,13 +1060,6 @@ const handleConfirmOperation = async () => {
   }
 };
 
-// 监听操作类型变化
-watch(operationType, (newType) => {
-  if (newType === 'rename' || newType === 'edit') {
-    renameValue.value = selectedFile.value?.name || '';
-  }
-});
-
 // 添加文件大小转换函数
 const formatFileSize = (bytes: number) => {
   if (!bytes || bytes === 0) return '0 MB';
@@ -1109,7 +1153,6 @@ const clearStoreData = () => {
 
 // 初始化加载项目列表
 onMounted(async () => {
-  listLoading.value = true;
   try {
     if (activeIndex.value === 0) {
       const res = await getProjectFile({
@@ -1140,8 +1183,6 @@ onMounted(async () => {
     // API调用失败时，清空列表
     fileLibraryStore.setLibraryList([]);
     fileLibraryStore.setTotal(0);
-  } finally {
-    listLoading.value = false;
   }
   // 使用捕获阶段监听点击事件
   document.addEventListener('click', handleClickOutside, true)
@@ -1185,7 +1226,7 @@ onUnmounted(() => {
           </div>
         </div>
         <div class="dcontent-cont">
-          <div class="dcontent-cont-left" v-loading="listLoading || searchLoading">
+          <div class="dcontent-cont-left" v-loading="searchLoading">
             <FileLibrary ref="fileLibraryRef" @fileSelected="handleFileSelected" :activeIndex="activeIndex" />
           </div>
           <div class="dcontent-cont-right" v-if="selectedFile">
@@ -1277,11 +1318,11 @@ onUnmounted(() => {
           <el-select v-model="country" style="width: 130px; margin-right: 10px;" disabled>
             <el-option label="中国" value="中国" />
           </el-select>
-          <el-select v-model="selectedProvince" placeholder="选择省份" style="width: 130px; margin-right: 10px;"
+          <el-select v-model="createProjectForm.selectedProvince" placeholder="选择省份" style="width: 130px; margin-right: 10px;"
             @change="onProvinceChange">
             <el-option v-for="item in provinceOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
-          <el-select v-model="selectedCity" placeholder="选择城市" style="width: 130px;" :disabled="!selectedProvince">
+          <el-select v-model="createProjectForm.selectedCity" placeholder="选择城市" style="width: 130px;" :disabled="!createProjectForm.selectedProvince">
             <el-option v-for="item in cityOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
@@ -1289,9 +1330,6 @@ onUnmounted(() => {
           <el-input v-model="createProjectForm.clientName" placeholder="请输入建设方/委托方" />
         </el-form-item>
       </el-form>
-    </template>
-    <template v-else-if="operationType === 'create' && fileLibraryStore.currentPath.length > 0">
-      <el-input v-model="renameValue" placeholder="请输入文件夹名称" />
     </template>
     <template v-else-if="operationType === 'edit'">
       <el-form :model="formDatassss" label-width="130px">

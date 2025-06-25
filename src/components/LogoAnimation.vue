@@ -103,8 +103,8 @@ const animatePath = (path: SVGPathElement, delay: number = 0): Promise<void> => 
             // 强制重排
             path.getBoundingClientRect()
             
-            // 描边动画 - 400ms
-            path.style.setProperty('transition', 'stroke-dashoffset 400ms ease-out', 'important')
+            // 描边动画 - 350ms
+            path.style.setProperty('transition', 'stroke-dashoffset 350ms ease-out', 'important')
             path.style.setProperty('stroke-dashoffset', '0', 'important')
             
             // 描边完成后填充动画 - 200ms
@@ -116,7 +116,7 @@ const animatePath = (path: SVGPathElement, delay: number = 0): Promise<void> => 
                 setTimeout(() => {
                     resolve()
                 }, 200)
-            }, 400)
+            }, 350)
         }, delay)
     })
 }
@@ -183,14 +183,16 @@ watch(isDark, () => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .logo-loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: v-bind(isDark ? '#000000' : 'rgba(231, 232, 235, 1)');
+    position: fixed;
+    top: 60px;
+    left: 200px;
+    right: 0;
+    bottom: 0;
+    width: calc(100vw - 200px);
+    height: calc(100vh - 60px);
+    background-color: v-bind('isDark ? "#000000" : "rgba(231, 232, 235, 1)"');
     display: flex;
     justify-content: center;
     align-items: center;
@@ -221,6 +223,6 @@ watch(isDark, () => {
                 stroke 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                 fill-opacity 0.2s ease-in-out,
                 stroke-opacity 0.2s ease-in-out,
-                stroke-dashoffset 0.4s ease-out !important;
+                stroke-dashoffset 0.35s ease-out !important;
 }
 </style> 

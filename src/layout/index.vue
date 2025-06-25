@@ -34,9 +34,9 @@
                                     </div>
                                     账户管理
                                 </el-dropdown-item>
-                                <el-dropdown-item>
-                                    <div class="icon-container">
-                                        <img :src="getIconUrl('grzx')" alt="返回官网" class="dropdown-icon" />
+                                <el-dropdown-item @click="toGang">
+                                    <div class="icon-container" >
+                                        <img :src="getIconUrl('grzx')" alt="返回官网" class="dropdown-icon"  />
                                     </div>
                                     返回官网
                                 </el-dropdown-item>
@@ -50,7 +50,7 @@
                         </template>
                     </el-dropdown>
                     <!-- 临时测试按钮 -->
-                    <el-button @click="testLoading" style="margin-right: 10px;">测试Loading</el-button>
+                    <!-- <el-button @click="testLoading" style="margin-right: 10px;">测试Loading</el-button> -->
                     <el-button class="theme-button" @click="handleThemeSwitch">
                         <img :src="getIconUrl(darkMode ? 'Darkmode' : 'lightmode')" :alt="darkMode ? '暗色模式' : '亮色模式'"
                             class="theme-icon" />
@@ -60,7 +60,6 @@
 
             <el-main>
                 <router-view />
-                <!-- 使用新的LogoAnimation组件 -->
                 <LogoAnimation :visible="loading" />
             </el-main>
         </el-container>
@@ -143,7 +142,9 @@ const handleThemeSwitch = (event: MouseEvent) => {
 
     toggleDark()
 }
-
+const toGang = () =>{
+    window.open('https://www.beesfpd.com/', '_blank');
+}
 const getIconUrl = (name: string) => {
     if (!name) return '';
 
@@ -157,7 +158,6 @@ const getIconUrl = (name: string) => {
             return '';
         }
     }
-
     try {
         return new URL(`../assets/tb/${name}.svg`, import.meta.url).href;
     } catch (error) {
@@ -216,7 +216,7 @@ watch(() => route.path, () => {
     // 延迟关闭loading，确保页面内容加载完成
     setTimeout(() => {
         loading.value = false
-    }, 2000) // 增加到2000ms，确保动画完整播放
+    }, 1200)
 }, { immediate: true })
 
 const testLoading = () => {
@@ -224,7 +224,7 @@ const testLoading = () => {
     // 2秒后关闭loading
     setTimeout(() => {
         loading.value = false
-    }, 2000)
+    }, 1200)
 }
 </script>
 
@@ -233,6 +233,7 @@ const testLoading = () => {
     height: 100vh;
     width: 100%;
     --dropdown-bg-color: v-bind(isDark.value ? 'var(--el-bg-color)' : '#E8E9E4');
+    position: relative;
 }
 
 .el-aside {

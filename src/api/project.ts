@@ -17,6 +17,7 @@ export function getProjectFolderList() {
 
 // 创建项目（文件夹形式）（一级）
 export function addProjectFolder(data: any) {
+  console.log('addProjectFolder 接收到的数据:', data);
   return request.post<ProjectListResult>({
     url: Api.ProjectUrl,
     data,

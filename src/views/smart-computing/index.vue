@@ -1,6 +1,6 @@
 <template>
     <div class="smart-computing-container" :style="{ background: bannerBgColor }">
-      <h2 class="title" :style="{ color: menuTextColor }">团队协同</h2>
+      <div class="title" :style="{ color: menuTextColor }">团队协同</div>
       <div class="banner-box" :style="{ background: cardBgColor, borderColor: borderColor }">
         <img class="banner-img" :src="bannerImg" alt="智能运算banner" />
         <div class="banner-content">
@@ -63,7 +63,7 @@
   }
   .title {
     font-size: 24px;
-    font-weight: bold;
+    // font-weight: bold;
     margin-bottom: 24px;
     transition: color 0.3s;
   }

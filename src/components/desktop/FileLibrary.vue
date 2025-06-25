@@ -9,7 +9,7 @@
           </el-breadcrumb-item>
         </el-breadcrumb>
       </div>
-      <div class="file-grid" v-loading="false" element-loading-text="加载中..." element-loading-background="rgba(231, 232, 235, 1) !important">
+      <div class="file-grid" v-loading="false" element-loading-text="加载中..." element-loading-background="transparent !important">
         <!-- 空状态显示 -->
         <div v-if="files.length === 0 && !isLoading" class="empty-state">
           <el-empty description="暂无数据"  :image-size="40" :image="simplified" />
@@ -39,7 +39,7 @@
         <span class="title">CAD查看器</span>
         <el-icon class="close-btn" @click="closeCadViewer"><Close /></el-icon>
       </div>
-      <div id="ibp-2d-container" v-loading="cadLoading" element-loading-text="CAD文件加载中..."></div>
+      <div id="ibp-2d-container" v-loading="cadLoading" element-loading-text="CAD文件加载中..." style="color: #ff9900;"></div>
     </div>
 
     <!-- 分页 -->
@@ -531,14 +531,17 @@ const handleContainerClick = () => {
       :deep(.el-loading-spinner) {
         .circular {
           .path {
-            stroke: #F9DE4A !important;
+            stroke: #ff9900 !important;
           }
         }
+      }
+      :deep(.el-loading-text){
+        color: #ff9900 !important;
       }
       
       // 更强的优先级选择器
       :deep(.el-loading-spinner .circular .path) {
-        stroke: #F9DE4A !important;
+        stroke: #ff9900 !important;
       }
     }
   }

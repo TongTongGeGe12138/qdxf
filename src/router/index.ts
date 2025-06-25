@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory  } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '../stores/user'
+import { nextTick } from 'vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -116,7 +117,21 @@ const routes: Array<RouteRecordRaw> = [
 
 const router = createRouter({
   history: createWebHashHistory (),
-  routes
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    // 如果有保存的位置（浏览器前进后退），则恢复到该位置
+    // if (savedPosition) {
+    //   return savedPosition
+    // }
+    
+    // 如果是路由切换，滚动到顶部
+    if (to.path !== from.path) {
+      return { top: 0 }
+    }
+    
+    // 默认行为
+    return { top: 0 }
+  }
 })
 
 // 路由守卫
@@ -136,6 +151,20 @@ router.beforeEach((to, _from, next) => {
   }
   
   next()
+})
+
+// 路由后置守卫 - 确保页面滚动到顶部
+router.afterEach((to, from) => {
+  // 如果是路由切换（不是同一页面），滚动到顶部
+  if (to.path !== from.path) {
+    // 使用 nextTick 确保 DOM 更新完成后再滚动
+    nextTick(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      })
+    })
+  }
 })
 
 // 添加全局错误处理
