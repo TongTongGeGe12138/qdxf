@@ -1,10 +1,6 @@
-import type { AxiosRequestConfig, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import axios from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { CreateAxiosOptions } from './axiosTransform';
 import { RequestOptions, Result } from './types';
-import { AxiosTransform } from './axiosTransform';
-import { isFunction } from 'lodash-es';
-import { ContentTypeEnum } from './httpEnum';
 
 export class VAxios {
   private axiosInstance: AxiosInstance;
@@ -57,15 +53,60 @@ export class VAxios {
 
     const { beforeRequestHook, requestCatch, transformRequestData } = transform || {};
 
-    if (beforeRequestHook && isFunction(beforeRequestHook)) {
-      conf = beforeRequestHook(conf, opt);
+    // 根据 externalUrlStatus 动态设置 baseURL
+    if (opt.externalUrlStatus !== undefined) {
+      let baseURL = '';
+      
+      if (import.meta.env.PROD) {
+        // 生产环境
+        switch (opt.externalUrlStatus) {
+          case 0:
+            // 默认API地址
+            baseURL = 'https://api-work.gatherbee.cn/api';
+            break;
+          case 1:
+            // 外部API地址（日志相关）- 使用api-cloud-uat.gatherbee.cn
+            baseURL = 'https://api-cloud-uat.gatherbee.cn/api';
+            break;
+          case 2:
+            // CAD API地址
+            baseURL = 'https://api-work.gatherbee.cn/api';
+            break;
+          default:
+            baseURL = 'https://api-work.gatherbee.cn/api';
+        }
+      } else {
+        // 开发环境
+        switch (opt.externalUrlStatus) {
+          case 0:
+            // 默认API地址
+            baseURL = opt.apiUrl || '/api';
+            break;
+          case 1:
+            // 外部API地址（日志相关）
+            baseURL = opt.externalUrlPrefix || '/log';
+            break;
+          case 2:
+            // CAD API地址
+            baseURL = opt.externalUrlPrefixCad || '/cad';
+            break;
+          default:
+            baseURL = opt.apiUrl || '/api';
+        }
+      }
+      
+      conf.baseURL = baseURL;
+    }
+
+    if (beforeRequestHook && typeof beforeRequestHook === 'function') {
+      conf = beforeRequestHook(conf);
     }
 
     return new Promise((resolve, reject) => {
       this.axiosInstance
         .request<any, AxiosResponse<Result>>(conf)
         .then((res: AxiosResponse<Result>) => {
-          if (transformRequestData && isFunction(transformRequestData)) {
+          if (transformRequestData && typeof transformRequestData === 'function') {
             try {
               const ret = transformRequestData(res, opt);
               resolve(ret);
@@ -77,7 +118,7 @@ export class VAxios {
           resolve(res as unknown as Promise<T>);
         })
         .catch((e: Error) => {
-          if (requestCatch && isFunction(requestCatch)) {
+          if (requestCatch && typeof requestCatch === 'function') {
             reject(requestCatch(e));
             return;
           }

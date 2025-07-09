@@ -432,24 +432,6 @@ onUnmounted(() => {
   }
 });
 
-// 添加组件激活时的处理
-const onActivated = () => {
-  // 组件被激活时，如果store中没有数据，则重新加载
-  if (fileLibraryStore.libraryList.length === 0) {
-    fileLibraryStore.refreshCurrentList();
-  }
-};
-
-// 添加组件停用时的处理
-const onDeactivated = () => {
-  // 组件停用时，不清空数据，只隐藏CAD查看器
-  if (EngineContext.Container) {
-    EngineContext.Container.style.display = 'none';
-  }
-  showCadViewer.value = false;
-  cadLoading.value = false;
-};
-
 // 添加一个公开的方法来处理文件打开
 const openFile = async (item: FileItem) => {
   await handleFileDblClick(item);

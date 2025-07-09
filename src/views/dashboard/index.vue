@@ -63,15 +63,15 @@
                         <img :src="getIconUrl('Setting')" alt="设置" class="header-icon"
                             :class="{ 'dark-icon': isDark, 'light-icon': !isDark }" />
                         <span>消防设备选型</span>
-                        <el-icon class="expand-icon">
+                        <el-icon class="expand-icon"  @click="handleEquipmentClick('more')">
                             <MoreFilled />
                         </el-icon>
                     </div>
                     <div class="list-items">
-                        <div class="list-item" v-for="item in equipmentList" :key="item">
+                        <div class="list-item" v-for="item in equipmentList" :key="item" @click="handleEquipmentClick(item)">
                             <div class="dot"></div>{{ item }}
                         </div>
-                        <div class="list-item more">更多选型 <el-icon class="double-arrow">
+                        <div class="list-item more" @click="handleEquipmentClick('more')">更多选型 <el-icon class="double-arrow">
                                 <DArrowRight />
                             </el-icon></div>
                     </div>
@@ -81,7 +81,7 @@
                         <img :src="getIconUrl('Shop')" alt="商店" class="header-icon"
                             :class="{ 'dark-icon': isDark, 'light-icon': !isDark }" />
                         <span>消防认证供应商</span>
-                        <el-icon class="expand-icon">
+                        <el-icon class="expand-icon"  @click="handleEquipmentClick('more')">
                             <MoreFilled />
                         </el-icon>
                     </div>
@@ -362,7 +362,7 @@ const fetchData = async () => {
 
         allList.value = list;
 
-        await handleFireApplication(list, componentsList);
+        await handleFireApplication(list);
 
     } catch (error) {
         ElMessage.error(error instanceof Error ? error.message : '获取数据失败');
@@ -401,7 +401,7 @@ const updateFireList = (moduleName: string) => {
 };
 
 // 处理智能消防应用
-const handleFireApplication = async (list: ProjectItem[], componentsList: AigcModuleComponent[]) => {
+const handleFireApplication = async (list: ProjectItem[]) => {
     const fireApps = list.filter((item: ProjectItem) => item.name === '智能消防');
     applicationList.value = fireApps;
 
@@ -442,7 +442,6 @@ const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#A1A1A1')
 const vTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const borderColor = computed(() => isDark.value ? 'transparent' : 'rgba(228, 231, 237, 0.3)')
-const VborderColor = computed(() => isDark.value ? '#EDEDED' : 'rgba(228, 231, 237, 0.6)')
 const menuBgColor = computed(() => isDark.value ? '#000' : '#ffffff')
 const listheader = computed(() => isDark.value ? 'rgba(255, 255, 255, 0.3)' : '#D7D7D7')
 const menuHoverBgColor = computed(() => isDark.value ? '#2b2b2b' : '#f5f7fa')
@@ -453,7 +452,7 @@ const tagsBgColor = computed(() => isDark.value ? '#0A0A0A' : '#FFFFFF')
 const tagTextColor = computed(() => isDark.value ? '#C4C4D3' : '#000000')
 const tagHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#F9F9F9')
 const tagActiveBgColor = computed(() => isDark.value ? '#191919' : '#F2F2F2')
-const cardBgColor = computed(() => isDark.value ? 'rgb(10,10,10)' : 'rgba(255, 253, 246, 1)')
+const cardBgColor = computed(() => isDark.value ? 'rgb(10,10,10)' : 'rgba(255, 255, 255, 1)')
 const cardHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#FFF8CC')
 const plusIconBgColor = computed(() => isDark.value ? '#C5C3D2' : '#c9c9c9')
 // const plusIconBorderColor = computed(() => isDark.value ? '#C5C3D2' : '#000000')
@@ -497,49 +496,53 @@ const supplierList = ref<Array<Supplier>>([
     {
         name: '博特睿',
         imageUrl: '/aigcIcon/1.png',
-        url: 'http://www.pescotech.cn/',
+        url: 'https://www.beesioe.com',
     },
     {
         name: '鼎信通讯消防',
         imageUrl: '/aigcIcon/2.png',
-        url: 'http://firetopscomm.com/',
+        url: 'https://www.beesioe.com',
     },
     {
         name: '青鸟消防',
         imageUrl: '/aigcIcon/3.png',
-        url: 'https://www.jbufa.com/',
+        url: 'https://www.beesioe.com',
     },
     {
         name: '台谊消防',
         imageUrl: '/aigcIcon/4.png',
-        url: 'https://taiyifire.com/',
+        url: 'https://www.beesioe.com',
     },
     {
         name: '深圳嘉泰',
         imageUrl: '/aigcIcon/5.png',
-        url: 'http://www.gtwaytec.com/',
+        url: 'https://www.beesioe.com',
     },
     {
         name: '赛特威尔',
         imageUrl: '/aigcIcon/6.png',
-        url: 'https://www.china-siter.cn/',
+        url: 'https://www.beesioe.com',
     },
     {
         name: '左向科技',
         imageUrl: '/aigcIcon/7.png',
-        url: 'http://www.zgzxzm.com/',
+        url: 'https://www.beesioe.com',
     },
     {
         name: '海湾公司',
         imageUrl: '/aigcIcon/8.png',
-        url: 'https://www.gst.com.cn/',
+        url: 'https://www.beesioe.com',
     },
 ]);
 
 // 处理供应商链接点击
 const handleSupplierClick = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    window.open(url,  'noopener,noreferrer');
 };
+const handleEquipmentClick = (item: string) => {
+    console.log(item);
+    window.open('https://www.beesioe.com',  'noopener,noreferrer');
+}
 
 // 添加新的响应式变量
 const cardDialogVisible = ref(false)
@@ -554,30 +557,7 @@ const handleCardClick = (item: ProjectItemExtended) => {
 };
 
 // 添加计算属性
-const iconBgColor = computed(() => isDark.value ? '#141414' : '#f5f7fa')
-const iconColor = computed(() => isDark.value ? '#fff' : '#303133')
-// const btnBorderColor = computed(() => 'rgba(231, 231, 224, 0.2980392156862745)')
 const closeHoverColor = computed(() => isDark.value ? '#f3cc2e' : '#409eff')
-
-// 获取并处理子分类数据
-const getAigcChildren = async (val: any) => {
-    try {
-        const { data, code } = await getAigcChildrenList(val.value);
-
-        if (code === 200) {
-            current.value = val.value;
-            if (Array.isArray(data) && data.length > 0) {
-                const uniqueData = unique(data);
-                secondary.value = uniqueData[0]?.value || '';
-                const processedData = getAigcCadStatus(uniqueData);
-                secondaryList.value = processedData;
-                threeStatus.value = true;
-            }
-        }
-    } catch (error) {
-        ElMessage.error(error instanceof Error ? error.message : '获取子分类数据失败');
-    }
-};
 
 // 处理 CAD 状态
 const getAigcCadStatus = (data: ProjectItem[]) => {
@@ -656,24 +636,12 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
     return result;
 };
 
-function unique(arr: any) {
-    console.log('进入 unique 函数，原始数据:', arr);
-    const list = [];
-    for (let i = 0; i < arr.length; i++) {
-        const element = arr[i];
-        console.log('检查数据项:', {
-            name: element.name,
-            hasExtra: !!element.extra,
-            hasVersion: element.extra?.version,
-            version: element.extra?.version
-        });
-        if (element.extra?.version) {
-            list.push(element);
-        }
-    }
-    console.log('unique 函数处理后的数据:', list);
-    return list;
-}
+// 添加计算属性来过滤secondaryList
+// type TagGroupKey = '智能给排水' | '智能电气' | '智能暖通';
+
+// function unique(arr: any) {
+//   return Array.from(new Set(arr));
+// }
 
 // 添加启动应用点击处理函数
 const handleLaunchClick = async () => {
@@ -709,8 +677,8 @@ const handleLaunchClick = async () => {
             const extraQuery = card.extra.url.split('?')[1];
             const query = `id=${data}&path=${path}${extraQuery ? `&${extraQuery}` : ''}`;
             const encodedQuery = `sign=${encodeURIComponent(RC4Encrypt(query))}`;
-
-            const baseUrl = 'http://cloud.dev.ifeng.com';
+            // const baseUrl = import.meta.env.PROD ?'http://cloud.dev.ifeng.com':'https://cloud-uat.gatherbee.cn';
+            const baseUrl = 'https://cloud-uat.gatherbee.cn';
             const basePath = card.extra.url.split('?')[0] || card.extra.url;
             const fullUrl = `${baseUrl}${basePath}#/UploadFiles?${encodedQuery}`;
 
@@ -756,13 +724,7 @@ onMounted(() => {
 });
 
 // 添加计算属性来过滤secondaryList
-type TagGroupKey = '智能给排水' | '智能电气' | '智能暖通';
-
-const tagGroups: Record<TagGroupKey, string[]> = {
-    '智能给排水': ['sprinkler', 'firehose_extinguisher', 'extinguishing', 'watermist', 'rain_water_curtain', 'firemonitor', 'waterspray', 'foam', 'deluge'],
-    '智能电气': ['firealarm', 'lighting_evacuation', 'firedoor_monitoring', 'firepump_monitoring'],
-    '智能暖通': ['pressurization', 'ventilation_pressurization', 'smoke_control']
-};
+// type TagGroupKey = '智能给排水' | '智能电气' | '智能暖通';
 
 const filteredSecondaryList = computed(() => {
     let filtered = secondaryList.value;
@@ -1395,7 +1357,7 @@ const handlePermissionClickss = () => {
     width: 120px;
     height: 40px;
     background: inherit;
-    background-color: rgba(249, 222, 74, 1) !important;
+    background-color: #FABD33 !important;
     box-sizing: border-box;
     border: none;
     border-radius: 5px;
@@ -1842,7 +1804,7 @@ const handlePermissionClickss = () => {
     }
 
     &.confirm {
-      background-color: rgba(249, 222, 74, 1);
+      background-color: #FABD33;
       color: #1B2126;
 
       &:hover {
@@ -1867,7 +1829,7 @@ html.dark {
       }
 
       &.confirm {
-        background-color: rgba(249, 222, 74, 1);
+        background-color: #FABD33;
         color: #1B2126;
 
         &:hover {
@@ -1883,7 +1845,7 @@ html.dark {
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 20px;
-  color: v-bind(textColor);
+  color: v-bind(vTextColor);
 }
 
 .welcome-card h2 {

@@ -1,4 +1,4 @@
-import type { ProjectListResult } from '@/api/model/detailModel';
+// import type { ProjectListResult } from '@/api/model/detailModel';
 import { requestCad } from '@/utils/request';
 
 interface P2dResponse {
@@ -12,7 +12,7 @@ interface P2dResponse {
 export function getP2d(data: { DwgUrl: string }) {
   return requestCad.post<P2dResponse>(
     {
-      url: '/log/Jd_Project/GetP2d',
+      url: '/Jd_Project/GetP2d',
       data,
     },
     { externalUrlStatus: 1 },

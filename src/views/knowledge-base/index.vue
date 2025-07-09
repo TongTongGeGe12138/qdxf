@@ -78,15 +78,12 @@ import { isDark } from '@/utils/theme';
 import { ElMessage } from 'element-plus';
 import {
   getBeeResources,
-  getTopLevelFiles,
   getFistLevelFiles,
   getSecondLevelListApi,
-  downloadFile as downloadFileApi,
   addMyResource,
-  getBeeResourcesSecond,
-  removeMyResource
+  getBeeResourcesSecond
 } from '@/api/dict';
-import { getMyResourcesInfo, deleteResourcesFile } from '@/api/resource';
+import { getMyResourcesInfo } from '@/api/resource';
 import folder from '@/assets/wjj.svg?component';
 import CadViewer from '@/components/CadViewer.vue';
 
@@ -131,7 +128,6 @@ const currentFolderId = ref('');
 const standardClassificationList = ref<ClassificationItem[]>([]);
 const normativeClassification = ref<ClassificationItem[]>([]);
 const activeStandard = ref(0);
-const activeNormative = ref(0);
 
 const filterGroups = ref([
   {
@@ -252,8 +248,6 @@ const fetchFileList = async () => {
         try {
           response = await getFistLevelFiles({
             category: currentCategory.value,
-            fist: filterGroups.value[0].activeFilter,
-            second: filterGroups.value[1].activeFilter,
             ...params
           });
 
@@ -284,7 +278,7 @@ const fetchFileList = async () => {
       }
     } else {
       // 默认获取顶级分类下的文件
-      response = await getTopLevelFiles({
+      response = await getFistLevelFiles({
         category: currentCategory.value,
         ...params
       });
@@ -362,7 +356,7 @@ const handleFilterChange = (groupIndex: number, filter: string) => {
   if (groupIndex === 0) {
     // 标准分类（一级分类）
     // 找到对应的分类对象以获取ID
-    const selectedCategory = standardClassificationList.value.find(item => item.name === filter);
+    // const selectedCategory = standardClassificationList.value.find(item => item.name === filter);
     currentLv1.value = filter;
     // 重置二级分类选择
     filterGroups.value[1].activeFilter = '';
@@ -443,22 +437,6 @@ const handleFileDblClick = async (file: FileItem) => {
 const handleContainerClick = () => {
   // 点击容器时取消选中状态
   selectedFile.value = null;
-};
-
-// 下载文件
-const downloadFile = async (fileId: string) => {
-  try {
-    const response = await downloadFileApi(fileId);
-    if (response.code === 200) {
-      ElMessage.success('下载成功');
-      // 这里可以添加实际的下载逻辑
-    } else {
-      ElMessage.error(response.message || '下载失败');
-    }
-  } catch (error) {
-    console.error('下载失败:', error);
-    ElMessage.error('下载失败');
-  }
 };
 
 // 在新窗口预览文件
@@ -556,19 +534,6 @@ const handleImageError = (event: Event) => {
   }
 };
 
-// 格式化文件大小
-const formatFileSize = (size: number) => {
-  if (size < 1024) return size + ' B';
-  if (size < 1024 * 1024) return (size / 1024).toFixed(1) + ' KB';
-  if (size < 1024 * 1024 * 1024) return (size / (1024 * 1024)).toFixed(1) + ' MB';
-  return (size / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
-};
-
-// 格式化日期
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('zh-CN');
-};
-
 // 监听搜索查询变化
 watch(searchQuery, () => {
   // 防抖处理
@@ -595,7 +560,6 @@ const borderColor = computed(() => isDark.value ? 'rgba(231, 231, 224, 0.2)' : '
 const menuBgColor = computed(() => isDark.value ? '#0A0A0A' : '#FFFFFF');
 const tagHoverBgColor = computed(() => isDark.value ? '#2b2b2b' : '#f0f0f0');
 const tagActiveColor = computed(() => isDark.value ? '#ff9900' : '#ff9900');
-const tagActiveBgColor = computed(() => isDark.value ? '#F9DE4A' : '#F9DE4A');
 
 // 获取一级分类
 const getBeeResourcesFn = async () => {
@@ -607,7 +571,6 @@ const getBeeResourcesFn = async () => {
       // 更新筛选条件
       updateFilterGroups();
       const fist = data[activeStandard.value]?.name;
-      const id = data[activeStandard.value]?.id;
       if (fist) {
         // 获取二级分类
         await getBeeResourcesSecondFn(fist);
@@ -684,47 +647,6 @@ const updateFilterGroups = () => {
       filterGroups.value[1].activeFilter = '全部';
       console.log('自动选择二级分类"全部"');
     }
-  }
-};
-
-// 处理一级分类选择
-const handleStandardChange = async (item: any, index: number) => {
-  if (item.name !== standardClassificationList.value[activeStandard.value]?.name) {
-    try {
-      const { data, code } = await getBeeResourcesSecond({
-        category: currentCategory.value,
-        lv1: item.name
-      });
-      if (code === 200) {
-        normativeClassification.value = data;
-        updateFilterGroups();
-      }
-    } catch (err) {
-      console.log('获取二级分类失败:', err);
-    }
-    activeStandard.value = index;
-    activeNormative.value = 0;
-    currentLv1.value = item.name;
-    currentPage.value = 1;
-    fetchFileList();
-  }
-};
-
-// 处理二级分类选择
-const handleNormativeChange = (index: number) => {
-  if (normativeClassification.value[index]?.name !== normativeClassification.value[activeNormative.value]?.name) {
-    activeNormative.value = index;
-    if (index) {
-      const second = normativeClassification.value[activeNormative.value].name;
-      const id = normativeClassification.value[activeNormative.value].id;
-      // 这里可以添加二级分类的处理逻辑
-    } else {
-      const fist = standardClassificationList.value[activeStandard.value]?.name;
-      const id = standardClassificationList.value[activeStandard.value]?.id;
-      currentLv1.value = fist || '';
-    }
-    currentPage.value = 1;
-    fetchFileList();
   }
 };
 
@@ -1154,7 +1076,7 @@ const enterFolder = async (folderId: string) => {
     height: 32px;
     border: none;
     color: #1B2126;
-    background-color: #F9DE4A;
+    background-color: #FABD33;
     font-size: 12px;
     font-weight: 500;
     border-radius: 6px;

@@ -37,7 +37,9 @@ const processQueue = (error: any, token: string | null = null) => {
 
 // 创建 axios 实例
 const service: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api', // 从环境变量获取API前缀
+  baseURL: import.meta.env.PROD 
+    ? 'https://api-work.gatherbee.cn/api'  // 生产环境使用完整API地址
+    : (import.meta.env.VITE_API_BASE_URL || '/api'), // 开发环境使用代理
   timeout: 50000,
   headers: { 'Content-Type': 'application/json;charset=utf-8' }
 });
@@ -77,7 +79,10 @@ service.interceptors.response.use(
     switch (res.code) {
       case 401:
         ElMessage.error('未授权，请重新登录');
-        // 可以在这里处理登出逻辑
+        // 处理登出逻辑
+        const userStore = useUserStore();
+        userStore.clearUserInfo();
+        router.push('/login');
         break;
       case 403:
         ElMessage.error('没有权限访问');

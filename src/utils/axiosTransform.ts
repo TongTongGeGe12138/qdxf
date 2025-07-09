@@ -11,7 +11,7 @@ export abstract class AxiosTransform {
   /**
    * @description: 请求之前处理配置
    */
-  beforeRequestHook?: (config: AxiosRequestConfig, options: RequestOptions) => AxiosRequestConfig;
+  beforeRequestHook?: (config: AxiosRequestConfig) => AxiosRequestConfig;
 
   /**
    * @description: 请求成功处理
@@ -45,7 +45,7 @@ export abstract class AxiosTransform {
 }
 
 export const transform: AxiosTransform = {
-  beforeRequestHook: (config, options) => {
+  beforeRequestHook: (config) => {
     return config;
   },
 

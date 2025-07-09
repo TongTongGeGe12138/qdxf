@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { computed, watch, nextTick } from 'vue'
 import { isDark } from '../utils/theme'
 
 interface Props {
@@ -85,7 +85,7 @@ const props = defineProps<Props>()
 
 // 计算颜色
 const beesColor = computed(() => isDark.value ? '#f6f6f6' : '#333333')
-const etpidColor = computed(() => '#c5ba1a')
+const etpidColor = computed(() => '#FABD33')
 
 // Logo动画相关函数
 const animatePath = (path: SVGPathElement, delay: number = 0): Promise<void> => {
@@ -125,7 +125,7 @@ const startLogoAnimation = () => {
     const paths = document.querySelectorAll('.logo-path') as NodeListOf<SVGPathElement>
     
     // 重置所有路径
-    paths.forEach((path, index) => {
+    paths.forEach((path) => {
         path.style.setProperty('transition', 'none', 'important')
         path.style.setProperty('stroke-dasharray', 'none', 'important')
         path.style.setProperty('stroke-dashoffset', '0', 'important')

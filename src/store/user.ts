@@ -1,7 +1,10 @@
 import { defineStore } from 'pinia';
 
-import { usePermissionStore } from '@/store';
-import type { UserInfo } from '@/types/interface';
+// 定义UserInfo接口
+interface UserInfo {
+  name: string;
+  roles: string[];
+}
 
 const InitUserInfo: UserInfo = {
   name: '', // 用户名，用于展示在页面右上角头像处
@@ -79,13 +82,5 @@ export const useUserStore = defineStore('user', {
       this.sessionid = '';
       this.userInfo = { ...InitUserInfo };
     },
-  },
-  persist: {
-    afterRestore: () => {
-      const permissionStore = usePermissionStore();
-      permissionStore.initRoutes();
-    },
-    key: 'user',
-    paths: ['token', 'refreshToken', 'sessionid'],
   },
 });

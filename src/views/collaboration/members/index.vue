@@ -81,9 +81,9 @@ const memberList = ref<Member[]>([
 ])
 
 // 操作方法
-const handleView = (row: Member) => {
-  console.log('查看成员:', row)
-}
+// const handleView = (row: Member) => {
+//   // 查看成员详情
+// };
 
 const lookcontact = (row: Member) => {
   console.log('查看联系方式:', row.contact)

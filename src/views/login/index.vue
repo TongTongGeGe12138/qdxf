@@ -18,13 +18,13 @@
         </transition>
         <!-- 登录表单容器始终渲染 -->
         <div style="width: 280px;">
-          <div class="login-type-switch">
+          <!-- <div class="login-type-switch">
             <el-tooltip :content="loginType === 'account' ? '扫码登录' : '手机登录'" placement="left" effect="dark" popper-class="custom-tooltip">
               <div class="qrcode-switch" @click="loginType = loginType === 'account' ? 'qrcode' : 'account'">
                 <img :src="loginType === 'account' ? qrcodeIcon : phoneIcon" alt="" class="QRcode" />
               </div>
             </el-tooltip>
-          </div>
+          </div> -->
 
           <!-- 账号密码登录 -->
           <template v-if="loginType === 'account'">
@@ -58,13 +58,13 @@
               <el-form-item>
                 <el-checkbox v-model="loginForm.agreement" class="dark-checkbox">
                   <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
-                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('user')" @dblclick="openAgreement('user', true)" @contextmenu.prevent="openAgreement('user', true)">用户协议</el-link>
+                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('user')" @dblclick="openAgreement('user')" @contextmenu.prevent="openAgreement('user')">用户协议</el-link>
                   <span style="font-size: 10px; color: #A1A1A1;">和</span>
-                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('privacy')" @dblclick="openAgreement('privacy', true)" @contextmenu.prevent="openAgreement('privacy', true)">隐私政策</el-link>
+                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('privacy')" @dblclick="openAgreement('privacy')" @contextmenu.prevent="openAgreement('privacy')">隐私政策</el-link>
                 </el-checkbox>
               </el-form-item>
 
-              <el-button type="primary" class="login-button" :loading="loading" :disabled="!loginForm.agreement" @click="handleLogin" style="background-color: rgba(249, 222, 74, 1) !important; color: #000 !important; border: none !important; transition: background-color 0.3s;" @mouseover="$event.target.style.backgroundColor='rgba(255, 234, 101, 1)'" @mouseleave="$event.target.style.backgroundColor='rgba(249, 222, 74, 1)'">
+              <el-button type="primary" class="login-button" :loading="loading" :disabled="!loginForm.agreement" @click="handleLogin" style="background-color: #ff9900 !important; color: #000 !important; border: none !important; transition: background-color 0.3s;">
                 登录
               </el-button>
             </el-form>
@@ -82,9 +82,9 @@
               </div>
               <el-checkbox v-model="loginForm.agreement" class="dark-checkbox">
                 <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
-                <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('user')" @dblclick="openAgreement('user', true)" @contextmenu.prevent="openAgreement('user', true)">用户协议</el-link>
+                <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('user')" @dblclick="openAgreement('user')" @contextmenu.prevent="openAgreement('user')">用户协议</el-link>
                 <span style="font-size: 10px; color: #A1A1A1;">和</span>
-                <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('privacy')" @dblclick="openAgreement('privacy', true)" @contextmenu.prevent="openAgreement('privacy', true)">隐私政策</el-link>
+                <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('privacy')" @dblclick="openAgreement('privacy')" @contextmenu.prevent="openAgreement('privacy')">隐私政策</el-link>
               </el-checkbox>
             </div>
           </template>
@@ -164,13 +164,13 @@
               <el-form-item >
                 <el-checkbox v-model="registerForm.agreement" class="dark-checkbox">
                   <span style="font-size: 10px; color: #A1A1A1;">我已阅读并同意</span>
-                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('user')" @dblclick="openAgreement('user', true)" @contextmenu.prevent="openAgreement('user', true)">用户协议</el-link>
+                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('user')" @dblclick="openAgreement('user')" @contextmenu.prevent="openAgreement('user')">用户协议</el-link>
                   <span style="font-size: 10px; color: #A1A1A1;">和</span>
-                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('privacy')" @dblclick="openAgreement('privacy', true)" @contextmenu.prevent="openAgreement('privacy', true)">隐私政策</el-link>
+                  <el-link type="primary" class="yellow-link" style="color: #FFEA65 !important; font-size: 10px !important; margin: 0 2px;" @click="openAgreement('privacy')" @dblclick="openAgreement('privacy')" @contextmenu.prevent="openAgreement('privacy')">隐私政策</el-link>
                 </el-checkbox>
               </el-form-item>
 
-              <el-button type="primary" class="login-button" :disabled="!registerForm.agreement" @click="handleRegister(registerFormRef)" style="background-color: rgba(249, 222, 74, 1) !important; color: #000 !important; border: none !important; transition: background-color 0.3s;" @mouseover="$event.target.style.backgroundColor='rgba(255, 234, 101, 1)'" @mouseleave="$event.target.style.backgroundColor='rgba(249, 222, 74, 1)'">
+              <el-button type="primary" class="login-button" :disabled="!registerForm.agreement" @click="handleRegister(registerFormRef)" style="background-color: #ff9900 !important; color: #000 !important; border: none !important; transition: background-color 0.3s;">
                 注册登录
               </el-button>
             </el-form>
@@ -226,7 +226,7 @@
                 </el-tooltip>
               </el-form-item>
 
-              <el-button type="primary" class="login-button" @click="handleResetPassword(forgotFormRef)" style="background-color: rgba(249, 222, 74, 1) !important; color: #000 !important; border: none !important; transition: background-color 0.3s;" @mouseover="$event.target.style.backgroundColor='rgba(255, 234, 101, 1)'" @mouseleave="$event.target.style.backgroundColor='rgba(249, 222, 74, 1)'">
+              <el-button type="primary" class="login-button" @click="handleResetPassword(forgotFormRef)" style="background-color:#ff9900 !important; color: #000 !important; border: none !important; transition: background-color 0.3s;">
                 重置密码
               </el-button>
             </el-form>
@@ -253,9 +253,9 @@ import { getProfessionList } from '@/api/dict'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { useFileLibraryStore } from '@/store/modules/fileLibrary'
-import qrcodeIcon from '@/assets/qrcode-scan.svg?url';
-import phoneIcon from '@/assets/phone.svg?url';
-import ssss from '@/assets/tb/text_only_logo - dark.svg?url';
+// import qrcodeIcon from '@/assets/qrcode-scan.svg?url';
+// import phoneIcon from '@/assets/phone.svg?url';
+import ssss from '@/assets/tb/dark.svg?url';
 import SimpleLoginAnimation from '@/utils/SimpleLoginAnimation.js'
 
 declare const WxLogin: any;
@@ -298,12 +298,12 @@ interface ForgotForm {
   confirmPassword: string
 }
 
-interface ApiResponse<T> {
-  code: number
-  data: T
-  msg: string
-  time: number
-}
+// interface ApiResponse<T> {
+//   code: number
+//   data: T
+//   msg: string
+//   time: number
+// }
 
 interface LoginError {
   password?: string[]
@@ -332,7 +332,7 @@ const animationContainer = ref<HTMLElement | null>(null)
 let animationInstance: any = null
 
 // 协议弹窗状态
-const agreementModalVisible = ref(false)
+// const agreementModalVisible = ref(false)
 
 // 表单数据
 const loginForm = reactive<LoginForm>({
@@ -407,7 +407,7 @@ const registerRules = reactive({
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },
     {
-      validator: (rule: any, value: string, callback: Function) => {
+      validator: (_rule: any, value: string, callback: any) => {
         if (value !== registerForm.password) {
           callback(new Error('两次输入密码不一致'))
         } else {
@@ -443,7 +443,7 @@ const forgotRules = reactive({
   confirmPassword: [
     { required: true, message: '请确认新密码', trigger: 'blur' },
     {
-      validator: (rule: any, value: string, callback: Function) => {
+      validator: (_rule: any, value: string, callback: any) => {
         if (value !== forgotForm.newPassword) {
           callback(new Error('两次输入密码不一致'))
         } else {
@@ -788,7 +788,7 @@ const handleResetPassword = async (formEl: FormInstance | undefined) => {
 }
 
 // 打开协议弹窗
-const openAgreement = (type: 'user' | 'privacy', openInNewWindow = false) => {
+const openAgreement = (type: 'user' | 'privacy') => {
   // 只在新窗口打开对应的协议页面
   const url = type === 'user' ? '/userAgreement.html' : '/privacyPolicy.html';
   window.open(url, '_blank');
@@ -1000,13 +1000,13 @@ const openAgreement = (type: 'user' | 'privacy', openInNewWindow = false) => {
   .login-button {
     width: 100%;
     height: 45px;
-    background-color: rgba(249, 222, 74, 1) !important;
+    background-color: #ff9900 !important;
     border: none;
     font-size: 16px;
     color: #000 !important;
 
     &:hover, &:focus, &:active {
-      background-color: rgba(255, 234, 101, 1) !important;
+      background-color: #ff9900 !important;
     }
   }
 
@@ -1074,50 +1074,50 @@ const openAgreement = (type: 'user' | 'privacy', openInNewWindow = false) => {
   }
 
   // 登录类型切换
-  .login-type-switch {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 1;
+  // .login-type-switch {
+  //   position: absolute;
+  //   top: 20px;
+  //   right: 20px;
+  //   z-index: 1;
 
-    .qrcode-switch {
-      position: absolute;
-      top: -20px;
-      right: -20px;
-      width: 54px;
-      height: 54px;
-      cursor: pointer;
-      clip-path: polygon(100% 0, 100% 100%, 0 0);
+  //   .qrcode-switch {
+  //     position: absolute;
+  //     top: -20px;
+  //     right: -20px;
+  //     width: 54px;
+  //     height: 54px;
+  //     cursor: pointer;
+  //     clip-path: polygon(100% 0, 100% 100%, 0 0);
 
-      &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(225deg, @primary-color 50%, @bg-darker 50%);
-        z-index: 0;
-      }
+  //     &::before {
+  //       content: '';
+  //       position: absolute;
+  //       top: 0;
+  //       right: 0;
+  //       width: 100%;
+  //       height: 100%;
+  //       background: linear-gradient(225deg, @primary-color 50%, @bg-darker 50%);
+  //       z-index: 0;
+  //     }
 
-      .QRcode {
-        position: relative;
-        z-index: 1;
-        width: 100%;
-        height: 100%;
-        padding: 12px;
-        filter: brightness(0) invert(1);
-        transition: all 0.3s;
-        transform: translate(2px, -2px);
-      }
+  //     .QRcode {
+  //       position: relative;
+  //       z-index: 1;
+  //       width: 100%;
+  //       height: 100%;
+  //       padding: 12px;
+  //       filter: brightness(0) invert(1);
+  //       transition: all 0.3s;
+  //       transform: translate(2px, -2px);
+  //     }
 
-      &:hover {
-        .QRcode {
-          transform: scale(1.1);
-        }
-      }
-    }
-  }
+  //     &:hover {
+  //       .QRcode {
+  //         transform: scale(1.1);
+  //       }
+  //     }
+  //   }
+  // }
 
   // 二维码容器
   .qrcode-container {
@@ -1147,7 +1147,7 @@ const openAgreement = (type: 'user' | 'privacy', openInNewWindow = false) => {
         top: -10px;
         width: 20px;
         height: 20px;
-        background: url('@/assets/images/qr-corner.png') no-repeat center/contain;
+        // background: url('@/assets/images/qr-corner.png') no-repeat center/contain;
         z-index: 2;
       }
 

@@ -63,6 +63,15 @@
                 <LogoAnimation :visible="loading" />
             </el-main>
         </el-container>
+
+        <!-- 客服图标 -->
+        <div class="customer-service-icon" @mouseenter="showQR = true" @mouseleave="showQR = false">
+            <img :src="getIconUrl('qr-icon.png')" alt="客服" class="cs-icon" />
+            <!-- 二维码 -->
+            <div class="qr-code" v-show="showQR">
+                <img :src="getIconUrl(isDark ? 'qr-dark.png' : 'qr-light.png')" alt="二维码" class="qr-image" />
+            </div>
+        </div>
     </el-container>
 </template>
 
@@ -81,6 +90,7 @@ const userStore = useUserStore()
 const isCollapse = ref(false)
 const themeTransitionRef = ref()
 const loading = ref(false)
+const showQR = ref(false)
 
 // 本地主题状态
 const darkMode = ref(isDark.value)
@@ -113,6 +123,8 @@ const dropdownBgColor = computed(() => isDark.value ? 'var(--el-bg-color)' : '#E
 
 const menuIconFilter = computed(() => isDark.value ? 'brightness(0) invert(1)' : '#ffffff')
 
+
+
 // 获取路由配置中的菜单项
 const routes = computed(() => {
     const mainRoute = router.options.routes.find(route => route.path === '/')
@@ -123,10 +135,6 @@ const routes = computed(() => {
 const visibleRoutes = computed(() => {
     return routes.value.filter(route => route.meta?.title && route.meta?.hidden !== true)
 })
-
-const toggleCollapse = () => {
-    isCollapse.value = !isCollapse.value
-}
 
 const handleThemeSwitch = (event: MouseEvent) => {
     // 获取开关元素的位置
@@ -150,7 +158,7 @@ const getIconUrl = (name: string) => {
 
     // 特殊处理logo图标，根据主题模式返回不同的图标
     if (name === 'beesfqd_ai_logo') {
-        const logoName = isDark.value ? 'text_only_logo - dark' : 'beesfqd_ai_logo';
+        const logoName = isDark.value ? 'dark' : 'beesfqd_ai_logo';
         try {
             return new URL(`../assets/tb/${logoName}.svg`, import.meta.url).href;
         } catch (error) {
@@ -158,6 +166,18 @@ const getIconUrl = (name: string) => {
             return '';
         }
     }
+    
+    // 处理png文件
+    if (name.endsWith('.png')) {
+        try {
+            return new URL(`../assets/tb/${name}`, import.meta.url).href;
+        } catch (error) {
+            console.error('Error loading png:', name, error);
+            return '';
+        }
+    }
+    
+    // 处理svg文件
     try {
         return new URL(`../assets/tb/${name}.svg`, import.meta.url).href;
     } catch (error) {
@@ -436,5 +456,59 @@ const testLoading = () => {
 
 :root {
     --el-dropdown-menu-bg-color: v-bind(dropdownBgColor);
+}
+
+/* 客服图标样式 */
+.customer-service-icon {
+    position: fixed;
+    right: 20px;
+    bottom: 30px;
+    z-index: 1000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.customer-service-icon {
+    position: fixed;
+    right: 20px;
+    bottom: 30px;
+    z-index: 1000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cs-icon {
+    width: 48px;
+    height: 48px;
+    transition: all 0.3s ease;
+}
+
+.customer-service-icon:hover .cs-icon {
+    transform: scale(1.1);
+}
+
+/* 二维码样式 */
+.qr-code {
+    position: absolute;
+    bottom: 0;
+    right: 60px;
+    animation: fadeIn 0.3s ease;
+}
+
+.qr-image {
+    width: 120px;
+    height: 120px;
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 </style>

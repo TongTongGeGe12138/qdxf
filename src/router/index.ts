@@ -118,12 +118,7 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
   history: createWebHashHistory (),
   routes,
-  scrollBehavior(to, from, savedPosition) {
-    // 如果有保存的位置（浏览器前进后退），则恢复到该位置
-    // if (savedPosition) {
-    //   return savedPosition
-    // }
-    
+  scrollBehavior(to, from) {
     // 如果是路由切换，滚动到顶部
     if (to.path !== from.path) {
       return { top: 0 }

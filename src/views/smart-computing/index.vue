@@ -117,7 +117,7 @@
     width: 150px;
     height: 40px;
     background: inherit;
-    background-color: rgba(249, 222, 74, 1) !important;
+    background-color:#FABD33 !important;
     box-sizing: border-box;
     border: none;
     border-radius: 5px;
@@ -173,7 +173,7 @@
     }
 
     &.confirm {
-      background-color: rgba(249, 222, 74, 1);
+      background-color: #FABD33;
       color: #1B2126;
 
       &:hover {
@@ -199,7 +199,7 @@ html.dark {
       }
 
       &.confirm {
-        background-color: rgba(249, 222, 74, 1);
+        background-color: #FABD33;
         color: #1B2126;
 
         &:hover {

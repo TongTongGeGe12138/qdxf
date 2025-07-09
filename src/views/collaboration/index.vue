@@ -395,10 +395,6 @@ const rightTabs = ref(defaultTabs)
 const rightActiveTab = ref(0)
 
 // 处理标签点击
-const handleTabClick = (tab: any) => {
-    console.log('点击了标签:', tab.name)
-}
-
 const handleFileOperation = (tab: any) => {
     console.log('点击了标签:', tab.name)
 }

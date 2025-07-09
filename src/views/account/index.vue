@@ -342,17 +342,6 @@ const fetchUserInfo = async () => {
     }
 };
 
-const toggleEditMode = () => {
-    editMode.value = !editMode.value;
-    if (!editMode.value) {
-        Object.assign(user, originalUser);
-    }
-};
-
-const changeAvatar = () => {
-    ElMessage.info('更换头像功能正在开发中');
-};
-
 const saveProfile = async () => {
     saving.value = true;
     try {
@@ -934,7 +923,7 @@ const passwordForm = reactive({
     confirmPassword: '',
 });
 
-const validatePass = (rule: any, value: any, callback: any) => {
+const validatePass = (value: any, callback: any) => {
     if (value === '') {
         callback(new Error('请输入密码'));
     } else {
@@ -945,7 +934,7 @@ const validatePass = (rule: any, value: any, callback: any) => {
         callback();
     }
 };
-const validatePass2 = (rule: any, value: any, callback: any) => {
+const validatePass2 = (value: any, callback: any) => {
     if (value === '') {
         callback(new Error('请再次输入密码'));
     } else if (value !== passwordForm.newPassword) {

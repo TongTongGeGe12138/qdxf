@@ -24,8 +24,7 @@ import {
   editProjectResource,
   getProjectFoldeInfo
 } from '@/api/project';
-import { getResourceFiles, deleteResourcesFile, getMyResourcesInfo, downloadResourcesFile } from '@/api/resource';
-import { removeMyResource } from '@/api/dict';
+import { getResourceFiles, deleteResourcesFile, getMyResourcesInfo } from '@/api/resource';
 import { getProvinceList, getCityList } from '@/api/location';
 import simplified from '@/assets/simplified_document_icon.svg?url';
 
@@ -261,7 +260,7 @@ watch(activeIndex, (newIndex) => {
           fileLibraryStore.setLibraryList([]);
           fileLibraryStore.setTotal(0);
         }
-      }).catch(error => {
+      }).catch(() => {
         ElMessage.error('获取项目列表失败');
         // API调用失败时，清空列表
         fileLibraryStore.setLibraryList([]);
@@ -1145,12 +1144,6 @@ watch(searchValue, async (newValue) => {
   }
 });
 
-// 辅助函数：清空store数据
-const clearStoreData = () => {
-  fileLibraryStore.setLibraryList([]);
-  fileLibraryStore.setTotal(0);
-};
-
 // 初始化加载项目列表
 onMounted(async () => {
   try {
@@ -1216,7 +1209,7 @@ onUnmounted(() => {
             <el-input v-model="searchValue" placeholder="搜索" class="search-input" :prefix-icon="Search" clearable
               size="small" v-loading="searchLoading" />
             <div class="right-tabs">
-              <div v-for="(tab, idx) in rightTabs" :key="tab.name" class="right-tab">
+              <div v-for="tab in rightTabs" :key="tab.name" class="right-tab">
                 <el-icon :size="18" style="margin-right: 4px;">
                   <component :is="tab.icon" />
                 </el-icon>
@@ -1664,11 +1657,11 @@ onUnmounted(() => {
     }
 
     &.confirm {
-      background-color: rgba(249, 222, 74, 1);
+      background-color: #FABD33;
       color: #1B2126;
 
       &:hover {
-        background-color: #B4B4C3;
+        background-color: rgba(250,189,51, .6);
       }
 
       // 自定义loading圈圈颜色

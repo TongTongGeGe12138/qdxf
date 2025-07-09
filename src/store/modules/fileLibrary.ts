@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { getProjectResource, getProjectFile, getProjectResourceFile } from '@/api/project';
+import { getProjectFile, getProjectResourceFile } from '@/api/project';
 import { ElMessage } from 'element-plus';
 
 interface FileItem {
