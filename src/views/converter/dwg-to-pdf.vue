@@ -76,23 +76,8 @@
 </template>
 
 <script setup lang="ts">
-import { ElMessage } from 'element-plus'
-import type { UploadFile } from 'element-plus'
-import { useUserStore } from '../../stores/user'
-const userStore = useUserStore()
-const beforeUpload = () => {
-  if (!userStore.isLoggedIn) {
-    window.location.href = '/login'
-    return false
-  }
-  return true
-}
-const handleFileChange = (file: UploadFile) => {
-  if (!file.size) return;
-  if (file.size > 20 * 1024 * 1024) {
-    ElMessage.error('单文件最大不超过20MB')
-  }
-}
+import { useUploadGuard } from '@/utils/useUploadGuard'
+const { beforeUpload, handleFileChange } = useUploadGuard(20 * 1024 * 1024)
 </script>
 
 <style scoped>

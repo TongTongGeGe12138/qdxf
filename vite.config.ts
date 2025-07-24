@@ -62,7 +62,8 @@ export default defineConfig({
     },
     proxy: {
       [VITE_API_URL_PREFIX]: {
-        target: 'https://api-work.gatherbee.cn/',
+        // target: 'https://api-work.gatherbee.cn/',
+        target: 'http://192.168.15.200:9400',
         changeOrigin: true,
         // rewrite: (path) => path.replace(/^\/api/, ''),
       },

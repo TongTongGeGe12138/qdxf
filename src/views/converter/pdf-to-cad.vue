@@ -9,17 +9,25 @@
           action="#"
           :show-file-list="false"
           :auto-upload="false"
-          :on-change="handleFileChange"
-          :before-upload="beforeUpload"
-          accept=".dwg,.dxf"
+          :on-change="onFileChange"
+          :before-upload="() => true"
+          accept=".pdf"
           style="width: 859px; height: 363px;"
         >
           <div class="upload-icon">
             <img src="../../assets/upload-cloud-2-line.svg" alt="上传" style="width:48px;height:48px;" />
           </div>
           <div class="upload-text">将PDF图纸拖拽或点击上传文件</div>
-          <div class="upload-tip">单文件最大不超过20MB</div>
+          <div class="upload-tip">单文件最大不超过100MB</div>
         </el-upload>
+        <div v-if="status === 'uploading'" style="margin-top: 16px; color: #409EFF;">正在上传...</div>
+        <div v-if="status === 'processing' || status === 'converting'" style="margin-top: 16px; color: #409EFF;">
+          正在转换，进度：{{ progress }}%
+        </div>
+        <div v-if="status === 'failed'" style="margin-top: 16px; color: red;">{{ errorMessage }}</div>
+        <el-button v-if="status === 'success' && downloadUrl" type="primary" style="margin-top: 16px;" @click="download">
+          下载DWG文件
+        </el-button>
         <div class="steps-title">如何免费将PDF 转换为CAD</div>
         <div class="steps">
           <div class="step">
@@ -76,21 +84,21 @@
   </template>
   
   <script setup lang="ts">
-  import { ElMessage } from 'element-plus'
+  import { useFileConvert } from '@/api/useFileConvert'
   import type { UploadFile } from 'element-plus'
-  import { useUserStore } from '../../stores/user'
-  const userStore = useUserStore()
-  const beforeUpload = () => {
-    if (!userStore.isLoggedIn) {
-      window.location.href = '/login'
-      return false
-    }
-    return true
-  }
-  const handleFileChange = (file: UploadFile) => {
-    if (!file.size) return;
-    if (file.size > 100 * 1024 * 1024) {
-      ElMessage.error('单文件最大不超过100MB')
+
+  const {
+    progress,
+    status,
+    errorMessage,
+    handleUpload,
+    downloadUrl,
+    download
+  } = useFileConvert()
+
+  function onFileChange(uploadFile: UploadFile) {
+    if (uploadFile.raw) {
+      handleUpload(uploadFile.raw)
     }
   }
   </script>
