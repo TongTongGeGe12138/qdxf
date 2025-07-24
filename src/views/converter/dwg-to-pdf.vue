@@ -10,6 +10,7 @@
         :show-file-list="false"
         :auto-upload="false"
         :on-change="handleFileChange"
+        :before-upload="beforeUpload"
         accept=".dwg,.dxf"
         style="width: 859px; height: 363px;"
       >
@@ -36,31 +37,40 @@
       </div>
     </div>
     <div class="dwg-to-pdf-page">
-      <div class="section free-tool">
-        <div class="section-title">免安装在线CAD转PDF工具：极速转换，无需安装</div>
-        <div class="section-desc">支持AutoCAD的DWG与DXF格式文件，安全加密处理，支持批量转换，无需注册登录，转换后自动删除文件，保障您的隐私安全。</div>
+      <!-- 介绍内容，仅替换此处，其他结构不动 -->
+      <div class="section-title main-title">免费在线CAD转PDF工具：极速转换，无需安装</div>
+      <div class="desc-center">
+        支持AutoCAD各版本DWG/DXF文件 → 专注单文件快速转换，文件自动加密，转换后立即删除。
+      </div>
+      <div class="section">
+        <div class="section-title section-title-core">核心优势</div>
         <ul class="feature-list">
-          <li>✔ 支持DWG/DXF格式</li>
-          <li>✔ 极速转换，支持批量</li>
-          <li>✔ 文件自动加密保护</li>
-          <li>✔ 转换后自动删除文件</li>
-          <li>✔ 100%本地在线操作，保障隐私</li>
+          <li>✅ 纯在线操作：无需下载软件或插件，浏览器打开即用</li>
+          <li>✅ 极速转换：20MB文件10秒内完成，自动匹配原图比例</li>
+          <li>✅ 全格式兼容：支持AutoCAD 2000-2023所有版本DWG/DXF文件</li>
+          <li>✅ 100%隐私保障：SSL加密传输，文件2小时自动销毁</li>
         </ul>
       </div>
-      <div class="section tech-secure">
-        <div class="section-title">技术保障</div>
-        <div class="section-desc">数据传输全程加密，内核高效稳定，转换过程不存储文件</div>
+      <div class="section">
+        <div class="section-title section-title-tech">技术保障</div>
+        <ul class="feature-list">
+          <li><b>格式兼容性</b><br>智能识别CAD版本，自动处理字体嵌入问题，避免转换后文字丢失</li>
+          <li><b>基础排版保留</b><br>严格按1:1比例输出，确保线条与图形完整显示</li>
+          <li><b>实时故障检测</b><br>转换失败自动提示原因（如文件损坏、版本不兼容），并提供解决方案</li>
+        </ul>
       </div>
-      <div class="section faq">
-        <div class="section-title">常见问题</div>
+      <div class="section">
+        <div class="section-title section-title-faq">常见问题</div>
         <ul class="faq-list">
-          <li>支持哪些CAD格式？目前支持DWG、DXF格式。</li>
-          <li>转换后的PDF会有水印吗？不会，输出PDF无水印。</li>
-          <li>转换后文件会保存多久？转换完成后会自动删除，保障隐私。</li>
-          <li>是否支持批量转换？支持，可一次上传多个文件。</li>
+          <li><b>转换后图纸不居中？</b><br>系统自动居中处理，若异常请检查原文件图框是否完整。</li>
+          <li><b>文件会被存储吗？</b><br>所有文件2小时后自动销毁，服务器不留存副本。</li>
+          <li><b>是否支持加密文件？</b><br>不支持，请解密去除密码后上传文件。</li>
         </ul>
       </div>
-      <div class="footer">© 2024 BeesFPD | 智能消防建筑设计平台 | Copyright 蜂鸟智造(苏州)科技有限公司苏ICP备2023015474号</div>
+    </div>
+    <!-- footer 移到页面最外层 -->
+    <div class="footer">
+      沪公网安备 31010702009578号 | 沪ICP备2021527689-3号 | Copyright © 上海蜂智擎人工智能技术有限公司版权所有
     </div>
   </div>
 </template>
@@ -68,6 +78,15 @@
 <script setup lang="ts">
 import { ElMessage } from 'element-plus'
 import type { UploadFile } from 'element-plus'
+import { useUserStore } from '../../stores/user'
+const userStore = useUserStore()
+const beforeUpload = () => {
+  if (!userStore.isLoggedIn) {
+    window.location.href = '/login'
+    return false
+  }
+  return true
+}
 const handleFileChange = (file: UploadFile) => {
   if (!file.size) return;
   if (file.size > 20 * 1024 * 1024) {
@@ -95,29 +114,40 @@ const handleFileChange = (file: UploadFile) => {
   padding-bottom: 0;
 }
 .dwg-to-pdf-page {
-  min-height: 60vh;
+  /* 680 + 24*2 */
+  padding: 32px 24px 16px 24px;
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.04);
   padding: 40px 32px 24px 32px;
-  margin: 0 auto 40px auto;
+  /* margin: 0 auto 40px auto; */
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 .main-title {
-  font-size: 32px;
+  font-family: 'Source Sans Pro', 'sans-serif';
   font-weight: 700;
+  font-size: 24px;
+  color: #000000;
   text-align: center;
-  margin-bottom: 12px;
-  color: #222;
+  margin-top: 80px;
+  margin-bottom: 24px;
 }
 .main-desc {
-  text-align: center;
-  color: #666;
-  font-size: 18px;
-  margin-bottom: 32px;
+  max-width: 780px;
+  margin: 0 auto 24px auto;
+  text-align: left;
+  font-family: 'Source Sans Pro', 'sans-serif';
+  font-weight: 400;
+  font-size: 16px;
+  color: #333333;
+}
+.main-desc,
+.feature-list,
+.section-title-core {
+  box-sizing: border-box;
 }
 /* 移除 .upload-area 样式，只保留 el-upload 默认样式 */
 .upload-icon {
@@ -133,17 +163,18 @@ const handleFileChange = (file: UploadFile) => {
   font-size: 13px;
 }
 .steps-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 32px 0 16px 0;
-  color: #222;
-  text-align: center;
+  font-family: 'Source Sans Pro', 'sans-serif';
+  font-weight: 700;
+  font-size: 24px;
+  color: #000000;
+  margin: 27px 0;
 }
 .steps {
   display: flex;
   justify-content: center;
-  gap: 48px;
-  margin-bottom: 32px;
+  gap: 267px;
+  margin-bottom: 88px;
+  margin-top: 27px;
 }
 .step {
   display: flex;
@@ -152,47 +183,70 @@ const handleFileChange = (file: UploadFile) => {
   width: 120px;
 }
 .step-num {
-  width: 32px;
-  height: 32px;
-  background: #ffe7b2;
-  color: #ffb300;
+  width: 50px;
+  height: 50px;
+  background: #FABD33;
+  color: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 28px;
+  font-family: 'Source Sans Pro', 'sans-serif';
+  font-weight: 400;
   margin-bottom: 8px;
 }
 .step-text {
   text-align: center;
-  color: #333;
-  font-size: 15px;
+  color: #000000;
+  font-size: 16px;
+  font-family: 'Source Sans Pro', 'sans-serif';
+  font-weight: 700;
+  margin-top: 15px;
 }
 .step-text span {
+  display: block;
   color: #888;
   font-size: 13px;
+  margin-top: 22px;
 }
 .section {
-  margin-bottom: 32px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 .section-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #222;
-  margin-bottom: 8px;
+  text-align: center;
+  font-family: 'Source Sans Pro', 'sans-serif';
+  font-weight: 700;
+  font-size: 24px;
+  color: #000000;
 }
 .section-desc {
   color: #666;
   font-size: 15px;
   margin-bottom: 8px;
 }
-.feature-list {
-  list-style: none;
+.feature-list,
+.faq-list {
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
   padding: 0;
-  margin: 0 0 0 8px;
-  color: #2e7d32;
-  font-size: 15px;
+  list-style: none;
+  text-align: left;
+}
+.feature-list li,
+.faq-list li {
+  padding-left: 0;
+  text-indent: 0;
+  margin-bottom: 8px;
+  text-align: left;
+  box-sizing: border-box;
+  font-size: 16px;
+  color: #333333;
+  font-family: 'Source Sans Pro', 'sans-serif';
 }
 .feature-list li {
   margin-bottom: 4px;
@@ -201,16 +255,27 @@ const handleFileChange = (file: UploadFile) => {
   color: #2d8cf0;
 }
 .faq-list {
-  list-style: disc inside;
+  list-style: none;
   color: #444;
   font-size: 15px;
-  margin-left: 16px;
+  /* margin-left: 16px; */
+}
+.faq-list li {
+  margin-bottom: 4px;
 }
 .footer {
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
   text-align: center;
   color: #bbb;
   font-size: 13px;
-  margin-top: 32px;
+  border-top: 1px solid #e5e6eb;
+  margin-top: 0;
+  word-break: break-all;
+  background: #fff;
+  position: relative;
+  box-sizing: border-box;
 }
 .upload-area:deep(.el-upload-dragger) {
   height: 363px;
@@ -220,6 +285,39 @@ const handleFileChange = (file: UploadFile) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+.section-desc.main-desc {
+  font-family: 'Source Sans Pro', 'sans-serif';
+  font-weight: 400;
+  font-size: 16px;
+  color: #333333;
+}
+.section .section-title.section-title-core {
+  font-family: 'Source Sans Pro', 'sans-serif';
+  font-weight: 700;
+  font-size: 16px;
+  color: #333333;
+  text-align: left;
+  margin-bottom: 8px;
+  max-width:780px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0;
+}
+.desc-center {
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto 24px auto;
+  text-align: left;
+  font-family: 'Source Sans Pro', 'sans-serif';
+  font-weight: 400;
+  font-size: 16px;
+  color: #333333;
+}
+.section-title.section-title-tech,
+.section-title.section-title-faq {
+  margin-top: 111px;
+  margin-bottom: 24px;
 }
 @media (max-width: 900px) {
   .dwg-to-pdf-top {

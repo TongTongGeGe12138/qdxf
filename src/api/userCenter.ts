@@ -383,3 +383,14 @@ export function UserCenterWxLogin(data: WxLoginParams) {
   });
 }
 
+// 上传文件
+export function uploadFile(formData: FormData) {
+  return request.post<ApiResponse<any>>({
+    url: '/api/file/upload',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+}
+

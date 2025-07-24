@@ -117,6 +117,11 @@ const routes: Array<RouteRecordRaw> = [
         path: 'dwg-to-pdf',
         name: 'ConverterDwgToPdf',
         component: () => import('../views/converter/dwg-to-pdf.vue')
+      },
+      {
+        path: 'pdf-to-cad',
+        name: 'ConverterPdfToCad',
+        component: () => import('../views/converter/pdf-to-cad.vue')
       }
       // 这里可以继续添加其他子页面
     ]
