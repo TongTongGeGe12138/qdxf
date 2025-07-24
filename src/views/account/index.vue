@@ -1015,7 +1015,7 @@ onUnmounted(() => {
     cropper.value = null;
 });
 
-const bgColor = computed(() => isDark.value ? '#000' : '#fff');
+const bgColor = computed(() => isDark.value ? '#000' : '#faf9f5');
 const textColor = computed(() => isDark.value ? '#EDEDED' : '#13343C');
 const labelColor = computed(() => isDark.value ? '#8E9094' : '#8E9094');
 const borderColor = computed(() => isDark.value ? 'rgba(231,231,224,.3)' : '#D7D7D7');
@@ -1024,7 +1024,7 @@ const linkHoverColor = computed(() => isDark.value ? '#FFFFFF' : '#000000');
 const desktopBboder = computed(() => isDark.value ? 'rgba(231,231,224,.3)' : '#D7D7D7')//11111
 
 // Dynamic colors for form inputs to adapt to theme changes
-const formInputBgColor = computed(() => isDark.value ? '#2a2a2a' : '#ffffff');
+const formInputBgColor = computed(() => isDark.value ? '#2a2a2a' : '#faf9f5');
 const formInputBorderColor = computed(() => isDark.value ? '#4c4d4f' : '#dcdfe6');
 const formInputTextColor = computed(() => isDark.value ? '#FFFFFF' : '#606266');
 const formPlaceholderColor = computed(() => isDark.value ? '#666' : '#a8abb2');

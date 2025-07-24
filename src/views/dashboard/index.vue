@@ -9,7 +9,7 @@
                 </div>
                 <div class="search-section">
                     <div class="search-input">
-                        <el-input v-model="searchText" placeholder="搜索应用..." :prefix-icon="Search" />
+                        <el-input v-model="searchText" placeholder="搜索应用..." :prefix-icon="Search" class="search-input" />
                     </div>
                     <div class="tags">
                         <el-tag v-for="tag in tags" :key="tag.name" :class="{ 'is-active': activeTag === tag.name }"
@@ -437,18 +437,18 @@ const tags = [
 ]
 
 // 计算样式
-const searchInputBorderColor = computed(() => isDark.value ? 'rgba(34, 34, 34, 0.3)' : 'rgba(51, 51, 51, 0.3)');
+const searchInputBorderColor = computed(() => isDark.value ? 'rgba(255, 255, 255, .3)' : '#dcdfe6');
 const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#A1A1A1')
 const vTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
-const borderColor = computed(() => isDark.value ? 'transparent' : 'rgba(228, 231, 237, 0.3)')
-const menuBgColor = computed(() => isDark.value ? '#000' : '#ffffff')
+const borderColor = computed(() => isDark.value ? 'transparent' : 'transparent')
+const menuBgColor = computed(() => isDark.value ? '#000' : '#fff')
 const listheader = computed(() => isDark.value ? 'rgba(255, 255, 255, 0.3)' : '#D7D7D7')
 const menuHoverBgColor = computed(() => isDark.value ? '#2b2b2b' : '#f5f7fa')
-const dialogBgColor = computed(() => isDark.value ? '#141414' : '#ffffff')
+const dialogBgColor = computed(() => isDark.value ? '#141414' : '#faf9f5')
 const dialogHeaderBgColor = computed(() => isDark.value ? '#1d1e1f' : '#f5f7fa')
 // const tagsBorderColor = computed(() => isDark.value ? '#222222' : '#D7D7D7')
-const tagsBgColor = computed(() => isDark.value ? '#0A0A0A' : '#FFFFFF')
+const tagsBgColor = computed(() => isDark.value ? '#0A0A0A' : '#faf9f5')
 const tagTextColor = computed(() => isDark.value ? '#C4C4D3' : '#000000')
 const tagHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#F9F9F9')
 const tagActiveBgColor = computed(() => isDark.value ? '#191919' : '#F2F2F2')
@@ -457,7 +457,7 @@ const cardHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#FFF8CC')
 const plusIconBgColor = computed(() => isDark.value ? '#C5C3D2' : '#c9c9c9')
 // const plusIconBorderColor = computed(() => isDark.value ? '#C5C3D2' : '#000000')
 const plusIconColor = computed(() => isDark.value ? '#000' : '#ffff')
-const dashboardBgColor = computed(() => isDark.value ? '#000' : 'transparent')
+const dashboardBgColor = computed(() => isDark.value ? '#000' : '#faf9f5')
 const appHeaderBgColor = computed(() => isDark.value ? 'rgba(231, 231, 224, 0.3)' : '#D7D7D7')
 const appPreviewTitleColor = computed(() => isDark.value ? '#fff' : '#222');
 const appPreviewStandardColor = computed(() => isDark.value ? '#a3a6ad' : '#606266');
@@ -678,7 +678,7 @@ const handleLaunchClick = async () => {
             const query = `id=${data}&path=${path}${extraQuery ? `&${extraQuery}` : ''}`;
             const encodedQuery = `sign=${encodeURIComponent(RC4Encrypt(query))}`;
             // const baseUrl = import.meta.env.PROD ?'http://cloud.dev.ifeng.com':'https://cloud-uat.gatherbee.cn';
-            const baseUrl = 'https://cloud-uat.gatherbee.cn';
+            const baseUrl = 'https://cloud.gatherbee.cn';
             const basePath = card.extra.url.split('?')[0] || card.extra.url;
             const fullUrl = `${baseUrl}${basePath}#/UploadFiles?${encodedQuery}`;
 
@@ -911,24 +911,24 @@ const handlePermissionClickss = () => {
 .search-input {
     flex: 1;
     min-width: 0;
-}
 
-.search-input :deep(.el-input__wrapper) {
-    background-color: v-bind(menuBgColor);
-    border: 1px solid v-bind(searchInputBorderColor) !important;
-    border-radius: 5px;
-    padding: 0 12px;
-    height: 40px;
-}
+    :deep(.el-input__wrapper) {
+        background-color: v-bind(menuBgColor);
+        border: 1px solid v-bind(borderColor);
+        border-radius: 5px;
+        padding: 0 12px;
+        height: 36px;
+        box-shadow: none;
+    }
 
-.search-input :deep(.el-input__inner) {
-    color: v-bind(menuTextColor);
-    height: 40px;
-    font-size: 14px;
-}
+    :deep(.el-input__inner) {
+        color: v-bind(menuTextColor);
+        font-size: 14px;
+    }
 
-.search-input :deep(.el-input__prefix) {
-    color: v-bind(subTextColor);
+    :deep(.el-input__prefix) {
+        color: v-bind(subTextColor);
+    }
 }
 
 .tags {
@@ -937,7 +937,7 @@ const handlePermissionClickss = () => {
     flex-wrap: wrap;
     width: 400px;
     flex-shrink: 0;
-    border: 1px solid v-bind(searchInputBorderColor);
+    border: 1px solid v-bind(searchInputBorderColor) !important;
     border-radius: 5px;
     padding: 0 8px;
     height: 40px;

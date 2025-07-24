@@ -35,8 +35,8 @@ import { computed, ref } from 'vue'
 import bannerImg from '@/assets/tb/设计广场.png'
 
 const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
-const cardBgColor = computed(() => isDark.value ? '#191919' : 'transparent')
-const bannerBgColor = computed(() => isDark.value ? '#000' : 'transparent')
+const cardBgColor = computed(() => isDark.value ? '#191919' : '#faf9f5')
+const bannerBgColor = computed(() => isDark.value ? '#000' : '#faf9f5')
 const borderColor = computed(() => isDark.value ? '#444' : '#D7D7D7')
 
 // 添加弹框显示状态

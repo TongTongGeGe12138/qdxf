@@ -501,7 +501,12 @@ const handleLogin = async () => {
         })
 
         ElMessage.success('登录成功')
-        router.push('/dashboard')
+        const redirect = router.currentRoute.value.query.redirect as string
+        if (redirect) {
+          router.replace(redirect)
+        } else {
+          router.replace('/dashboard')
+        }
       } else {
         if (response.data && (response.data as LoginError).password) {
           errorMessages.password = (response.data as LoginError).password![0]

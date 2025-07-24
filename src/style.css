@@ -76,8 +76,8 @@ html {
   --el-fill-color-extra-light: #fafcff;
   --el-fill-color-dark: #ebedf0;
   --el-fill-color-blank: #ffffff;
-  --el-mask-color: rgba(255, 255, 255, .9);
-  --el-mask-color-extra-light: rgba(255, 255, 255, .3);
+  --el-mask-color: rgba(250, 249, 245, .9);
+  --el-mask-color-extra-light: rgba(250, 249, 245, .3);
   --el-menu-bg-color: #ffffff;
   --el-menu-text-color: #303133;
   --el-menu-active-color: #409eff;

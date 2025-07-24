@@ -399,14 +399,14 @@ const handleFileSelected = async (file: FileItem) => {
 }
 
 // 计算背景色
-const cardBgColor = computed(() => isDark.value ? '#000' : 'transparent')
+const cardBgColor = computed(() => isDark.value ? '#000' : '#faf9f5')
 const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 // const navTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const desktopBboder = computed(() => isDark.value ? 'rgba(231,231,224,.3)' : '#D7D7D7')//11111
 const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#A1A1A1')
 const vTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const borderColor = computed(() => isDark.value ? 'transparent' : 'rgba(228, 231, 237, 0.6)')
-// const menuBgColor = computed(() => isDark.value ? '#000' : '#ffffff')
+const menuBgColor = computed(() => isDark.value ? '#000' : '#faf9f5')
 
 // 处理点击事件
 const handleClickOutside = (event: MouseEvent) => {
@@ -1459,21 +1459,20 @@ onUnmounted(() => {
       gap: 16px;
 
       .search-input {
-        width: 200px;
-        margin-right: 16px;
-        // background: transparent !important;
+        width: 300px;
+        padding-right: 30px;
 
         :deep(.el-input__wrapper) {
-          // background-color: v-bind(menuBgColor);
+          background-color: v-bind(menuBgColor);
           border: 1px solid v-bind(borderColor);
           border-radius: 5px;
           padding: 0 12px;
-          height: 40px;
+          height: 36px;
+          box-shadow: none;
         }
 
         :deep(.el-input__inner) {
           color: v-bind(menuTextColor);
-          height: 40px;
           font-size: 14px;
         }
       }

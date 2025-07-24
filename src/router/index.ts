@@ -109,6 +109,19 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/login/index.vue')
   },
   {
+    path: '/converter',
+    name: 'Converter',
+    component: () => import('../views/converter/index.vue'),
+    children: [
+      {
+        path: 'dwg-to-pdf',
+        name: 'ConverterDwgToPdf',
+        component: () => import('../views/converter/dwg-to-pdf.vue')
+      }
+      // 这里可以继续添加其他子页面
+    ]
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('../views/error/404.vue')
@@ -132,19 +145,21 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, _from, next) => {
   const userStore = useUserStore()
-  
+  // /converter 及其所有子路由都不需要登录
+  if (to.path.startsWith('/converter')) {
+    next()
+    return
+  }
   // 如果访问登录页面且已登录，重定向到首页
   if (to.path === '/login' && userStore.isLoggedIn) {
     next('/dashboard')
     return
   }
-  
   // 如果访问需要登录的页面但未登录，重定向到登录页
   if (to.path !== '/login' && !userStore.isLoggedIn) {
     next('/login')
     return
   }
-  
   next()
 })
 

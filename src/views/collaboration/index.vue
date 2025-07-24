@@ -379,12 +379,13 @@ const handleMenuSelect = (index: string) => {
 }
 
 // 计算背景色
-const cardBgColor = computed(() => isDark ? '#000' : '#ffffff')
+const cardBgColor = computed(() => isDark ? '#000' : '#faf9f5')
 const menuTextColor = computed(() => isDark ? '#EDEDED' : '#13343C')
 const desktopBboder = computed(() => isDark ? 'rgba(231,231,224,.3)' : '#D7D7D7')
 const subTextColor = computed(() => isDark ? '#A1A1A1' : '#A1A1A1')
 const borderColor = computed(() => isDark ? 'transparent' : 'rgba(228, 231, 237, 0.6)')
-const containerColor = computed(() => isDark ? '#000' : '#f5f5f5')
+const containerColor = computed(() => isDark ? '#000' : '#faf9f5')
+const menuBgColor = computed(() => isDark ? '#000' : '#faf9f5')
 
 // 右侧操作按钮
 const defaultTabs = [
@@ -530,20 +531,20 @@ const handleProjectFileDblClick = (item: FileItem) => {
                 gap: 16px;
 
                 .search-input {
-                    width: 180px;
-                    margin-right: 16px;
-                    background: transparent;
+                    width: 300px;
+                    padding-right: 30px;
 
                     :deep(.el-input__wrapper) {
+                        background-color: v-bind(menuBgColor);
                         border: 1px solid v-bind(borderColor);
                         border-radius: 5px;
                         padding: 0 12px;
-                        height: 40px;
+                        height: 36px;
+                        box-shadow: none;
                     }
 
                     :deep(.el-input__inner) {
                         color: v-bind(menuTextColor);
-                        height: 40px;
                         font-size: 14px;
                     }
                 }

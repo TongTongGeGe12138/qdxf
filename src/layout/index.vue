@@ -108,8 +108,8 @@ watch(isDark, (newValue) => {
 })
 
 // 计算菜单样式
-const menuBgColor = computed(() => isDark.value ? '#000' : 'rgba(231, 232, 235, 1)')
-const mainBgColor = computed(() => isDark.value ? '#000' : 'rgba(231, 232, 235, 1)')
+const menuBgColor = computed(() => isDark.value ? '#000' : '#faf9f5')
+const mainBgColor = computed(() => isDark.value ? '#000' : '#faf9f5')
 const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const menuActiveTextColor = computed(() => '#fff')
 const menuHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#f6f7f9')
@@ -119,7 +119,7 @@ const dropdownTextColor = computed(() => isDark.value ? '#FFFFFF' : '#333333')
 const themeButtonBgColor = computed(() => darkMode.value ? '#333333' : '#E8E9E4')
 const themeButtonHoverBgColor = computed(() => darkMode.value ? '#1B2126' : '#FFF8CC')
 
-const dropdownBgColor = computed(() => isDark.value ? 'var(--el-bg-color)' : '#E8E9E4')
+const dropdownBgColor = computed(() => isDark.value ? 'var(--el-bg-color)' : '#faf9f5')
 
 const menuIconFilter = computed(() => isDark.value ? 'brightness(0) invert(1)' : '#ffffff')
 
@@ -496,8 +496,8 @@ const testLoading = () => {
 }
 
 .qr-image {
-    width: 120px;
-    height: 120px;
+    width: 232px;
+    height: 263px;
     display: block;
 }
 

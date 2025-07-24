@@ -557,7 +557,7 @@ onMounted(() => {
 const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C');
 const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#13343C');
 const borderColor = computed(() => isDark.value ? 'rgba(231, 231, 224, 0.2)' : 'rgba(0, 0, 0, 0.1)');
-const menuBgColor = computed(() => isDark.value ? '#0A0A0A' : '#FFFFFF');
+const menuBgColor = computed(() => isDark.value ? '#0A0A0A' : '#faf9f5');
 const tagHoverBgColor = computed(() => isDark.value ? '#2b2b2b' : '#f0f0f0');
 const tagActiveColor = computed(() => isDark.value ? '#ff9900' : '#ff9900');
 

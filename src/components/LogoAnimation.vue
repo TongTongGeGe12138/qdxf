@@ -192,7 +192,7 @@ watch(isDark, () => {
     bottom: 0;
     width: calc(100vw - 200px);
     height: calc(100vh - 60px);
-    background-color: v-bind('isDark ? "#000000" : "rgba(231, 232, 235, 1)"');
+    background-color: v-bind('isDark ? "#000000" : "#faf9f5"');
     display: flex;
     justify-content: center;
     align-items: center;
