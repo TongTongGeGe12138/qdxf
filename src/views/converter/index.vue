@@ -72,7 +72,7 @@ const isCollapse = ref(false)
 
 const goToAccount = () => {
     // 跳转到个人中心页面
-    window.location.href = '/account';
+    router.push('/account')
 }
 const toGang = () => {
     window.open('https://www.beesfpd.com/', '_blank');
@@ -114,6 +114,14 @@ const goToLogin = () => {
 </script>
 
 <style scoped>
+.el-dropdown-link {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: var(--el-text-color-primary);
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 .special-page {
     min-height: 100vh;
     background: #fff;
@@ -131,7 +139,11 @@ router-view,
 }
 
 .top {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
+    z-index: 100;
     height: 68px;
     background: inherit;
     background-color: rgba(255, 255, 255, 1);

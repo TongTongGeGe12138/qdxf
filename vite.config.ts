@@ -61,12 +61,22 @@ export default defineConfig({
       clientPort: 3003
     },
     proxy: {
-      [VITE_API_URL_PREFIX]: {
-        // target: 'https://api-work.gatherbee.cn/',
+      // 1. 上传相关接口，优先匹配
+      '/file': {
         target: 'http://192.168.15.200:9400',
+        changeOrigin: true,
+      },
+      '/api/file': {
+        target: 'http://192.168.15.200:9400',
+        changeOrigin: true,
+      },
+      // 2. 其他 /api 走原来的服务器
+      '/api': {
+        target: 'https://api-work.gatherbee.cn/',
         changeOrigin: true,
         // rewrite: (path) => path.replace(/^\/api/, ''),
       },
+      // 3. 其它已有代理保持不变
       [VITE_API_URL_PREFIX_LOG]: {
         target: 'http://api.dev.ifeng.com',
         changeOrigin: true,

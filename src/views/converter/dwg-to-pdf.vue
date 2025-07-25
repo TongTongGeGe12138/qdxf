@@ -1,7 +1,7 @@
 <template>
   <div class="dwg-to-pdf-bg">
     <div class="dwg-to-pdf-top">
-      <h1 class="main-title">CAD转PDF在线转换</h1>
+      <h1 class="main-title" style="font-size: 78px;">CAD转PDF在线转换</h1>
       <p class="main-desc">支持DWG/DXF转PDF，100%本地在线操作，文件自动加密保护，无需安装客户端，一键上传，极速转换，保障您的文件与隐私</p>
       <el-upload
         class="upload-area"

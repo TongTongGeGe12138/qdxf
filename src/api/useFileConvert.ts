@@ -92,6 +92,17 @@ export function useFileConvert() {
     pollTimer && clearTimeout(pollTimer)
   }
 
+  // 重置所有状态
+  function reset() {
+    fileId.value = null
+    taskId.value = null
+    progress.value = 0
+    status.value = 'idle'
+    errorMessage.value = null
+    downloadUrl.value = null
+    pollTimer && clearTimeout(pollTimer)
+  }
+
   return {
     fileId,
     taskId,
@@ -101,6 +112,7 @@ export function useFileConvert() {
     downloadUrl,
     handleUpload,
     download,
-    cleanup
+    cleanup,
+    reset
   }
 } 

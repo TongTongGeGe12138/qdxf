@@ -9,6 +9,7 @@ import store from './store'
 import { initTheme } from './utils/theme'
 import { useUserStore } from './stores/user'
 import { gsap } from 'gsap'
+import '@/assets/fonts/font.css'
 window.gsap = gsap
 // 初始化主题
 initTheme()

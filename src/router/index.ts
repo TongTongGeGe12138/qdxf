@@ -162,7 +162,7 @@ router.beforeEach((to, _from, next) => {
   }
   // 如果访问需要登录的页面但未登录，重定向到登录页
   if (to.path !== '/login' && !userStore.isLoggedIn) {
-    next('/login')
+    next({ path: '/login', query: { redirect: to.fullPath } })
     return
   }
   next()

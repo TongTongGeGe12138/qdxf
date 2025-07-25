@@ -247,6 +247,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import type { FormInstance } from 'element-plus'
 import { UserCenterLogin, UserCenterPostSendCode, GetUserCenterRegister, passwordEditSandCode, passwordEdit } from '@/api/userCenter'
 import { getProfessionList } from '@/api/dict'
@@ -316,6 +317,7 @@ const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,16}$/
 
 // 组件实例
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 const loginFormRef = ref<FormInstance>()
 const registerFormRef = ref<FormInstance>()
@@ -501,8 +503,9 @@ const handleLogin = async () => {
         })
 
         ElMessage.success('登录成功')
-        const redirect = router.currentRoute.value.query.redirect as string
-        if (redirect) {
+        const redirect = route.query.redirect as string
+        console.log('登录后 redirect 参数：', redirect)
+        if (redirect && typeof redirect === 'string' && redirect.startsWith('/')) {
           router.replace(redirect)
         } else {
           router.replace('/dashboard')
