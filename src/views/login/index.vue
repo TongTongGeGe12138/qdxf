@@ -17,7 +17,7 @@
           ></div>
         </transition>
         <!-- 登录表单容器始终渲染 -->
-        <div style="width: 280px;">
+        <div class="form-container">
           <!-- <div class="login-type-switch">
             <el-tooltip :content="loginType === 'account' ? '扫码登录' : '手机登录'" placement="left" effect="dark" popper-class="custom-tooltip">
               <div class="qrcode-switch" @click="loginType = loginType === 'account' ? 'qrcode' : 'account'">
@@ -831,7 +831,10 @@ const openAgreement = (type: 'user' | 'privacy') => {
 
   .login-card {
     width: 900px;
+    max-width: 95vw;
     height: 600px;
+    min-height: 500px;
+    max-height: 90vh;
     display: flex;
     border-radius: 10px;
     overflow: hidden;
@@ -878,6 +881,12 @@ const openAgreement = (type: 'user' | 'privacy') => {
       flex-direction: column;
       justify-content: center;
       align-items: center;
+
+      .form-container {
+        width: 280px;
+        max-width: 100%;
+        min-width: 280px;
+      }
 
       .logo {
         text-align: center;
@@ -1435,5 +1444,316 @@ const openAgreement = (type: 'user' | 'privacy') => {
 
 :deep(.el-link--primary) {
   color: #FFEA65 !important;
+}
+
+// 移动端适配
+@media (max-width: 768px) {
+  .login-card {
+    width: 100% !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+    flex-direction: column !important;
+    border-radius: 0 !important;
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+
+    .left {
+      display: none !important;
+    }
+
+    .right {
+      width: 100% !important;
+      min-width: auto !important;
+      max-width: 100% !important;
+      height: 100vh !important;
+      min-height: 100vh !important;
+      flex: 1 !important;
+      padding: 20px !important;
+      border-radius: 0 !important;
+      overflow: visible !important;
+
+      .form-container {
+        width: 100% !important;
+        max-width: 320px !important;
+        min-width: auto !important;
+        margin: 0 auto !important;
+      }
+
+      .logo {
+        width: 200px !important;
+        height: 48px !important;
+        margin-bottom: 20px !important;
+        max-width: 100% !important;
+        text-align: center !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        
+        img {
+          width: 200px !important;
+          height: 48px !important;
+          max-width: 100% !important;
+        }
+      }
+
+      h2 {
+        font-size: 20px !important;
+        margin-bottom: 8px !important;
+        width: 100% !important;
+        text-align: center !important;
+      }
+
+      .subtitle {
+        font-size: 12px !important;
+        margin: 8px 0 30px !important;
+        width: 100% !important;
+        text-align: center !important;
+      }
+    }
+  }
+
+  // 移动端表单样式优化
+  .el-form-item {
+    margin-bottom: 15px !important;
+    height: 50px !important;
+    width: 100% !important;
+
+    :deep(.el-input__wrapper) {
+      height: 50px !important;
+      border-radius: 8px !important;
+      transition: all 0.2s ease !important;
+      width: 100% !important;
+      
+      &:focus-within {
+        box-shadow: 0 0 0 2px rgba(255, 189, 51, 0.3) !important;
+      }
+    }
+
+    :deep(.el-input__inner) {
+      height: 50px !important;
+      line-height: 50px !important;
+      font-size: 16px !important; // 防止iOS缩放
+      padding: 0 15px !important;
+      width: 100% !important;
+    }
+  }
+
+  // 移动端按钮样式
+  .login-button {
+    height: 50px !important;
+    font-size: 16px !important;
+    border-radius: 8px !important;
+    margin-top: 20px !important;
+    width: 100% !important;
+    transition: all 0.2s ease !important;
+    
+    &:active {
+      transform: scale(0.98) !important;
+      background-color: #e68a00 !important;
+    }
+  }
+
+  // 移动端验证码按钮
+  .verify-code-item {
+    .get-code-btn {
+      font-size: 14px !important;
+      padding: 0 15px !important;
+      min-width: 80px !important;
+    }
+  }
+
+  // 移动端二维码容器
+  .qrcode-container {
+    width: 100% !important;
+    text-align: center !important;
+    
+    .qrcode-box {
+      width: 200px !important;
+      height: 200px !important;
+      margin: 15px auto 30px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+
+      #login_container {
+        margin-right: 0 !important;
+        padding-top: 20px !important;
+        width: 100% !important;
+        height: 100% !important;
+
+        :deep(.wxqrcode) {
+          width: 100% !important;
+          height: 100% !important;
+          
+          .qrcode {
+            width: 200px !important;
+            height: 200px !important;
+          }
+
+          canvas {
+            width: 200px !important;
+            height: 200px !important;
+          }
+        }
+      }
+    }
+  }
+
+  // 移动端下拉选择框
+  :deep(.el-select) {
+    width: 100% !important;
+    
+    .el-select__wrapper {
+      height: 50px !important;
+      border-radius: 8px !important;
+      width: 100% !important;
+    }
+
+    .el-input__inner {
+      height: 50px !important;
+      line-height: 50px !important;
+      font-size: 16px !important;
+      width: 100% !important;
+    }
+  }
+
+  // 移动端复选框
+  :deep(.dark-checkbox) {
+    width: 100% !important;
+    
+    .el-checkbox__input {
+      .el-checkbox__inner {
+        width: 18px !important;
+        height: 18px !important;
+      }
+    }
+
+    .el-checkbox__label {
+      font-size: 12px !important;
+      line-height: 1.4 !important;
+      width: 100% !important;
+    }
+  }
+
+  // 移动端链接样式
+  .login-footer {
+    margin-top: 25px !important;
+    width: 100% !important;
+
+    .dark-link {
+      font-size: 14px !important;
+      padding: 8px 0 !important;
+      display: block !important;
+      transition: opacity 0.2s ease !important;
+      
+      &:active {
+        opacity: 0.7 !important;
+      }
+    }
+  }
+
+  // 移动端错误提示
+  :deep(.error-tooltip) {
+    font-size: 11px !important;
+    padding: 8px 10px !important;
+    max-width: 280px !important;
+  }
+}
+
+// 小屏幕手机适配
+@media (max-width: 480px) {
+  .login-card {
+    width: 100% !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+
+    .left {
+      display: none !important;
+    }
+
+    .right {
+      width: 100% !important;
+      min-width: auto !important;
+      max-width: 100% !important;
+      height: 100vh !important;
+      min-height: 100vh !important;
+      flex: 1 !important;
+      padding: 15px !important;
+      overflow: visible !important;
+
+      .form-container {
+        max-width: 280px !important;
+        min-width: auto !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+      }
+
+      .logo {
+        width: 180px !important;
+        height: 44px !important;
+        max-width: 100% !important;
+        text-align: center !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        
+        img {
+          width: 180px !important;
+          height: 44px !important;
+          max-width: 100% !important;
+        }
+      }
+
+      h2 {
+        font-size: 18px !important;
+        width: 100% !important;
+        text-align: center !important;
+      }
+
+      .subtitle {
+        font-size: 11px !important;
+        width: 100% !important;
+        text-align: center !important;
+      }
+    }
+  }
+
+  // 更小的输入框间距
+  .el-form-item {
+    margin-bottom: 12px !important;
+    width: 100% !important;
+  }
+
+  // 更紧凑的按钮
+  .login-button {
+    margin-top: 15px !important;
+  }
+}
+
+// 横屏适配
+@media (max-width: 768px) and (orientation: landscape) {
+  .login-card {
+    width: 100% !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+
+    .left {
+      display: none !important;
+    }
+
+    .right {
+      width: 100% !important;
+      min-width: auto !important;
+      max-width: 100% !important;
+      height: 100vh !important;
+      min-height: 100vh !important;
+      flex: 1 !important;
+      padding: 15px 20px !important;
+    }
+  }
 }
 </style>

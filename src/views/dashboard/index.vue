@@ -188,7 +188,25 @@
                         </span>
                     </div>
                     <div class="preview-container">
-                        <img src="@/assets/operate/one.png" alt="应用截图" class="preview-image" />
+                        <video
+                            v-if="hasPreviewVideo"
+                            ref="previewVideoRef"
+                            controls
+                            autoplay
+                            class="preview-video"
+                            preload="metadata"
+                            @error="onPreviewVideoError"
+                        >
+                            <source v-if="isHevcSupportedPreview" :src="previewHevcUrl" type="video/mp4; codecs=hevc" />
+                            <source :src="previewH264Url" type="video/mp4; codecs=avc1.42E01E" />
+                            您的浏览器不支持视频播放。
+                        </video>
+                        <img 
+                            v-else 
+                            src="@/assets/operate/one.png" 
+                            alt="应用截图" 
+                            class="preview-image" 
+                        />
                     </div>
                 </div>
             </div>
@@ -231,7 +249,8 @@
 
 <script setup lang="ts">
 import { Search, Monitor, MoreFilled, Timer, Warning, Notification, Operation, ScaleToOriginal, Switch, Aim, Cpu, Smoking, Connection, Link, Right, DArrowRight,  QuestionFilled } from '@element-plus/icons-vue'
-import { computed, ref, onMounted, watch } from 'vue'
+import { computed, ref, onMounted, watch, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { isDark } from '../../utils/theme'
 import { getAigcPrimaryList, getAigcChildrenList } from '@/api/aigc'
 import type { ProjectItem } from '@/api/model/detailModel'
@@ -240,6 +259,9 @@ import { stashToken } from '@/api/userCenter'
 import { useUserStore } from '@/stores/user'
 import { RC4Encrypt } from '../../utils/crypto'
 import { logPost } from '../../utils/log'
+
+// 初始化 router
+const router = useRouter()
 
 // 获取所有svg图标
 const getIconUrl = (name: string) => {
@@ -250,6 +272,54 @@ const getIconUrl = (name: string) => {
     } catch (error) {
         console.error('Error loading icon:', name, error);
         return '';
+    }
+}
+
+// 获取视频链接（基础）
+const getVideoUrl = (value: string) => {
+    if (!value) return '';
+    const availableVideos = ['extinguishing', 'firehose_extinguisher', 'rain_water_curtain', 'sprinkler'];
+    if (availableVideos.includes(value)) {
+        return `https://work.beesfpd.com/tutorials/${value}_h265.mp4`;
+    }
+    return '';
+}
+
+// 预览视频兼容：优先 HEVC，不支持/出错回退 H264
+const previewVideoRef = ref<HTMLVideoElement | null>(null)
+const isHevcSupportedPreview = ref(true)
+const hasPreviewVideo = computed(() => !!(currentCard.value && getVideoUrl((currentCard.value as any).value)))
+const previewHevcUrl = computed(() => currentCard.value ? `https://work.beesfpd.com/tutorials/${(currentCard.value as any).value}_h265.mp4` : '')
+const previewH264Url = computed(() => currentCard.value ? `https://work.beesfpd.com/tutorials/${(currentCard.value as any).value}_h264.mp4` : '')
+
+const checkHevcSupportPreview = async () => {
+    try {
+        if ((navigator as any).mediaCapabilities?.decodingInfo) {
+            const result = await (navigator as any).mediaCapabilities.decodingInfo({
+                type: 'file',
+                video: {
+                    contentType: 'video/mp4; codecs=hevc',
+                    width: 1920,
+                    height: 1080,
+                    bitrate: 3000000,
+                    framerate: 30
+                }
+            })
+            isHevcSupportedPreview.value = !!result?.supported
+            return
+        }
+        const testVideo = document.createElement('video')
+        const canPlay = testVideo.canPlayType('video/mp4; codecs=hevc')
+        isHevcSupportedPreview.value = canPlay === 'probably' || canPlay === 'maybe'
+    } catch {
+        isHevcSupportedPreview.value = false
+    }
+}
+
+const onPreviewVideoError = () => {
+    if (isHevcSupportedPreview.value) {
+        isHevcSupportedPreview.value = false
+        nextTick(() => previewVideoRef.value?.load())
     }
 }
 
@@ -468,6 +538,12 @@ const hvacCardList = [
         description: '基于云架构，完全自主产权',
         icon: 'cloud_cad',
         action: 'open_app'
+    },
+    {
+        title: 'CAD转化',
+        description: 'CAD / PDF / 图片转换工具',
+        icon: 'cad_converter',
+        action: 'cad'
     },
     {
         title: '智能预算',
@@ -721,6 +797,8 @@ watch(isDark, () => {
 
 onMounted(() => {
     toggleIconMode();
+    // 预检测一次 HEVC 支持，提升首次播放体验
+    checkHevcSupportPreview()
 });
 
 // 添加计算属性来过滤secondaryList
@@ -766,9 +844,12 @@ const handleTagClick = (tagName: string) => {
 const handleMoreAppCardClick = (item: any) => {
     if(item.action === 'open_app'){
         permissionDialogVisibless.value = true;
+    }else if(item.action === 'cad'){
+        const resolvedRoute = router.resolve('/converter/pdf-to-cad');
+        const targetUrl = window.location.origin + resolvedRoute.href;
+        window.open(targetUrl, '_blank');
     }else{
-    permissionDialogVisible.value = true;
-
+        permissionDialogVisible.value = true;
     }
     // if (item.action === 'open_app') {
     //     const mockItem = {
@@ -1412,6 +1493,15 @@ const handlePermissionClickss = () => {
 .preview-image {
     width: 100%;
     display: block;
+}
+
+.preview-video {
+    width: 100%;
+    display: block;
+    border-radius: 4px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid v-bind(borderColor);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .version-info {

@@ -1,41 +1,41 @@
 <template>
     <div class="dwg-to-pdf-bg">
         <div class="dwg-to-pdf-top">
-            <h1 class="main-title" style="font-size: 78px;">PDF转CAD在线转换</h1>
+            <h1 class="main-title" style="font-size: 78px;">PDF 转 CAD 在线转换</h1>
             <p class="main-desc"
                 style="font-family: 'Source Sans Pro', 'sans-serif'; font-size: 24px;color: #7F7F7F;text-align: center;">
-                支持PDF转CAD，100%免费在线操作，文件自动加密保护，无需安装客户端。一键上传，极速转换，保留原始比例与图层</p>
+                支持 PDF 转 CAD，100%免费在线操作，文件自动加密保护，无需安装客户端。一键上传，极速转换，保留原始比例与图层</p>
             <div class="upload-mask-wrapper" style="position: relative;">
                 <el-upload class="upload-area" drag action="javascript:void(0);" :auto-upload="false"
                     :show-file-list="false" :on-change="onFileChange" :on-remove="handleRemove" accept=".pdf"
                     style="width: 859px; height: 363px;">
                     <template #default>
                         <div v-if="!file">
-                            <img src="../../assets/upload-cloud-2-line.svg" style="width:48px;height:48px;" />
+                            <img src="/assets/upload-cloud-2-line.svg" style="width:48px;height:48px;" />
                             <div class="upload-text"
                                 style="font-family: 'Source Sans Pro', 'sans-serif'; font-size: 20px;color: #000;text-align: center;">
-                                拖拽或点击上传PDF文件</div>
+                                拖放 PDF 到此处或点击上传文件</div>
                             <div
                                 style="font-family: ' Source Sans Pro';font-size: 14px;color: #7F7F7F;text-align: center; font-weight: 400;">
-                                仅支持DWG格式，单个文件不得大于100M</div>
+                                仅支持 PDF 文件格式，单个文件不得大于100M</div>
                         </div>
                         <div v-else>
                             <div class="file-info-box">
                                 <div class="icon-close-box"  @click.stop>
                                     <img :src="status === 'success' ? dwgIcon : pdfIcon"
                                         :alt="status === 'success' ? 'DWG图标' : 'PDF图标'" class="convert-page-icon" />
-                                    <img src="../../assets/close-circle-fill.svg" class="close-btn"
+                                    <img src="/assets/close-circle-fill.svg" class="close-btn"
                                         v-if="status === 'idle' || status === 'uploading'"
-                                        @click.stop="resetUpload" title="重新上传" />
+                                        @click.stop="resetUpload" title="重新上传" style="z-index: 30; position: relative;" />
                                 </div>
-                                <div class="file-name">{{ file.name }} ({{ formatSize(file.size!) }})</div>
+                                <div class="file-name">{{ getFileNameWithoutExt(file.name) }}{{ status !== 'success' ? ` (${formatSize(file.size!)})` : '' }}</div>
                                 <el-button v-if="status === 'idle' || status === 'uploading'" class="convert-btn"
-                                    type="primary" @click.stop="handleUpload(file.raw as File)">开始转换</el-button>
+                                    type="primary" @click.stop="handleUpload(file.raw as File)" style="z-index: 30; position: relative;top: -10px;">开始转换</el-button>
                                 <div v-if="status === 'processing' || status === 'converting'" class="progress-center">
                                     <div class="progress-bar-box">
                                         <el-progress :percentage="progress" :stroke-width="18" 
                                             color="#000" style="width:220px;" :show-text="false" />
-                                        <el-button class="cancel-btn" type="text" @click.stop="cancelConvert" style="font-size: 17px; color: #7F7F7F; background: none; border: none; padding-left: 5px;">取消</el-button>
+                                        <el-button class="cancel-btn" type="text" @click.stop="cancelConvert" style="font-size: 17px; color: #7F7F7F; background: none; border: none; padding-left: 5px; z-index: 30; position: relative;">取消</el-button>
                                     </div>
                                     <div class="progress-text">{{ progress }}%</div>
                                     <div class="convert-status">
@@ -52,64 +52,72 @@
                                 </div>
                                 <template v-if="status === 'success' && downloadUrl">
                                     <span class="convert-status">
-                                        <img src="../../assets/check-double-fill.svg" class="status-icon" />
+                                        <img src="/assets/check-double-fill.svg" class="status-icon" />
                                         转换成功
                                     </span>
                                     <div style="display: flex; gap: 10px;">
                                         <el-button class="white-btn" type="default"
-                                            @click.stop="resetUpload">再次上传</el-button>
+                                            @click.stop="resetUpload" style="z-index: 30; position: relative;">再次上传</el-button>
                                         <el-button class="convert-btn" type="success"
-                                            @click.stop="download">下载到本地</el-button>
+                                            @click.stop="download" style="z-index: 30; position: relative;">下载到本地</el-button>
                                     </div>
 
                                 </template>
                                 <el-button v-if="status === 'failed'" type="danger"
-                                    @click.stop="handleUpload(file.raw as File)">重试</el-button>
+                                    @click.stop="handleUpload(file.raw as File)" style="z-index: 30; position: relative;">重试</el-button>
                                 <div v-if="errorMessage && status === 'failed'" class="file-error">{{
                                     errorMessage }}</div>
                             </div>
                         </div>
                     </template>
                 </el-upload>
+                <div
+                    v-if="file"
+                    style="position: absolute; inset: 0; z-index: 20; background: rgba(255,255,255,0.01); cursor: not-allowed;"
+                    @mousedown.stop
+                    @click.stop
+                    @dragover.stop
+                    @drop.stop
+                ></div>
                 <div v-if="!isLoggedIn" class="upload-mask" @click.stop="goLogin"
                     style="position: absolute; inset: 0; z-index: 10; background: rgba(255,255,255,0); cursor: pointer;">
                 </div>
             </div>
-            <div class="steps-title">如何免费将PDF 转换为CAD</div>
+            <div class="steps-title">如何免费将 PDF 转换为 CAD</div>
             <div class="steps">
                 <div class="step">
                     <div class="step-num">1</div>
-                    <div class="step-text">上传文件<br /><span>支持PDF格式</span></div>
+                    <div class="step-text">上传文件<br /><span>拖拽单个 PDF 至上传区（最大支持100MB）</span></div>
                 </div>
                 <div class="step">
                     <div class="step-num">2</div>
-                    <div class="step-text">选择输出格式<br /><span>点击开始转换，支持DWG/DXF格式</span></div>
+                    <div class="step-text">选择输出格式<br /><span>点击转换按钮，系统自动处理，无复杂参数设置</span></div>
                 </div>
                 <div class="step">
                     <div class="step-num">3</div>
-                    <div class="step-text">下载PDF<br /><span>转换完成后即可下载DWG文件</span></div>
+                    <div class="step-text">下载PDF<br /><span>转换成功点击下载 CAD 文件，支持手机预览</span></div>
                 </div>
             </div>
         </div>
         <div class="dwg-to-pdf-page">
             <!-- 介绍内容，仅替换此处，其他结构不动 -->
-            <div class="section-title main-title">免费在线PDF转CAD工具：极速转换，无需安装</div>
+            <div class="section-title main-title">免费在线 PDF 转 CAD 工具：极速转换，无需安装</div>
             <div class="desc-center">
-                支持各类PDF文件 → 专注单文件快速转换，文件自动加密，转换后立即删除。
+                支持各类 PDF 图纸转换为 AutoCAD DWG文件 → 专注单文件快速转换，文件自动加密，转换后立即删除。
             </div>
             <div class="section">
                 <div class="section-title section-title-core">核心优势</div>
                 <ul class="feature-list">
                     <li>✅ 纯在线操作：无需下载软件或插件，浏览器打开即用</li>
-                    <li>✅ 极速转换：100MB文件10秒内完成，自动匹配原图比例</li>
-                    <li>✅ 全格式兼容：支持AutoCAD 2000-2023所有版本DWG/DXF文件</li>
+                    <li>✅ 极速转换：10MB文件10秒内完成，自动匹配原图比例（大型 PDF 图纸建议切割成单页图纸后上传）</li>
+                    <li>✅ 支持矢量 PDF 还原为 DWG 格式，保留图层，传统扫描件暂不支持。</li>
                     <li>✅ 100%隐私保障：SSL加密传输，文件2小时自动销毁</li>
                 </ul>
             </div>
             <div class="section">
                 <div class="section-title section-title-tech">技术保障</div>
                 <ul class="feature-list">
-                    <li><b>格式兼容性</b><br>智能识别CAD版本，自动处理字体嵌入问题，避免转换后文字丢失</li>
+                    <li><b>格式兼容性</b><br>智能识别 CAD 版本，自动处理字体嵌入问题，避免转换后文字丢失</li>
                     <li><b>基础排版保留</b><br>严格按1:1比例输出，确保线条与图形完整显示</li>
                     <li><b>实时故障检测</b><br>转换失败自动提示原因（如文件损坏、版本不兼容），并提供解决方案</li>
                 </ul>
@@ -125,46 +133,58 @@
         </div>
         <!-- footer 移到页面最外层 -->
         <div class="footer">
-            沪公网安备 31010702009578号 | 沪ICP备2021527689-3号 | Copyright © 上海蜂智擎人工智能技术有限公司版权所有
+            沪公网安备 31010702009578号 | 沪ICP备2021527689-3号 | Copyright © 上海聚蜂智擎人工智能技术有限公司版权所有
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref,  onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useFileConvert } from '@/api/useFileConvert'
+import { UserCenterGetUserRelatedInfo } from '@/api/userCenter'
 import type { UploadFile } from 'element-plus'
-import { useUserStore } from '@/stores/user'
-import { Loading, CircleCheckFilled, CircleCloseFilled } from '@element-plus/icons-vue'
+import { Loading, CircleCheckFilled } from '@element-plus/icons-vue'
 
-const userStore = useUserStore()
 const router = useRouter()
-const route = useRoute()
+
+// 验证token是否有效
+async function validateToken(): Promise<boolean> {
+    try {
+        const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null
+        if (!token) {
+            return false
+        }
+        
+        // 调用接口验证token
+        await UserCenterGetUserRelatedInfo()
+        // 如果接口调用成功，说明token有效
+        return true
+    } catch (error) {
+        console.error('Token验证失败:', error)
+        return false
+    }
+}
 
 // 登录判断封装到 handleUpload
-function handleUpload(file: File) {
-    const token = localStorage.getItem('token')
+async function handleUpload(file: File) {
+    const isValid = await validateToken()
     const currentPath = router.currentRoute.value.fullPath
-    if (!token) {
+    
+    if (!isValid) {
+        // 清除无效的token
+        if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem('token')
+        }
         router.push({ path: '/login', query: { redirect: currentPath } })
         return
     }
+    
     _handleUpload(file)
 }
 
 function handleRemove() {
     resetUpload()
-}
-
-const beforeClick = () => {
-    const token = localStorage.getItem('token')
-    const currentPath = router.currentRoute.value.fullPath
-    if (!token) {
-        router.push({ path: '/login', query: { redirect: currentPath } })
-        return false
-    }
-    return true
 }
 
 const {
@@ -187,19 +207,38 @@ function cancelConvert() {
 
 const file = ref<UploadFile | null>(null)
 
-const isLoggedIn = computed(() => {
-    return !!localStorage.getItem('token')
+const isLoggedIn = ref(false)
+
+// 检查登录状态
+async function checkLoginStatus() {
+    isLoggedIn.value = await validateToken()
+}
+
+// 页面加载时检查登录状态
+onMounted(() => {
+    checkLoginStatus()
 })
+
 function goLogin() {
     const currentPath = router.currentRoute.value.fullPath
     router.push({ path: '/login', query: { redirect: currentPath } })
 }
 
-function onFileChange(uploadFile: UploadFile) {
-    // 检查登录状态
-    const token = localStorage.getItem('token')
+// 监听路由变化，重新检查登录状态
+watch(() => router.currentRoute.value.path, () => {
+    checkLoginStatus()
+})
+
+async function onFileChange(uploadFile: UploadFile) {
+    // 验证token是否有效
+    const isValid = await validateToken()
     const currentPath = router.currentRoute.value.fullPath
-    if (!token) {
+    
+    if (!isValid) {
+        // 清除无效的token
+        if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem('token')
+        }
         if (currentPath !== '/login') {
             router.push({ path: '/login', query: { redirect: currentPath } })
         } else {
@@ -208,14 +247,10 @@ function onFileChange(uploadFile: UploadFile) {
         return
     }
 
+    // 只有在token有效的情况下才设置文件
     if (uploadFile.raw) {
         file.value = uploadFile
     }
-}
-
-function removeFile() {
-    file.value = null
-    cleanup()
 }
 
 function resetUpload() {
@@ -230,8 +265,12 @@ function formatSize(size: number) {
     return (size / 1024 / 1024).toFixed(1) + 'MB'
 }
 
-const pdfIcon = new URL('../../assets/PDF.svg', import.meta.url).href
-const dwgIcon = new URL('../../assets/DWG.svg', import.meta.url).href
+function getFileNameWithoutExt(name: string) {
+  return name.replace(/\.[^/.]+$/, "")
+}
+
+const pdfIcon = '/assets/PDF.svg'
+const dwgIcon = '/assets/DWG.svg'
 </script>
 
 <style scoped>
@@ -355,6 +394,7 @@ const dwgIcon = new URL('../../assets/DWG.svg', import.meta.url).href
     font-family: 'Source Sans Pro', 'sans-serif';
     font-weight: 700;
     margin-top: 15px;
+    width: 160px;
 }
 
 .step-text span {
@@ -571,8 +611,8 @@ const dwgIcon = new URL('../../assets/DWG.svg', import.meta.url).href
 
 .close-btn {
     position: absolute;
-    top: -8px;
-    right: -8px;
+    top: -45px;
+    right: 15px;
     width: 22px;
     height: 22px;
     background: #fff;
@@ -699,6 +739,8 @@ const dwgIcon = new URL('../../assets/DWG.svg', import.meta.url).href
 @media (max-width: 900px) {
     .dwg-to-pdf-top {
         padding-top: 20px;
+        padding-left: 12px;
+        padding-right: 12px;
     }
 
     .main-title {
@@ -711,8 +753,8 @@ const dwgIcon = new URL('../../assets/DWG.svg', import.meta.url).href
     }
 
     .upload-area {
-        width: 98vw !important;
-        max-width: 100vw !important;
+        width: calc(100vw - 24px) !important;
+        max-width: calc(100vw - 24px) !important;
         height: 220px !important;
         border-radius: 10px;
     }
@@ -735,8 +777,8 @@ const dwgIcon = new URL('../../assets/DWG.svg', import.meta.url).href
     }
 
     .dwg-to-pdf-page {
-        padding: 18px 6px 12px 6px;
-        margin: 0 auto 18px auto;
+        padding: 18px 12px 12px 12px;
+        margin: 0 12px 18px 12px;
         border-radius: 8px;
     }
 
@@ -769,30 +811,44 @@ const dwgIcon = new URL('../../assets/DWG.svg', import.meta.url).href
         width: 48px;
         margin-bottom: 8px;
     }
+
+    .footer {
+        padding: 0 12px;
+        font-size: 12px;
+        line-height: 50px;
+    }
 }
 
 @media (max-width: 600px) {
+    .dwg-to-pdf-top {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
     .main-title {
-        font-size: 16px;
+        font-size: 24px !important;
     }
 
     .main-desc {
-        font-size: 13px;
+        font-size: 18px !important;
     }
 
     .upload-area {
-        height: 140px !important;
+        width: calc(100vw - 16px) !important;
+        max-width: calc(100vw - 16px) !important;
+        height: 450px !important;
         border-radius: 6px;
     }
 
     .upload-area:deep(.el-upload-dragger) {
-        height: 140px !important;
+        height: 450px !important;
         border-radius: 6px;
         padding: 0 2px;
     }
 
     .dwg-to-pdf-page {
-        padding: 8px 2px 6px 2px;
+        padding: 8px 8px 6px 8px;
+        margin: 0 8px 6px 8px;
         border-radius: 4px;
     }
 
@@ -829,6 +885,12 @@ const dwgIcon = new URL('../../assets/DWG.svg', import.meta.url).href
 
     .upload-text {
         font-size: 12px;
+    }
+
+    .footer {
+        padding: 0 8px;
+        font-size: 11px;
+        line-height: 50px;
     }
 }
 </style>

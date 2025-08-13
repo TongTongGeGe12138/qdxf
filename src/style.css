@@ -19,6 +19,15 @@
   --el-color-primary: #409eff;
 }
 
+/* 首帧禁用过渡，防止主题变量初次应用导致的闪烁 */
+html.disable-theme-transitions,
+html.disable-theme-transitions *,
+html.disable-theme-transitions *::before,
+html.disable-theme-transitions *::after {
+  transition: none !important;
+  animation: none !important;
+}
+
 html.dark {
   --el-bg-color: #000;
   --el-bg-color-page: #0a0a0a;
@@ -92,14 +101,17 @@ html {
 
 /* 添加全局过渡效果 */
 :root {
-  transition: all 0.3s ease-in-out;
+  transition: all 0s ease-in-out;
 }
 
 :root * {
-  transition: background-color 0.3s ease-in-out,
-              border-color 0.3s ease-in-out,
-              color 0.3s ease-in-out,
-              box-shadow 0.3s ease-in-out;
+  transition: background-color 0s ease-in-out,
+              border-color 0s ease-in-out,
+              color 0s ease-in-out,
+              box-shadow 0s ease-in-out;
+}
+:root * {
+  transition:none !important;
 }
 
 html, body {
@@ -195,7 +207,8 @@ body {
     --el-bg-color: var(--el-bg-color) !important;
     --el-bg-color-overlay: var(--el-bg-color) !important;
     background-color: var(--el-bg-color) !important;
-    border-color: var(--theme-borderColor) !important;
+    border: none !important;
+    outline: none !important;
     transition: all 0.3s !important;
 }
 
@@ -362,6 +375,8 @@ html:not(.dark) .el-dropdown-menu__item {
 
 .el-popper.is-pure.is-light {
   box-shadow: 5px 5px 5px rgba(255, 255, 255, 0.3) !important;
+  border: none !important;
+  outline: none !important;
 }
 
 /* 只对下拉菜单隐藏箭头 */
@@ -369,10 +384,25 @@ html:not(.dark) .el-dropdown-menu__item {
   display: none !important;
 }
 
+/* 清除 hover/focus 状态下的边框与阴影（可能由浏览器或内部样式施加） */
+.el-dropdown-menu:hover,
+.el-dropdown-menu:focus,
+.el-dropdown-menu:focus-visible,
+.el-popper.is-pure.is-light:hover,
+.el-popper.is-pure.is-light:focus,
+.el-popper.is-pure.is-light:focus-visible {
+  border: none !important;
+  outline: none !important;
+  /* box-shadow: none !important; */
+}
+
 /* 全局loading文字颜色 */
 .el-loading-text {
   color: #F9DE4A !important;
 }
+
+/* 移除 el-dropdown 焦点可见时的边框/轮廓/阴影 */
+
 
 /* 分页组件样式 */
 .el-pagination {
@@ -604,7 +634,7 @@ html:not(.dark) .el-dropdown-menu__item {
 .el-popper.el-select__popper .el-select-dropdown {
   box-shadow: none !important;
   filter: none !important;
-} */ */
+} */
 
 /* 移除所有可能的阴影效果 - 更强版本 */
 /* .el-select-dropdown,
@@ -644,3 +674,39 @@ html:not(.dark) .el-dropdown-menu__item {
   filter: none !important;
 } */
 
+
+/* 全局移除 focus/focus-visible 描边（含 -webkit-focus-ring-color）*/
+*:focus,
+*:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* 强化常见可聚焦元素与 Element Plus 组件 */
+button:focus,
+button:focus-visible,
+a:focus,
+a:focus-visible,
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible,
+[tabindex]:focus,
+[tabindex]:focus-visible,
+.el-button:focus,
+.el-button:focus-visible,
+.el-link:focus,
+.el-link:focus-visible,
+.el-dropdown:focus,
+.el-dropdown:focus-visible,
+.el-dropdown-menu:focus,
+.el-dropdown-menu:focus-visible,
+.el-dropdown-menu__item:focus,
+.el-dropdown-menu__item:focus-visible,
+.el-tooltip__trigger:focus,
+.el-tooltip__trigger:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}

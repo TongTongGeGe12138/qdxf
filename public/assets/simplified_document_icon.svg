@@ -1,0 +1,14 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 主文档背景 -->
+  <path d="M16 24h48a4 4 0 0 1 4 4v44a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4V28a4 4 0 0 1 4-4z" fill="#f0f0f0" stroke="#d0d0d0" stroke-width="1"/>
+  
+  <!-- 文档折角 -->
+  <path d="M52 8h12a4 4 0 0 1 4 4v12L52 8z" fill="#d0d0d0"/>
+  <path d="M16 8h36l16 16v-4a4 4 0 0 0-4-4H16a4 4 0 0 0-4 4v44a4 4 0 0 0 4 4h4V12a4 4 0 0 0-4-4z" fill="#e4e4e4"/>
+  
+  <!-- 内容线条 -->
+  <rect x="24" y="36" width="32" height="2" rx="1" fill="#b4b4b4"/>
+  <rect x="24" y="44" width="28" height="2" rx="1" fill="#b4b4b4"/>
+  <rect x="24" y="52" width="24" height="2" rx="1" fill="#b4b4b4"/>
+  <rect x="24" y="60" width="20" height="2" rx="1" fill="#b4b4b4"/>
+</svg>

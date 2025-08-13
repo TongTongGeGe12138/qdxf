@@ -72,12 +72,15 @@ export const isDark = ref(false)
 
 // 初始化主题
 export function initTheme() {
-  // 从 localStorage 读取主题设置
+  // 从 localStorage 读取主题设置；如果没有则使用系统偏好
   const savedTheme = localStorage.getItem('theme')
   if (savedTheme) {
     isDark.value = savedTheme === 'dark'
-    applyTheme()
+  } else {
+    // 默认亮色：无记录时不再跟随系统偏好
+    isDark.value = false
   }
+  applyTheme()
 }
 
 // 应用主题
@@ -92,12 +95,6 @@ export function applyTheme() {
   
   // 保存主题设置
   localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
-  
-  // 强制触发重新渲染
-  document.body.style.backgroundColor = isDark.value ? '#141414' : 'rgba(231, 232, 235, 1)'
-  setTimeout(() => {
-    document.body.style.backgroundColor = ''
-  }, 0)
 }
 
 // 切换暗色/亮色主题

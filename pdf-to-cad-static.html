@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>免费在线 PDF 转 CAD 工具 - 无需下载，极速转换</title>
+    <meta name="description" content="支持PDF转DWG，100%免费在线操作，文件自动加密保护，无需安装客户端。一键上传，极速转换，保留原始比例与图层。">
+    <meta name="keywords" content="免费PDF转CAD, 在线PDF转DWG, PDF转CAD无需下载, 单文件PDF转CAD工具">
+    <link rel="canonical" href="https://work.beesfpd.com/#/converter/pdf-to-cad">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Source Sans Pro", sans-serif;
+            background: rgba(245, 246, 250, 1);
+            color: #333;
+        }
+
+        .special-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            height: 68px;
+            background-color: rgba(255, 255, 255, 1);
+            border-bottom: 1px solid rgba(215, 215, 215, 1);
+        }
+
+        .top-flex-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            height: 68px;
+        }
+
+        .logo-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            height: 100%;
+            padding: 0 20px;
+        }
+
+        .logo-icon {
+            width: 120px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .menu-bar {
+            display: flex;
+            align-items: center;
+            margin-left: 32px;
+            gap: 24px;
+            height: 100%;
+        }
+
+        .menu-item {
+            color: #4b5359;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 400;
+            padding: 0 2px;
+            transition: color 0.2s, font-weight 0.2s;
+        }
+
+        .menu-item.active {
+            color: #222;
+            font-weight: 700;
+            border-bottom: 2px solid #222;
+        }
+
+        .menu-item:hover {
+            color: #0078d9;
+        }
+
+        .dwg-to-pdf-bg {
+            width: 100%;
+            min-height: 100vh;
+            background-color: rgba(245, 246, 250, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 68px;
+        }
+
+        .dwg-to-pdf-top {
+            width: 100%;
+            background: rgba(245, 246, 250, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 40px;
+            padding-bottom: 0;
+        }
+
+        .dwg-to-pdf-page {
+            padding: 32px 24px 16px 24px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            padding: 40px 32px 24px 32px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .main-title {
+            font-family: 'Source Sans Pro', 'sans-serif';
+            font-weight: 700;
+            font-size: 78px;
+            color: #000000;
+            text-align: center;
+            margin-top: 80px;
+            margin-bottom: 24px;
+        }
+
+        .main-desc {
+            max-width: 780px;
+            margin: 0 auto 24px auto;
+            text-align: center;
+            font-family: 'Source Sans Pro', 'sans-serif';
+            font-weight: 400;
+            font-size: 24px;
+            color: #7F7F7F;
+        }
+
+        .upload-mask-wrapper {
+            position: relative;
+            width: 859px;
+            height: 363px;
+        }
+
+        .upload-area {
+            border: 2px dashed #d9d9d9;
+            border-radius: 8px;
+            padding: 60px 20px;
+            text-align: center;
+            background: #fafafa;
+            transition: border-color 0.3s;
+            cursor: pointer;
+            margin-bottom: 30px;
+            width: 859px;
+            height: 363px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-area:hover {
+            border-color: #0078d9;
+            background: #f0f8ff;
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .upload-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .upload-text {
+            font-family: 'Source Sans Pro', 'sans-serif';
+            font-size: 20px;
+            color: #000;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-family: 'Source Sans Pro';
+            font-size: 14px;
+            color: #7F7F7F;
+            text-align: center;
+            font-weight: 400;
+        }
+
+        .steps-title {
+            font-family: 'Source Sans Pro', 'sans-serif';
+            font-weight: 700;
+            font-size: 24px;
+            color: #000000;
+            margin: 27px 0;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 267px;
+            margin-bottom: 88px;
+            margin-top: 27px;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 120px;
+        }
+
+        .step-num {
+            width: 50px;
+            height: 50px;
+            background: #FABD33;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-family: 'Source Sans Pro', 'sans-serif';
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+
+        .step-text {
+            text-align: center;
+            color: #000000;
+            font-size: 16px;
+            font-family: 'Source Sans Pro', 'sans-serif';
+            font-weight: 700;
+            margin-top: 15px;
+            width: 160px;
+        }
+
+        .step-text span {
+            font-family: 'Source Sans Pro', 'sans-serif';
+            font-weight: 400;
+            display: block;
+            color: #333333;
+            font-size: 13px;
+            margin-top: 22px;
+        }
+
+        .section {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-family: 'Source Sans Pro', 'sans-serif';
+            font-weight: 700;
+            font-size: 24px;
+            color: #000000;
+        }
+
+        .desc-center {
+            width: 100%;
+            max-width: 780px;
+            margin: 0 auto 24px auto;
+            text-align: left;
+            font-family: 'Source Sans Pro', 'sans-serif';
+            font-weight: 400;
+            font-size: 16px;
+            color: #333333;
+        }
+
+        .feature-list,
+        .faq-list {
+            width: 100%;
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 0;
+            list-style: none;
+            text-align: left;
+        }
+
+        .feature-list li,
+        .faq-list li {
+            padding-left: 0;
+            text-indent: 0;
+            margin-bottom: 8px;
+            text-align: left;
+            box-sizing: border-box;
+            font-size: 16px;
+            color: #333333;
+            font-family: 'Source Sans Pro', 'sans-serif';
+        }
+
+        .feature-list li {
+            margin-bottom: 4px;
+        }
+
+        .faq-list {
+            list-style: none;
+            color: #444;
+            font-size: 15px;
+        }
+
+        .faq-list li {
+            margin-bottom: 4px;
+        }
+
+        .footer {
+            width: 100%;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            color: #bbb;
+            font-size: 13px;
+            border-top: 1px solid #e5e6eb;
+            margin-top: 0;
+            word-break: break-all;
+            background: #fff;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .section-title.section-title-core {
+            font-family: 'Source Sans Pro', 'sans-serif';
+            font-weight: 700;
+            font-size: 16px;
+            color: #333333;
+            text-align: left;
+            margin-bottom: 8px;
+            max-width: 780px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 0;
+        }
+
+        .section-title.section-title-tech,
+        .section-title.section-title-faq {
+            margin-top: 111px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .dwg-to-pdf-top {
+                padding-top: 20px;
+            }
+
+            .main-title {
+                font-size: 22px;
+            }
+
+            .main-desc {
+                font-size: 15px;
+                margin-bottom: 18px;
+            }
+
+            .upload-area {
+                width: 98vw !important;
+                max-width: 100vw !important;
+                height: 220px !important;
+                border-radius: 10px;
+            }
+
+            .steps {
+                flex-direction: column;
+                gap: 18px;
+                align-items: center;
+            }
+
+            .step {
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .dwg-to-pdf-page {
+                padding: 18px 6px 12px 6px;
+                margin: 0 auto 18px auto;
+                border-radius: 8px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .main-title {
+                font-size: 24px !important;
+            }
+
+            .main-desc {
+                font-size: 18px !important;
+            }
+
+            .upload-area {
+                height: 450px !important;
+                border-radius: 6px;
+            }
+
+            .dwg-to-pdf-page {
+                padding: 8px 2px 6px 2px;
+                border-radius: 4px;
+            }
+
+            .section-title {
+                font-size: 15px;
+            }
+
+            .section-desc,
+            .feature-list,
+            .faq-list {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="special-page">
+        <div class="top">
+            <div class="top-flex-row">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="380 338 420 85" width="420" height="85">
+                            <g id="logo-group">
+                                <image xlink:href="" id="container" x="272" y="144" width="480" height="480" transform="translate(0 0)" style="display: none;"/>
+                                <g id="logo-center" transform="translate(268.45547704999996 0)">
+                                    <image xlink:href="" id="icon_container" x="0" y="0" style="display: none;"/>
+                                    <g id="slogan" style="font-style:normal;font-weight:700;font-size:32px;line-height:1;font-family:'Brandmark1 Bold';font-variant-ligatures:none;text-align:center;text-anchor:middle" transform="translate(0 0)"/>
+                                    <g id="title" style="font-style:normal;font-weight:normal;font-size:72px;line-height:1;font-family:'Brandmark Sans 10';font-variant-ligatures:normal;text-align:center;text-anchor:middle" transform="translate(0 0)">
+                                        <path id="path200238" style="font-style:normal;font-weight:normal;font-size:72px;line-height:1;font-family:'Brandmark Sans 10';font-variant-ligatures:normal;text-align:center;text-anchor:middle" d="m 395.76725,-27.936 c 2.304,-2.376 3.816,-5.616 3.816,-9.216 0,-7.344 -5.976,-13.248 -13.248,-13.248 h -13.896 c -1.584,0 -2.952,1.368 -2.952,2.952 0,1.656 1.368,3.024 2.952,3.024 h 13.896 c 3.96,0 7.272,3.24 7.272,7.272 0,4.032 -3.312,7.272 -7.272,7.272 h -13.896 c -1.584,0 -2.952,1.296 -2.952,2.952 0,1.656 1.368,3.024 2.952,3.024 h 15.912 c 4.968,0 9,4.032 9,8.928 0,4.968 -4.032,9 -9,9 h -15.912 c -1.584,0 -2.952,1.368 -2.952,3.024 0,1.584 1.368,2.952 2.952,2.952 h 15.912 c 8.208,0 14.976,-6.696 14.976,-14.976 0,-5.544 -3.096,-10.368 -7.56,-12.96 z" stroke-width="0" stroke-linejoin="miter" stroke-miterlimit="2" fill="#333333" stroke="#333333" transform="translate(0 319.1212) translate(120.5 28.32800000000001) scale(1.43) translate(-369.48725 50.4)"/>
+                                        <path id="path200240" style="font-style:normal;font-weight:normal;font-size:72px;line-height:1;font-family:'Brandmark Sans 10';font-variant-ligatures:normal;text-align:center;text-anchor:middle" d="m 448.28787,-21.672 c -1.224,-9.648 -9.288,-17.136 -19.08,-17.136 -10.584,0 -19.224,8.856 -19.224,19.8 0,10.872 8.64,19.728 19.224,19.728 5.976,0 11.30401,-2.736 14.76,-7.128 1.584,-1.944 0.144,-4.824 -2.30399,-4.824 -0.93601,0 -1.80001,0.432 -2.37601,1.152 -2.376,2.952 -6.048,4.824 -10.08,4.824 -4.536,0 -8.49599,-2.304 -10.944,-5.976 -1.008,-1.512 -1.728,-3.312 -2.08799,-5.184 h 29.66399 c 1.44,0 2.592,-1.152 2.592,-2.592 0,-0.936 -0.072,-1.8 -0.144,-2.664 z m -32.11199,0 c 1.22399,-6.336 6.55199,-11.16 13.03199,-11.16 6.48001,0 11.88,4.824 13.032,11.16 z" stroke-width="0" stroke-linejoin="miter" stroke-miterlimit="2" fill="#333333" stroke="#333333" transform="translate(0 319.1212) translate(178.41016659999997 44.904560000000004) scale(1.43) translate(-409.98387 38.808)"/>
+                                        <path id="path200242" style="font-style:normal;font-weight:normal;font-size:72px;line-height:1;font-family:'Brandmark Sans 10';font-variant-ligatures:normal;text-align:center;text-anchor:middle" d="m 493.00662,-21.672 c -1.224,-9.648 -9.288,-17.136 -19.08,-17.136 -10.584,0 -19.224,8.856 -19.224,19.8 0,10.872 8.64,19.728 19.224,19.728 5.976,0 11.30401,-2.736 14.76,-7.128 1.584,-1.944 0.144,-4.824 -2.30399,-4.824 -0.93601,0 -1.80001,0.432 -2.37601,1.152 -2.376,2.952 -6.048,4.824 -10.08,4.824 -4.536,0 -8.49599,-2.304 -10.944,-5.976 -1.008,-1.512 -1.728,-3.312 -2.08799,-5.184 h 29.66399 c 1.44,0 2.592,-1.152 2.592,-2.592 0,-0.936 -0.072,-1.8 -0.144,-2.664 z m -32.11199,0 c 1.22399,-6.336 6.55199,-11.16 13.03199,-11.16 6.48001,0 11.88,4.824 13.032,11.16 z" stroke-width="0" stroke-linejoin="miter" stroke-miterlimit="2" fill="#333333" stroke="#333333" transform="translate(0 319.1212) translate(242.3579791 44.904560000000004) scale(1.43) translate(-454.70262 38.808)"/>
+                                        <path id="path200244" style="font-style:normal;font-weight:normal;font-size:72px;line-height:1;font-family:'Brandmark Sans 10';font-variant-ligatures:normal;text-align:center;text-anchor:middle" d="m 513.89337,-23.112 c -4.752,-1.728 -7.632,-3.024 -7.632,-5.4 0,-2.88 3.81601,-4.32 5.90401,-4.32 2.592,0 4.82399,1.224 5.616,3.096 0.648,1.512 2.44799,2.232 3.95999,1.584 1.512,-0.648 2.23201,-2.448 1.512,-3.96 -1.728,-4.104 -6.12,-6.696 -11.08799,-6.696 -4.968,0 -11.88001,3.6 -11.88001,10.296 0,6.696 6.408,9.072 11.52001,11.016 5.54399,2.088 8.13599,3.312 8.13599,6.12 0,2.304 -1.58399,6.12 -7.55999,6.12 -4.10401,0 -6.04801,-2.664 -6.98401,-4.896 -0.648,-1.512 -2.376,-2.232 -3.888,-1.584 -1.512,0.576 -2.304,2.376 -1.65599,3.888 2.23199,5.472 6.83999,8.568 12.528,8.568 8.928,0 13.53599,-6.048 13.53599,-12.096 0,-7.2 -6.624,-9.72 -12.024,-11.736 z" stroke-width="0" stroke-linejoin="miter" stroke-miterlimit="2" fill="#333333" stroke="#333333" transform="translate(0 319.1212) translate(306.5979692 44.904560000000004) scale(1.43) translate(-499.62569 38.808)"/>
+                                        <path id="path200246" style="font-style:normal;font-weight:normal;font-size:72px;line-height:1;font-family:'Brandmark Sans 10';font-variant-ligatures:normal;text-align:center;text-anchor:middle" d="m 561.76887,-50.4 h -25.63199 c -1.58401,0 -2.952,1.368 -2.952,2.952 0,1.656 1.36799,3.024 2.952,3.024 h 25.63199 c 1.65601,0 3.024,-1.368 3.024,-3.024 0,-1.584 -1.36799,-2.952 -3.024,-2.952 z m -28.58399,47.448 c 0,1.584 1.36799,2.952 2.952,2.952 1.65599,0 3.024,-1.368 3.024,-2.952 v -20.232 h 18.72 c 1.65599,0 3.02399,-1.368 3.02399,-2.952 0,-1.656 -1.368,-3.024 -3.02399,-3.024 h -21.744 c -1.58401,0 -2.952,1.368 -2.952,3.024 z" stroke-width="0" stroke-linejoin="miter" stroke-miterlimit="2" fill="#FABD33" stroke="#FABD33" transform="translate(0 319.1212) translate(354.5876109 28.32800000000001) scale(1.43) translate(-533.18488 50.4)"/>
+                                        <path id="path200248" style="font-style:normal;font-weight:normal;font-size:72px;line-height:1;font-family:'Brandmark Sans 10';font-variant-ligatures:normal;text-align:center;text-anchor:middle" d="m 591.27537,-50.4 h -17.99999 c -1.58401,0 -2.952,1.368 -2.952,2.952 0,1.656 1.36799,3.024 2.952,3.024 h 17.99999 c 4.896,0 8.92801,3.96 8.92801,8.856 0,4.896 -4.03201,8.928 -8.92801,8.928 h -17.99999 c -1.58401,0 -2.952,1.296 -2.952,2.952 v 20.736 c 0,1.584 1.36799,2.952 2.952,2.952 1.65599,0 3.024,-1.368 3.024,-2.952 v -17.712 h 14.97599 c 8.20801,0 14.90401,-6.696 14.90401,-14.904 0,-8.136 -6.696,-14.832 -14.90401,-14.832 z" stroke-width="0" stroke-linejoin="miter" stroke-miterlimit="2" fill="#FABD33" stroke="#FABD33" transform="translate(0 319.1212) translate(407.6956659000001 28.32800000000001) scale(1.43) translate(-570.32338 50.4)"/>
+                                        <path id="path200250" style="font-style:normal;font-weight:normal;font-size:72px;line-height:1;font-family:'Brandmark Sans 10';font-variant-ligatures:normal;text-align:center;text-anchor:middle" d="m 617.24937,-50.4 c -1.58399,0 -2.952,1.368 -2.952,2.952 v 44.496 c 0,1.584 1.36801,2.952 2.952,2.952 1.65601,0 3.024,-1.368 3.024,-2.952 v -44.496 c 0,-1.584 -1.36799,-2.952 -3.024,-2.952 z m 8.208,47.448 c 0,1.584 1.368,2.952 3.024,2.952 h 1.80001 c 13.46399,0 24.408,-11.304 24.408,-25.2 0,-13.896 -10.94401,-25.2 -24.408,-25.2 h -1.80001 c -1.656,0 -3.024,1.368 -3.024,2.952 0,1.656 1.368,3.024 3.024,3.024 h 1.80001 c 10.15199,0 18.432,8.64 18.432,19.224 0,10.584 -8.28001,19.224 -18.432,19.224 h -1.80001 c -1.656,0 -3.024,1.368 -3.024,3.024 z" stroke-width="0" stroke-linejoin="miter" stroke-miterlimit="2" fill="#FABD33" stroke="#FABD33" transform="translate(0 319.1212) translate(470.57847160000006 28.32800000000001) scale(1.43) translate(-614.29737 50.4)"/>
+                                    </g>
+                                </g>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="menu-bar">
+                        <span class="menu-item">智能消防建筑设计</span>
+                        <span class="menu-item active">PDF 转 CAD</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dwg-to-pdf-bg">
+            <div class="dwg-to-pdf-top">
+                <h1 class="main-title">PDF 转 CAD 在线转换</h1>
+                <p class="main-desc">支持 PDF 转 CAD，100%免费在线操作，文件自动加密保护，无需安装客户端。一键上传，极速转换，保留原始比例与图层</p>
+                
+                <div class="upload-mask-wrapper">
+                    <div class="upload-area" onclick="window.open('https://work.beesfpd.com/#/converter/pdf-to-cad', '_blank')">
+                        <div class="upload-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="96" height="96" fill="rgba(127,127,127,1)">
+                                <path d="M12 12.5858L16.2426 16.8284L14.8284 18.2426L13 16.415V22H11V16.413L9.17157 18.2426L7.75736 16.8284L12 12.5858ZM12 2C15.5934 2 18.5544 4.70761 18.9541 8.19395C21.2858 8.83154 23 10.9656 23 13.5C23 16.3688 20.8036 18.7246 18.0006 18.9776L18.0009 16.9644C19.6966 16.7214 21 15.2629 21 13.5C21 11.567 19.433 10 17.5 10C17.2912 10 17.0867 10.0183 16.8887 10.054C16.9616 9.7142 17 9.36158 17 9C17 6.23858 14.7614 4 12 4C9.23858 4 7 6.23858 7 9C7 9.36158 7.03838 9.7142 7.11205 10.0533C6.91331 10.0183 6.70879 10 6.5 10C4.567 10 3 11.567 3 13.5C3 15.2003 4.21241 16.6174 5.81986 16.934L6.00005 16.9646L6.00039 18.9776C3.19696 18.7252 1 16.3692 1 13.5C1 10.9656 2.71424 8.83154 5.04648 8.19411C5.44561 4.70761 8.40661 2 12 2Z"></path>
+                            </svg>
+                        </div>
+                        <div class="upload-text">拖放 PDF 到此处或点击上传文件</div>
+                        <div class="upload-hint">仅支持 PDF 文件格式，单个文件不得大于100M</div>
+                    </div>
+                </div>
+
+                <div class="steps-title">如何免费将 PDF 转换为 CAD</div>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-text">上传文件<br /><span>拖拽单个 PDF 至上传区（最大支持100MB）</span></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-text">选择输出格式<br /><span>点击转换按钮，系统自动处理，无复杂参数设置</span></div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-text">下载PDF<br /><span>转换成功点击下载 CAD 文件，支持手机预览</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dwg-to-pdf-page">
+                <div class="section-title main-title">免费在线 PDF 转 CAD 工具：极速转换，无需安装</div>
+                <div class="desc-center">
+                    支持各类 PDF 图纸转换为 AutoCAD DWG文件 → 专注单文件快速转换，文件自动加密，转换后立即删除。
+                </div>
+                
+                <div class="section">
+                    <div class="section-title section-title-core">核心优势</div>
+                    <ul class="feature-list">
+                        <li>✅ 纯在线操作：无需下载软件或插件，浏览器打开即用</li>
+                        <li>✅ 极速转换：10MB文件10秒内完成，自动匹配原图比例（大型 PDF 图纸建议切割成单页图纸后上传）</li>
+                        <li>✅ 支持矢量 PDF 还原为 DWG 格式，保留图层，传统扫描件暂不支持。</li>
+                        <li>✅ 100%隐私保障：SSL加密传输，文件2小时自动销毁</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title section-title-tech">技术保障</div>
+                    <ul class="feature-list">
+                        <li><b>格式兼容性</b><br>智能识别 CAD 版本，自动处理字体嵌入问题，避免转换后文字丢失</li>
+                        <li><b>基础排版保留</b><br>严格按1:1比例输出，确保线条与图形完整显示</li>
+                        <li><b>实时故障检测</b><br>转换失败自动提示原因（如文件损坏、版本不兼容），并提供解决方案</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title section-title-faq">常见问题</div>
+                    <ul class="faq-list">
+                        <li><b>转换后图纸不居中？</b><br>系统自动居中处理，若异常请检查原文件图框是否完整。</li>
+                        <li><b>文件会被存储吗？</b><br>所有文件2小时后自动销毁，服务器不留存副本。</li>
+                        <li><b>是否支持加密文件？</b><br>不支持，请解密去除密码后上传文件。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer">
+                沪公网安备 31010702009578号 | 沪ICP备2021527689-3号 | Copyright © 上海聚蜂智擎人工智能技术有限公司版权所有
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

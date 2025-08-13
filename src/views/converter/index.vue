@@ -4,13 +4,23 @@
             <el-aside :width="isCollapse ? '64px' : '200px'" style="width: 100%; padding: 0; border: none; background: none;">
                 <div class="top-flex-row">
                     <div class="logo-container">
-                        <img :src="getIconUrl('beesfqd_ai_logo')" alt="BeesFQD Logo" class="logo-icon" />
-                        <div class="menu-bar">
-                            <span class="menu-item" :class="{ active: route.path === '/converter/intro' }" @click="goMenu('/converter/intro')">智能消防建筑设计</span>
-                            <span class="menu-item" :class="{ active: route.path === '/converter/dwg-to-pdf' }" @click="goMenu('/converter/dwg-to-pdf')">CAD 转 PDF</span>
-                            <span class="menu-item" :class="{ active: route.path === '/converter' }" @click="goMenu('/converter')">CAD 转图片</span>
+                        <img :src="getIconUrl('beesfqd_ai_logo')" alt="BeesFQD Logo" class="logo-icon" @click="toGang" style="cursor: pointer;" />
+                        <!-- 横向菜单（大屏） -->
+                        <div class="menu-bar" v-show="!isMobile">
+                            <span class="menu-item" :class="{ active: route.path === '/converter/intro' }" @click="goMenu('/dashboard')">智能消防建筑设计</span>
                             <span class="menu-item" :class="{ active: route.path === '/converter/pdf-to-cad' }" @click="goMenu('/converter/pdf-to-cad')">PDF 转 CAD</span>
                         </div>
+                        <!-- 移动端下拉菜单 -->
+                        <el-dropdown v-if="isMobile" trigger="click" v-model:visible="showMobileMenu">
+                            <div class="mobile-menu-btn">
+                                <img src="/assets/menu-line.svg" alt="菜单" style="width: 24px; height: 24px;" />
+                            </div>
+                            <template #dropdown>
+                                <el-dropdown-menu>
+                                    <el-dropdown-item @click="handleMenuSelect('/converter/pdf-to-cad')">PDF 转 CAD</el-dropdown-item>
+                                </el-dropdown-menu>
+                            </template>
+                        </el-dropdown>
                     </div>
                     <div class="header-right">
                         <template v-if="userStore.isLoggedIn">
@@ -57,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { UserFilled } from '@element-plus/icons-vue'
 import { useUserStore } from '../../stores/user'
 import { useRoute, useRouter } from 'vue-router'
@@ -71,7 +81,6 @@ const userStore = useUserStore()
 const isCollapse = ref(false)
 
 const goToAccount = () => {
-    // 跳转到个人中心页面
     router.push('/account')
 }
 const toGang = () => {
@@ -79,7 +88,6 @@ const toGang = () => {
 }
 const getIconUrl = (name: string) => {
     if (!name) return '';
-    // 只处理 logo 特殊情况和 svg/png 文件
     if (name === 'beesfqd_ai_logo') {
         try {
             return new URL(`../../assets/tb/beesfqd_ai_logo.svg`, import.meta.url).href;
@@ -108,9 +116,36 @@ const handleLogout = async () => {
     }
 }
 const goToLogin = () => {
-  window.location.href = '/login';
+  const currentPath = router.currentRoute.value.fullPath
+  router.push({ path: '/login', query: { redirect: currentPath } })
 }
 
+// 响应式判断是否为移动端
+const isMobile = ref(false)
+
+const handleResize = () => {
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth <= 600
+  }
+}
+
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth <= 600
+    window.addEventListener('resize', handleResize)
+  }
+})
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', handleResize)
+  }
+})
+
+const showMobileMenu = ref(false)
+function handleMenuSelect(path: string) {
+  showMobileMenu.value = false
+  goMenu(path)
+}
 </script>
 
 <style scoped>
@@ -159,6 +194,8 @@ router-view,
     font-style: normal;
     font-size: 12px;
     color: #FAFAFA;
+    display: flex;
+    align-items: center;
 }
 
 .top-flex-row {
@@ -182,6 +219,7 @@ router-view,
     height: 100%;
     gap: 20px;
     font-size: 14px;
+    padding-right: 50px;
 }
 
 .logo-container {
@@ -245,11 +283,23 @@ router-view,
 .menu-item:hover {
   color: #0078d9;
 }
+.mobile-menu-btn {
+  display: none;
+  font-size: 15px;
+  color: #0078d9;
+  cursor: pointer;
+  padding: 0 10px;
+  align-items: center;
+  height: 40px;
+}
 
 @media (max-width: 900px) {
+  .top {
+    height: 88px;
+  }
   .top-flex-row {
     flex-direction: column;
-    height: auto;
+    height: 88px;
     align-items: flex-start;
     padding: 0 4px;
   }
@@ -288,14 +338,56 @@ router-view,
   }
 }
 @media (max-width: 600px) {
+  .top {
+    height: 48px;
+  }
+  .top-flex-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    padding: 0 4px;
+    gap: 0;
+  }
+  .logo-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 10px;
+    height: 48px;
+    padding: 0 6px 0 0;
+    min-width: 0;
+  }
+  .header-right {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 11px;
+    height: 32px;
+    margin-left: 0;
+    margin-right: 0;
+    gap: 10px;
+    padding: 0 6px;
+    white-space: nowrap;
+  }
+  .mobile-menu-btn {
+    display: flex !important;
+    align-items: center;
+    margin-left: 10px;
+    height: 32px;
+  }
   .logo-icon {
     width: 70px;
     height: 18px;
   }
   .menu-bar {
-    gap: 8px;
-    font-size: 11px;
-    height: 32px;
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: flex !important;
   }
   .menu-item {
     font-size: 11px;

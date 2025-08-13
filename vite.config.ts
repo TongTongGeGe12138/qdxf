@@ -9,7 +9,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // API 前缀
 const VITE_API_URL_PREFIX = '/api'
 const VITE_API_URL_PREFIX_LOG = '/log'
-const VITE_API_URL_PREFIX_CAD = '/cad'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -63,29 +62,28 @@ export default defineConfig({
     proxy: {
       // 1. 上传相关接口，优先匹配
       '/file': {
-        target: 'http://192.168.15.200:9400',
+        // target: 'https://api-work.gatherbee.cn/',
+        target: 'https://api-work.beesfpd.com/',
         changeOrigin: true,
       },
       '/api/file': {
-        target: 'http://192.168.15.200:9400',
+        // target: 'https://api-work.gatherbee.cn/',
+        target: 'https://api-work.beesfpd.com/',
         changeOrigin: true,
       },
       // 2. 其他 /api 走原来的服务器
       '/api': {
-        target: 'https://api-work.gatherbee.cn/',
+        // target: 'https://api-work.gatherbee.cn/',
+        target: 'https://api-work.beesfpd.com/',
         changeOrigin: true,
         // rewrite: (path) => path.replace(/^\/api/, ''),
       },
       // 3. 其它已有代理保持不变
       [VITE_API_URL_PREFIX_LOG]: {
-        target: 'http://api.dev.ifeng.com',
+        // target: 'http://api.dev.ifeng.com',
+        target: 'http://api.aigc-v1.beesfpd.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/log/, '/api'),
-      },
-      [VITE_API_URL_PREFIX_CAD]: {
-        target: 'http://cadapi.dev.ifeng.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/cad/, '/api'),
       },
     },
   },

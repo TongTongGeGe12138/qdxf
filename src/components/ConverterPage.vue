@@ -15,7 +15,7 @@
         :style="{ width: '859px', height: '363px' }"
       >
         <div class="upload-icon">
-            <img src="../../assets/upload-cloud-2-line.svg" alt="上传" style="width:48px;height:48px;" />
+            <img src="/assets/upload-cloud-2-line.svg" alt="上传" style="width:48px;height:48px;" />
         </div>
         <div class="upload-text">{{ uploadText }}</div>
         <div class="upload-tip">{{ uploadTip }}</div>
@@ -60,8 +60,6 @@
 import { ElMessage } from 'element-plus'
 import type { UploadFile } from 'element-plus'
 import { useUserStore } from '../stores/user'
-import { computed } from 'vue'
-import defaultIcon from '../assets/upload-cloud-2-line.svg'
 
 const props = defineProps({
   title: String,

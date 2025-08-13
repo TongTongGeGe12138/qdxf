@@ -1,6 +1,6 @@
 <template>
     <el-container class="layout-container">
-        <ThemeTransition ref="themeTransitionRef" />
+        <ThemeTransition />
         <el-aside :width="isCollapse ? '64px' : '200px'">
             <div class="logo-container">
                 <img :src="getIconUrl('beesfqd_ai_logo')" alt="BeesFQD Logo" class="logo-icon" />
@@ -88,7 +88,6 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const isCollapse = ref(false)
-const themeTransitionRef = ref()
 const loading = ref(false)
 const showQR = ref(false)
 
@@ -136,18 +135,8 @@ const visibleRoutes = computed(() => {
     return routes.value.filter(route => route.meta?.title && route.meta?.hidden !== true)
 })
 
-const handleThemeSwitch = (event: MouseEvent) => {
-    // 获取开关元素的位置
-    const switchEl = event.target as HTMLElement
-    const rect = switchEl.getBoundingClientRect()
-    const x = rect.left + rect.width / 2
-    const y = rect.top + rect.height / 2
-
-    // 触发过渡动画
-    if (themeTransitionRef.value) {
-        themeTransitionRef.value.startTransition({ clientX: x, clientY: y })
-    }
-
+const handleThemeSwitch = () => {
+    // Element Plus 官网式：依赖全局样式的颜色过渡，直接切换主题
     toggleDark()
 }
 const toGang = () =>{
@@ -347,6 +336,11 @@ const testLoading = () => {
     border: none !important;
     transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+:deep(.el-menu) {
+    background-color: v-bind(menuBgColor) !important;
+    border: none !important;
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 :deep(.el-menu-item) {
     border-radius: 10px;
@@ -382,10 +376,21 @@ const testLoading = () => {
     }
 }
 
+/* 彻底关闭菜单内文字与图标的过渡，避免闪烁 */
+:deep(.el-menu),
+:deep(.el-menu *),
+:deep(.el-sub-menu__title),
+:deep(.el-menu-item span),
+:deep(.el-menu-item .el-icon) {
+    transition: none !important;
+}
+
 :deep(.el-dropdown-menu),
 :deep(.el-popper.is-pure.is-light) {
     background-color: var(--dropdown-bg-color) !important;
-    border: 1px solid v-bind(borderColor) !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 :deep(.el-dropdown-menu__item) {

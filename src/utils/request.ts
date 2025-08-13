@@ -38,7 +38,7 @@ const processQueue = (error: any, token: string | null = null) => {
 // 创建 axios 实例
 const service: AxiosInstance = axios.create({
   baseURL: import.meta.env.PROD 
-    ? 'https://api-work.gatherbee.cn/api'  // 生产环境使用完整API地址
+    ? 'https://api-work.beesfpd.com/api'  // 生产环境使用完整API地址
     : (import.meta.env.VITE_API_BASE_URL || '/api'), // 开发环境使用代理
   timeout: 50000,
   headers: { 'Content-Type': 'application/json;charset=utf-8' }

@@ -47,6 +47,15 @@ const routes: Array<RouteRecordRaw> = [
         }
       },
       {
+        path: '/learning-center',
+        name: 'LearningCenter',
+        component: () => import('@/views/learning-center/index.vue'),
+        meta: {
+          title: '学习中心',
+          icon: '左栏 - 学习中心'
+        }
+      },
+      {
         path: '/account',
         name: 'Account',
         component: () => import('../views/account/index.vue'),
@@ -111,19 +120,33 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/converter',
     name: 'Converter',
-    component: () => import('../views/converter/index.vue'),
+    component: () => import('@/views/converter/index.vue'),
+    meta: { title: 'CAD工具 - BeesFPD' },
     children: [
       {
+        path: 'intro',
+        name: 'ConverterIntro',
+        component: () => import('@/views/converter/intro.vue'),
+        meta: { title: '智能消防建筑设计 - BeesFPD' }
+      },
+      {
+        path: 'image',
+        name: 'ConverterImage',
+        component: () => import('@/views/converter/image.vue'),
+        meta: { title: 'CAD转图片 - BeesFPD' }
+      },
+      {
         path: 'dwg-to-pdf',
-        name: 'ConverterDwgToPdf',
-        component: () => import('../views/converter/dwg-to-pdf.vue')
+        name: 'DwgToPdf',
+        component: () => import('@/views/converter/dwg-to-pdf.vue'),
+        meta: { title: 'CAD转PDF - BeesFPD' }
       },
       {
         path: 'pdf-to-cad',
-        name: 'ConverterPdfToCad',
-        component: () => import('../views/converter/pdf-to-cad.vue')
-      }
-      // 这里可以继续添加其他子页面
+        name: 'PdfToCad',
+        component: () => import('@/views/converter/pdf-to-cad.vue'),
+        meta: { title: 'PDF转CAD - BeesFPD' }
+      },
     ]
   },
   {
@@ -150,7 +173,7 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, _from, next) => {
   const userStore = useUserStore()
-  // /converter 及其所有子路由都不需要登录
+  // /converter 及其所有子路由不需要登录就能查看
   if (to.path.startsWith('/converter')) {
     next()
     return
@@ -179,6 +202,15 @@ router.afterEach((to, from) => {
         behavior: 'smooth'
       })
     })
+  }
+})
+
+// 动态设置页面标题
+router.afterEach((to) => {
+  if (to.meta && to.meta.title) {
+    document.title = to.meta.title as string
+  } else {
+    document.title = 'BeesFPD - 只关注消防领域的智慧云平台'
   }
 })
 

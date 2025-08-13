@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { uploadFile } from '@/api/userCenter'
-import axios from 'axios'
+import { request } from '@/utils/request'
 
 export function useFileConvert() {
   const fileId = ref<string | null>(null)
@@ -41,13 +41,13 @@ export function useFileConvert() {
   async function startConvert() {
     if (!fileId.value) return
     try {
-      const res = await axios.post(`/api/file/${fileId.value}/convert/pdf/to/dwg`)
-      if (res.data && res.data.success && res.data.data && res.data.data.taskId) {
-        taskId.value = res.data.data.taskId
+      const res = await request.post({ url: `/file/${fileId.value}/convert/pdf/to/dwg` })
+      if (res.success && res.data && res.data.taskId) {
+        taskId.value = res.data.taskId
         status.value = 'processing'
         pollProgress()
       } else {
-        throw new Error(res.data.error || '发起转换失败')
+        throw new Error(res.error || '发起转换失败')
       }
     } catch (e: any) {
       status.value = 'failed'
@@ -60,16 +60,16 @@ export function useFileConvert() {
     if (!taskId.value) return
     pollTimer && clearTimeout(pollTimer)
     try {
-      const res = await axios.get(`/api/file/task/${taskId.value}/status`)
-      if (res.data && res.data.success && res.data.data) {
-        progress.value = res.data.data.progress
+      const res = await request.get({ url: `/file/task/${taskId.value}/status` })
+      if (res.success && res.data) {
+        progress.value = res.data.progress
         if (progress.value === 100) {
           status.value = 'success'
           downloadUrl.value = `/api/file/${fileId.value}/dwg/download`
           return
-        } else if (res.data.data.status === 'failed') {
+        } else if (res.data.status === 'failed') {
           status.value = 'failed'
-          errorMessage.value = res.data.data.errorMessage || '转换失败'
+          errorMessage.value = res.data.errorMessage || '转换失败'
           return
         }
       }
@@ -83,7 +83,7 @@ export function useFileConvert() {
   // 下载
   function download() {
     if (downloadUrl.value) {
-      window.open(downloadUrl.value, '_blank')
+      window.open('https://api-work.beesfpd.com'+downloadUrl.value,'_self')
     }
   }
 

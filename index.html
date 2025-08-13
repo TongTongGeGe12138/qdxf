@@ -3,14 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.ico" />
-    <!-- 预加载样式 -->
-    <link rel="preload" href="/src/style.css" as="style">
-
-    <!-- 默认启用的主题样式，稍后会禁用并在样式加载后重新启用 -->
-    <link id="theme-stylesheet" rel="stylesheet" href="/src/style.css" disabled>
+    <script>
+      // 在样式与应用挂载前尽早设置主题类，减少首帧主题闪烁
+      (function () {
+        try {
+          var root = document.documentElement;
+          root.classList.add('disable-theme-transitions');
+          var saved = localStorage.getItem('theme');
+          // 默认亮色：仅当已保存为 dark 时才加 dark 类
+          var dark = saved ? saved === 'dark' : false;
+          if (dark) root.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
 
     <script type="text/javascript" src="./vendor/CadEngine.js" charset="utf-8"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>BeesFPD - 只关注消防领域的智慧云平台</title>
     <!-- 引入微信登录SDK -->
     <script src="https://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js"></script>
@@ -57,16 +65,7 @@
         100% { transform: rotate(360deg); }
       }
 
-      /* 在样式加载前隐藏内容 */
-      body {
-        visibility: hidden;
-      }
-       /* 防止闪烁，加载完毕后才显示内容 */
-       #app {
-        display: none;
-      }
     </style>
-    <!-- <link id="theme-stylesheet" rel="stylesheet" href="/src/style.css" onload="document.body.style.visibility = 'visible';"> -->
   </head>
   <body>
      <!-- 加载动画 -->
@@ -74,22 +73,19 @@
       <div class="loader"></div>
     </div>
 
-    <div id="app" style="display: none;"></div>
+    <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
     <script>
-      // 等待文档加载完后，启用样式并移除加载动画
-      window.addEventListener('load', function () {
-        // 启用主题样式
-        document.getElementById('theme-stylesheet').disabled = false;
-
-        // 隐藏加载动画
-        document.getElementById('loading').style.display = 'none';
-
-        // 显示页面内容
-        document.getElementById('app').style.display = 'block';
-
-        // 使页面内容可见
-        document.body.style.visibility = 'visible';
+      // DOM 就绪后尽早移除加载动画，并在两帧后移除禁用过渡类，避免突变引发动画
+      document.addEventListener('DOMContentLoaded', function () {
+        var loading = document.getElementById('loading');
+        if (loading) loading.style.display = 'none';
+        requestAnimationFrame(function(){
+          requestAnimationFrame(function(){
+            var root = document.documentElement;
+            root.classList.remove('disable-theme-transitions');
+          });
+        });
       });
     </script>
   </body>

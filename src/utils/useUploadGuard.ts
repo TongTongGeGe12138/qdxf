@@ -1,10 +1,10 @@
 import { ElMessage } from 'element-plus'
 import { useRouter, useRoute } from 'vue-router'
-import { useUserStore } from '../stores/user'
+// import { useUserStore } from '../stores/user'
 import type { UploadFile } from 'element-plus'
 
 export function useUploadGuard(maxSize: number) {
-  const userStore = useUserStore()
+  // const userStore = useUserStore()
   const router = useRouter()
   const route = useRoute()
   
