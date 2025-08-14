@@ -6,18 +6,19 @@
       <div>
         <img src="@/assets/xxzx.png" alt="">
       </div>
-      <div class="tabtitle">
+      <!-- <div class="tabtitle">
         <div class="tabs">
           <div v-for="(tab, idx) in tabs" :key="tab" class="tab" :class="{ active: activeTab === idx }" @click="onTabClick(idx)">{{ tab }}</div>
         </div>
-      </div>
+      </div> -->
       <div class="video-section">
         <div class="video-grid">
           <div class="video-card" v-for="item in videos" :key="item.id" @click="playVideo(item)">
             <div class="video-thumb">
+              <img class="video-cover" :src="getPosterUrl(item.value)" alt="cover" @error="onPosterError" />
               <div class="play-icon"></div>
             </div>
-            <div class="video-title">{{ item.title }}</div>
+            <!-- <div class="video-title">{{ item.title }}</div> -->
           </div>
         </div>
       </div>
@@ -30,6 +31,7 @@
           preload="metadata"
           class="dialog-video"
           @error="onVideoError"
+          :poster="currentVideo ? getPosterUrl(currentVideo.value) : ''"
         >
           <source v-if="isHevcSupported" :src="hevcUrl" type="video/mp4; codecs=hevc" />
           <source :src="h264Url" type="video/mp4; codecs=avc1.42E01E" />
@@ -55,31 +57,35 @@ interface VideoItem {
   value: string
 }
 
-const tabs = ref<string[]>([
-  '通用',
-  '智能建筑',
-  '智能结构',
-  '智能给排水',
-  '智能暖通',
-  '智能电气',
-  '智能消防',
-  '智能停车',
-  '智能幕墙',
-  '景观园林',
-  '工程造价',
-  '智能建造',
-  '智能审查'
-])
-const activeTab = ref<number>(0)
-const onTabClick = (idx: number) => {
-  activeTab.value = idx
-}
+// const tabs = ref<string[]>([
+//   '通用',
+//   '智能建筑',
+//   '智能结构',
+//   '智能给排水',
+//   '智能暖通',
+//   '智能电气',
+//   '智能消防',
+//   '智能停车',
+//   '智能幕墙',
+//   '景观园林',
+//   '工程造价',
+//   '智能建造',
+//   '智能审查'
+// ])
+// const activeTab = ref<number>(0)
+// const onTabClick = (idx: number) => {
+//   activeTab.value = idx
+// }
 
 const videos = ref<VideoItem[]>([
   { id: 1, title: 'firealarm', value: 'firealarm' },
   { id: 2, title: 'firedoor_monitoring', value: 'firedoor_monitoring' },
   { id: 3, title: 'lighting_evacuation', value: 'lighting_evacuation' },
-  { id: 4, title: 'lighting_evacuation', value: 'lighting_evacuation' }
+  { id: 4, title: 'lighting_evacuation', value: 'lighting_evacuation' },
+  { id: 5, title: 'extinguishing', value: 'extinguishing' },
+  { id: 6, title: 'firehose_extinguisher', value: 'firehose_extinguisher' },
+  { id: 7, title: 'rain_water_curtain', value: 'rain_water_curtain' },
+  { id: 8, title: 'sprinkler', value: 'sprinkler' },
 ])
 
 const playerVisible = ref(false)
@@ -143,6 +149,19 @@ watch(playerVisible, async (visible) => {
     currentVideo.value = null
   }
 })
+
+// 预览图（Poster）使用本地 assets
+const getPosterUrl = (value: string) => {
+  try {
+    return new URL(`../../assets/${value}.png`, import.meta.url).href
+  } catch (e) {
+    return ''
+  }
+}
+const onPosterError = (e: Event) => {
+  const img = e.target as HTMLImageElement
+  if (img) img.style.display = 'none'
+}
 </script>
 
 <style scoped lang="less">
@@ -229,10 +248,19 @@ padding-top: 20px;
 .video-thumb {
   width: 100%;
   height: 100%;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 100%);
+}
+
+.video-cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .play-icon {

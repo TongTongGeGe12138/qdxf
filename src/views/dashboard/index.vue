@@ -275,7 +275,7 @@ const getIconUrl = (name: string) => {
     }
 }
 
-// 获取视频链接（基础）
+// 获取视频链接
 const getVideoUrl = (value: string) => {
     if (!value) return '';
     const availableVideos = ['extinguishing', 'firehose_extinguisher', 'rain_water_curtain', 'sprinkler'];
@@ -285,7 +285,7 @@ const getVideoUrl = (value: string) => {
     return '';
 }
 
-// 预览视频兼容：优先 HEVC，不支持/出错回退 H264
+// 兼容播放（优先 HEVC，回退 H264）
 const previewVideoRef = ref<HTMLVideoElement | null>(null)
 const isHevcSupportedPreview = ref(true)
 const hasPreviewVideo = computed(() => !!(currentCard.value && getVideoUrl((currentCard.value as any).value)))
@@ -293,34 +293,34 @@ const previewHevcUrl = computed(() => currentCard.value ? `https://work.beesfpd.
 const previewH264Url = computed(() => currentCard.value ? `https://work.beesfpd.com/tutorials/${(currentCard.value as any).value}_h264.mp4` : '')
 
 const checkHevcSupportPreview = async () => {
-    try {
-        if ((navigator as any).mediaCapabilities?.decodingInfo) {
-            const result = await (navigator as any).mediaCapabilities.decodingInfo({
-                type: 'file',
-                video: {
-                    contentType: 'video/mp4; codecs=hevc',
-                    width: 1920,
-                    height: 1080,
-                    bitrate: 3000000,
-                    framerate: 30
-                }
-            })
-            isHevcSupportedPreview.value = !!result?.supported
-            return
+  try {
+    if ((navigator as any).mediaCapabilities?.decodingInfo) {
+      const result = await (navigator as any).mediaCapabilities.decodingInfo({
+        type: 'file',
+        video: {
+          contentType: 'video/mp4; codecs=hevc',
+          width: 1920,
+          height: 1080,
+          bitrate: 3000000,
+          framerate: 30
         }
-        const testVideo = document.createElement('video')
-        const canPlay = testVideo.canPlayType('video/mp4; codecs=hevc')
-        isHevcSupportedPreview.value = canPlay === 'probably' || canPlay === 'maybe'
-    } catch {
-        isHevcSupportedPreview.value = false
+      })
+      isHevcSupportedPreview.value = !!result?.supported
+      return
     }
+    const testVideo = document.createElement('video')
+    const canPlay = testVideo.canPlayType('video/mp4; codecs=hevc')
+    isHevcSupportedPreview.value = canPlay === 'probably' || canPlay === 'maybe'
+  } catch {
+    isHevcSupportedPreview.value = false
+  }
 }
 
 const onPreviewVideoError = () => {
-    if (isHevcSupportedPreview.value) {
-        isHevcSupportedPreview.value = false
-        nextTick(() => previewVideoRef.value?.load())
-    }
+  if (isHevcSupportedPreview.value) {
+    isHevcSupportedPreview.value = false
+    nextTick(() => previewVideoRef.value?.load())
+  }
 }
 
 // 初始化 userStore
@@ -797,7 +797,6 @@ watch(isDark, () => {
 
 onMounted(() => {
     toggleIconMode();
-    // 预检测一次 HEVC 支持，提升首次播放体验
     checkHevcSupportPreview()
 });
 
