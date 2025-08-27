@@ -697,14 +697,17 @@ async function fetchCollabFolders() {
 .sc-menu-item.active { color: v-bind(menuTextColor); font-weight: 600; }
 
 .sc-main {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
   padding: 16px 20px;
 }
 
 .sc-detail {
+  flex: 0 0 300px;
   width: 300px;
   border-left: 1px solid v-bind(desktopBboder);
   padding: 20px;
+  box-sizing: border-box;
 }
 .sc-detail .panel-title { font-size: 14px; color: v-bind(menuTextColor); margin-bottom: 12px; }
 .sc-detail .desc-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px; }
