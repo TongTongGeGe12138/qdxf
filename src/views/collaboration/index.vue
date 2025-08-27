@@ -67,38 +67,7 @@
                     <template v-else>
                         <!-- 详情模式 -->
                         <div class="dcontent-cont-left">
-                            <el-menu :default-active="activeMenu" class="side-menu" @select="handleMenuSelect">
-                                <el-menu-item index="space">
-                                    <el-icon>
-                                        <Operation />
-                                    </el-icon>
-                                    <span>协同空间</span>
-                                </el-menu-item>
-                                <el-menu-item index="members">
-                                    <el-icon>
-                                        <User />
-                                    </el-icon>
-                                    <span>人员管理</span>
-                                </el-menu-item>
-                                <el-menu-item index="tasks">
-                                    <el-icon>
-                                        <List />
-                                    </el-icon>
-                                    <span>任务管理</span>
-                                </el-menu-item>
-                                <el-menu-item index="board">
-                                    <el-icon>
-                                        <Grid />
-                                    </el-icon>
-                                    <span>进度看板</span>
-                                </el-menu-item>
-                                <el-menu-item index="back" @click="toggleDetailMode(false)">
-                                    <el-icon>
-                                        <Back />
-                                    </el-icon>
-                                    <span>返回所有项目</span>
-                                </el-menu-item>
-                            </el-menu>
+                            <ProjectDetailsAside :project="currentProject" />
                         </div>
                         <div class="dcontent-cont-count">
                             <div class="breadcrumb-container">
@@ -137,17 +106,38 @@
                             </template>
                         </div>
                         <div class="dcontent-cont-right">
-                            <div class="detail-panel">
-                                <h3>详情信息</h3>
-                                <div class="info-item">
-                                    <span class="label">名称：</span>
-                                    <span class="value">{{ currentProject?.name }}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">创建时间：</span>
-                                    <span class="value">{{ currentProject?.createdAt }}</span>
-                                </div>
-                            </div>
+                            <el-menu :default-active="activeMenu" class="side-menu" @select="handleMenuSelect">
+                                <el-menu-item index="space">
+                                    <el-icon>
+                                        <Operation />
+                                    </el-icon>
+                                    <span>协同空间</span>
+                                </el-menu-item>
+                                <el-menu-item index="members">
+                                    <el-icon>
+                                        <User />
+                                    </el-icon>
+                                    <span>人员管理</span>
+                                </el-menu-item>
+                                <el-menu-item index="tasks">
+                                    <el-icon>
+                                        <List />
+                                    </el-icon>
+                                    <span>任务管理</span>
+                                </el-menu-item>
+                                <el-menu-item index="board">
+                                    <el-icon>
+                                        <Grid />
+                                    </el-icon>
+                                    <span>进度看板</span>
+                                </el-menu-item>
+                                <el-menu-item index="back" @click="toggleDetailMode(false)">
+                                    <el-icon>
+                                        <Back />
+                                    </el-icon>
+                                    <span>返回所有项目</span>
+                                </el-menu-item>
+                            </el-menu>
                         </div>
                     </template>
                 </div>
@@ -162,6 +152,7 @@ import { Refresh, Search, Operation, User, List, Grid, Back } from '@element-plu
 import folder from '@/assets/wjj.svg?component';
 import { isDark } from '../../utils/theme'
 import { useRouter } from 'vue-router'
+// 左侧和右侧沿用原有布局：左侧菜单 + 右侧详情
 
 interface FileItem {
     id: string | number;
@@ -345,14 +336,12 @@ const breadcrumbPath = computed(() => {
 // 面包屑点击
 const handleBreadcrumbClick = (index: number) => {
     if (index === 0) {
-        // 点击"协同空间"：返回项目列表
+        // 返回项目列表
         filePath.value = ['协同空间'];
         toggleDetailMode(false);
-        router.push('/collaboration');
     } else if (index === 1) {
-        // 点击项目名：返回项目根目录（协同空间）
+        // 回到项目根目录（协同空间）
         activeMenu.value = 'space';
-        router.push('/collaboration');
     }
 };
 
@@ -365,16 +354,12 @@ const handleMenuSelect = (index: string) => {
         currentProject.value = null;
         selectedFile.value = null;
         activeMenu.value = 'space';
-        router.push('/collaboration');
     } else if (index === 'space') {
         // 协同空间：显示项目内的文件列表
         activeMenu.value = 'space';
-        // 清除路由，显示项目内容
-        router.push('/collaboration');
     } else {
-        // 其他菜单项：跳转到对应路由
+        // 其他菜单项：切换中间区域
         activeMenu.value = index;
-        router.push(`/collaboration/${index}`);
     }
 }
 

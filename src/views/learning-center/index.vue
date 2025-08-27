@@ -81,7 +81,7 @@ const videos = ref<VideoItem[]>([
   { id: 1, title: 'firealarm', value: 'firealarm' },
   { id: 2, title: 'firedoor_monitoring', value: 'firedoor_monitoring' },
   { id: 3, title: 'lighting_evacuation', value: 'lighting_evacuation' },
-  { id: 4, title: 'lighting_evacuation', value: 'lighting_evacuation' },
+  { id: 4, title: 'watermist', value: 'watermist' },
   { id: 5, title: 'extinguishing', value: 'extinguishing' },
   { id: 6, title: 'firehose_extinguisher', value: 'firehose_extinguisher' },
   { id: 7, title: 'rain_water_curtain', value: 'rain_water_curtain' },

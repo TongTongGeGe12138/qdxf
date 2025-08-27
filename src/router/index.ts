@@ -136,10 +136,16 @@ const routes: Array<RouteRecordRaw> = [
         meta: { title: 'CAD转图片 - BeesFPD' }
       },
       {
-        path: 'dwg-to-pdf',
-        name: 'DwgToPdf',
+        path: 'cad-to-pdf',
+        name: 'CadToPdf',
         component: () => import('@/views/converter/dwg-to-pdf.vue'),
         meta: { title: 'CAD转PDF - BeesFPD' }
+      },
+      {
+        path: 'cad-to-png',
+        name: 'CadToPng',
+        component: () => import('@/views/converter/dwg-to-svg.vue'),
+        meta: { title: 'CAD转PNG - BeesFPD' }
       },
       {
         path: 'pdf-to-cad',

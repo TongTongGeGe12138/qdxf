@@ -9,6 +9,8 @@
                         <div class="menu-bar" v-show="!isMobile">
                             <span class="menu-item" :class="{ active: route.path === '/converter/intro' }" @click="goMenu('/dashboard')">智能消防建筑设计</span>
                             <span class="menu-item" :class="{ active: route.path === '/converter/pdf-to-cad' }" @click="goMenu('/converter/pdf-to-cad')">PDF 转 CAD</span>
+                            <span class="menu-item" :class="{ active: route.path === '/converter/cad-to-pdf' }" @click="goMenu('/converter/cad-to-pdf')">CAD 转 PDF</span>
+                            <span class="menu-item" :class="{ active: route.path === '/converter/cad-to-png' }" @click="goMenu('/converter/cad-to-png')">CAD 转 图片</span>
                         </div>
                         <!-- 移动端下拉菜单 -->
                         <el-dropdown v-if="isMobile" trigger="click" v-model:visible="showMobileMenu">
@@ -18,6 +20,8 @@
                             <template #dropdown>
                                 <el-dropdown-menu>
                                     <el-dropdown-item @click="handleMenuSelect('/converter/pdf-to-cad')">PDF 转 CAD</el-dropdown-item>
+                                    <el-dropdown-item @click="handleMenuSelect('/converter/cad-to-pdf')">CAD 转 PDF</el-dropdown-item>
+                                    <el-dropdown-item @click="handleMenuSelect('/converter/cad-to-svg')">CAD 转 SVG</el-dropdown-item>
                                 </el-dropdown-menu>
                             </template>
                         </el-dropdown>

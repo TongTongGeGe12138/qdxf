@@ -62,7 +62,8 @@ export class VAxios {
         switch (opt.externalUrlStatus) {
           case 0:
             // 默认API地址
-            baseURL = 'https://api-work.beesfpd.com/api';
+            // baseURL = 'https://api-work.beesfpd.com/api';
+            baseURL = 'http://192.168.15.200:9400/';
             break;
           case 1:
             // 外部API地址（日志相关）- 使用api-cloud-uat.gatherbee.cn

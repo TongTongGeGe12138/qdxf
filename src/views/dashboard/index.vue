@@ -278,7 +278,7 @@ const getIconUrl = (name: string) => {
 // 获取视频链接
 const getVideoUrl = (value: string) => {
     if (!value) return '';
-    const availableVideos = ['extinguishing', 'firehose_extinguisher', 'rain_water_curtain', 'sprinkler'];
+    const availableVideos = ['extinguishing', 'firehose_extinguisher', 'rain_water_curtain', 'sprinkler','firealarm','firedoor_monitoring','lighting_evacuation','watermist'];
     if (availableVideos.includes(value)) {
         return `https://work.beesfpd.com/tutorials/${value}_h265.mp4`;
     }

@@ -62,25 +62,21 @@ export default defineConfig({
     proxy: {
       // 1. 上传相关接口，优先匹配
       '/file': {
-        // target: 'https://api-work.gatherbee.cn/',
-        target: 'https://api-work.beesfpd.com/',
+        target: 'http://192.168.15.200:9400',
         changeOrigin: true,
       },
       '/api/file': {
-        // target: 'https://api-work.gatherbee.cn/',
-        target: 'https://api-work.beesfpd.com/',
+        target: 'http://192.168.15.200:9400',
         changeOrigin: true,
       },
-      // 2. 其他 /api 走原来的服务器
+      // 2. 其他 /api 统一代理到后端根，并移除 /api 前缀
       '/api': {
-        // target: 'https://api-work.gatherbee.cn/',
         target: 'https://api-work.beesfpd.com/',
         changeOrigin: true,
         // rewrite: (path) => path.replace(/^\/api/, ''),
       },
-      // 3. 其它已有代理保持不变
+      // 3. 日志等（保持原有映射）
       [VITE_API_URL_PREFIX_LOG]: {
-        // target: 'http://api.dev.ifeng.com',
         target: 'http://api.aigc-v1.beesfpd.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/log/, '/api'),
@@ -88,3 +84,5 @@ export default defineConfig({
     },
   },
 })
+
+

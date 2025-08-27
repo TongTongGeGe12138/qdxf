@@ -72,6 +72,13 @@
                 <img :src="getIconUrl(isDark ? 'qr-dark.png' : 'qr-light.png')" alt="二维码" class="qr-image" />
             </div>
         </div>
+        <!-- 微信图标（仿照客服图标） -->
+        <div class="customer-photo-icon" @mouseenter="showPhoto = true" @mouseleave="showPhoto = false">
+            <img :src="xxxIconUrl" alt="微信" class="cs-icon" />
+            <div class="qr-code" v-show="showPhoto">
+                <img :src="ghImageUrl" alt="图片预览" class="qr-image" />
+            </div>
+        </div>
     </el-container>
 </template>
 
@@ -90,6 +97,9 @@ const userStore = useUserStore()
 const isCollapse = ref(false)
 const loading = ref(false)
 const showQR = ref(false)
+const showPhoto = ref(false)
+const ghImageUrl = new URL('../assets/gh_b35daf1fe99b_258.jpg', import.meta.url).href
+const xxxIconUrl = new URL('../assets/xxx.svg', import.meta.url).href
 
 // 本地主题状态
 const darkMode = ref(isDark.value)
@@ -492,6 +502,20 @@ const testLoading = () => {
     transform: scale(1.1);
 }
 
+/* 第二个悬浮图标：显示 gh_b35daf1fe99b_258.jpg */
+.customer-photo-icon {
+    position: fixed;
+    right: 20px;
+    bottom: 100px;
+    z-index: 1000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.customer-photo-icon:hover .cs-icon {
+    transform: scale(1.1);
+}
+
 /* 二维码样式 */
 .qr-code {
     position: absolute;
@@ -504,6 +528,11 @@ const testLoading = () => {
     width: 232px;
     height: 263px;
     display: block;
+}
+
+/* 仅为微信悬浮预览图添加圆角 */
+.customer-photo-icon .qr-image {
+    border-radius: 12px;
 }
 
 @keyframes fadeIn {
