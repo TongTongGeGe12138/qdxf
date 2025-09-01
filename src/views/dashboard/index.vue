@@ -158,7 +158,7 @@
 
     <!-- 添加卡片详情弹框 -->
     <el-dialog v-model="cardDialogVisible" width="700px" :close-on-click-modal="false"
-        class="standard-dialog app-dialog">
+        class="standard-dialog app-dialog" @closed="onAppDialogClosed">
         <el-scrollbar>
             <div class="app-dialog-content">
                 <div class="app-header">
@@ -189,7 +189,7 @@
                     </div>
                     <div class="preview-container">
                         <video
-                            v-if="hasPreviewVideo"
+                            v-if="hasPreviewVideo && playPreview"
                             ref="previewVideoRef"
                             controls
                             autoplay
@@ -249,7 +249,7 @@
 
 <script setup lang="ts">
 import { Search, Monitor, MoreFilled, Timer, Warning, Notification, Operation, ScaleToOriginal, Switch, Aim, Cpu, Smoking, Connection, Link, Right, DArrowRight,  QuestionFilled } from '@element-plus/icons-vue'
-import { computed, ref, onMounted, watch, nextTick } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { isDark } from '../../utils/theme'
 import { getAigcPrimaryList, getAigcChildrenList } from '@/api/aigc'
@@ -289,6 +289,7 @@ const getVideoUrl = (value: string) => {
 const previewVideoRef = ref<HTMLVideoElement | null>(null)
 const isHevcSupportedPreview = ref(true)
 const hasPreviewVideo = computed(() => !!(currentCard.value && getVideoUrl((currentCard.value as any).value)))
+const playPreview = ref(false)
 const previewHevcUrl = computed(() => currentCard.value ? `https://work.beesfpd.com/tutorials/${(currentCard.value as any).value}_h265.mp4` : '')
 const previewH264Url = computed(() => currentCard.value ? `https://work.beesfpd.com/tutorials/${(currentCard.value as any).value}_h264.mp4` : '')
 
@@ -321,6 +322,23 @@ const onPreviewVideoError = () => {
     isHevcSupportedPreview.value = false
     nextTick(() => previewVideoRef.value?.load())
   }
+}
+
+// 关闭弹框时停止并重置预览视频
+const stopPreviewVideo = () => {
+  const el = previewVideoRef.value
+  if (!el) return
+  try {
+    el.pause()
+    el.currentTime = 0
+    el.removeAttribute('src')
+    el.load()
+  } catch {}
+}
+
+const onAppDialogClosed = () => {
+  playPreview.value = false
+  stopPreviewVideo()
 }
 
 // 初始化 userStore
@@ -630,6 +648,7 @@ const currentCard = ref<any>(null)
 const handleCardClick = (item: ProjectItemExtended) => {
     currentCard.value = item;
     cardDialogVisible.value = true;
+    playPreview.value = true
 };
 
 // 添加计算属性
@@ -754,7 +773,8 @@ const handleLaunchClick = async () => {
             const query = `id=${data}&path=${path}${extraQuery ? `&${extraQuery}` : ''}`;
             const encodedQuery = `sign=${encodeURIComponent(RC4Encrypt(query))}`;
             // const baseUrl = import.meta.env.PROD ?'http://cloud.dev.ifeng.com':'https://cloud-uat.gatherbee.cn';
-            const baseUrl = 'https://cloud.gatherbee.cn';
+            // const baseUrl = 'https://cloud.gatherbee.cn';
+            const baseUrl = 'https://aigc.beesfpd.com';
             const basePath = card.extra.url.split('?')[0] || card.extra.url;
             const fullUrl = `${baseUrl}${basePath}#/UploadFiles?${encodedQuery}`;
 
@@ -799,6 +819,19 @@ onMounted(() => {
     toggleIconMode();
     checkHevcSupportPreview()
 });
+
+// 关闭弹框或离开页面时，确保视频停止
+watch(cardDialogVisible, (visible) => {
+  if (!visible) {
+    onAppDialogClosed()
+  }
+  if (visible) {
+    playPreview.value = true
+  }
+})
+onUnmounted(() => {
+  onAppDialogClosed()
+})
 
 // 添加计算属性来过滤secondaryList
 // type TagGroupKey = '智能给排水' | '智能电气' | '智能暖通';

@@ -21,7 +21,8 @@ export const useUserStore = defineStore('user', {
   
   getters: {
     isLoggedIn(): boolean {
-      return !!this.accessToken
+      // 兼容切页后 store 尚未恢复的场景，回退读取本地 token
+      return !!this.accessToken || !!localStorage.getItem('token')
     }
   },
   
@@ -50,6 +51,12 @@ export const useUserStore = defineStore('user', {
       if (userInfo) {
         const data = JSON.parse(userInfo)
         this.setUserInfo(data)
+        return
+      }
+      // 若 sessionStorage 为空但本地仍保留 token，则回填 store，避免 UI 误判未登录
+      const token = localStorage.getItem('token')
+      if (token) {
+        this.setUserInfo({ accessToken: token })
       }
     },
 

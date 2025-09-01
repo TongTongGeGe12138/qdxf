@@ -73,8 +73,8 @@ export function useFileConvert() {
     layouts: null as null | string[] | string,
     splitLayoutsZip: true,
     zoomToExtents: true,
-    width: 6210,
-    height: 5630,
+    width: 4096,
+    height: 4096,
     palette: 'light' as 'light' | 'dark',
     hatchAsPolygon: true,
     plotLineweights: true,
@@ -92,8 +92,8 @@ export function useFileConvert() {
     layouts: null as null | string[] | string,
     splitLayoutsZip: true,
     zoomToExtents: true,
-    width: 6210,
-    height: 5630,
+    width: 4096,
+    height: 4096,
     scaleMode: "cover",
     transparentBackground: false,
     backgroundColor: "#FFFFFF"
@@ -202,8 +202,8 @@ export function useFileConvert() {
   // 下载
   function download() {
     if (downloadUrl.value) {
-      // window.open('https://api-work.beesfpd.com'+downloadUrl.value,'_self')
-      window.open('http://192.168.15.200:9400'+downloadUrl.value,'_self')
+      window.open('https://api-work.beesfpd.com'+downloadUrl.value,'_self')
+      // window.open('http://192.168.15.200:9400'+downloadUrl.value,'_self')
     }
   }
 

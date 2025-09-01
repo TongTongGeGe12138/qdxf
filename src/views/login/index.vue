@@ -34,7 +34,7 @@
             <h2>欢迎回来</h2>
             <p class="subtitle">即刻登录使用智能绘制</p>
 
-            <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form">
+            <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form" @keyup.enter="handleLogin">
               <el-form-item prop="account">
                 <el-input v-model="loginForm.account" placeholder="账户名/手机号"
                   :class="{ 'error-input': errorMessages.account }" />
@@ -95,7 +95,7 @@
               <img :src="ssss" alt="BeesFPD" />
             </div>
             <h2 class="form-title">注册账号</h2>
-            <el-form ref="registerFormRef" :model="registerForm" :rules="registerRules" class="login-form">
+            <el-form ref="registerFormRef" :model="registerForm" :rules="registerRules" class="login-form" @keyup.enter="handleRegister(registerFormRef)">
               <el-form-item prop="mobile">
                 <el-input v-model="registerForm.mobile" placeholder="输入手机号" 
                   :class="{ 'error-input': errorMessages.mobile }" />
@@ -182,7 +182,7 @@
               <img :src="ssss" alt="BeesFPD" />
             </div>
             <h2 class="form-title" style="margin-bottom: 20px;">找回密码</h2>
-            <el-form ref="forgotFormRef" :model="forgotForm" :rules="forgotRules" class="login-form" >
+            <el-form ref="forgotFormRef" :model="forgotForm" :rules="forgotRules" class="login-form" @keyup.enter="handleResetPassword(forgotFormRef)" >
               <el-form-item prop="mobile">
                 <el-input v-model="forgotForm.mobile" placeholder="输入手机号" 
                   :class="{ 'error-input': errorMessages.mobile }" />

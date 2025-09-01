@@ -62,11 +62,13 @@ export default defineConfig({
     proxy: {
       // 1. 上传相关接口，优先匹配
       '/file': {
-        target: 'http://192.168.15.200:9400',
+        // target: 'http://192.168.15.200:9400',
+        target: 'https://api-work.beesfpd.com',
         changeOrigin: true,
       },
       '/api/file': {
-        target: 'http://192.168.15.200:9400',
+        // target: 'http://192.168.15.200:9400',
+        target: 'https://api-work.beesfpd.com',
         changeOrigin: true,
       },
       // 2. 其他 /api 统一代理到后端根，并移除 /api 前缀

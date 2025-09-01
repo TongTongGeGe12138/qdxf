@@ -32,6 +32,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/smart-computing',
         name: 'SmartComputing',
         component: () => import('@/views/smart-computing/index.vue'),
+        // component: () => import('@/views/smart-computing/test.vue'),
         meta: {
           title: '团队协同',
           icon: '左栏 - 团队协同',

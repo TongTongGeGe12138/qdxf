@@ -73,12 +73,12 @@
             </div>
         </div>
         <!-- 微信图标（仿照客服图标） -->
-        <div class="customer-photo-icon" @mouseenter="showPhoto = true" @mouseleave="showPhoto = false">
+        <!-- <div class="customer-photo-icon" @mouseenter="showPhoto = true" @mouseleave="showPhoto = false">
             <img :src="xxxIconUrl" alt="微信" class="cs-icon" />
             <div class="qr-code" v-show="showPhoto">
                 <img :src="ghImageUrl" alt="图片预览" class="qr-image" />
             </div>
-        </div>
+        </div> -->
     </el-container>
 </template>
 
@@ -97,9 +97,9 @@ const userStore = useUserStore()
 const isCollapse = ref(false)
 const loading = ref(false)
 const showQR = ref(false)
-const showPhoto = ref(false)
-const ghImageUrl = new URL('../assets/gh_b35daf1fe99b_258.jpg', import.meta.url).href
-const xxxIconUrl = new URL('../assets/xxx.svg', import.meta.url).href
+// const showPhoto = ref(false)
+// const ghImageUrl = new URL('../assets/gh_b35daf1fe99b_258.jpg', import.meta.url).href
+// const xxxIconUrl = new URL('../assets/xxx.svg', import.meta.url).href
 
 // 本地主题状态
 const darkMode = ref(isDark.value)
@@ -528,6 +528,7 @@ const testLoading = () => {
     width: 232px;
     height: 263px;
     display: block;
+    border-radius: 12px;
 }
 
 /* 仅为微信悬浮预览图添加圆角 */
