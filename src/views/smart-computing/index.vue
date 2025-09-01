@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import * as echarts from 'echarts'
 import { isDark } from '../../utils/theme'
 import { Refresh, UploadFilled, FolderAdd } from '@element-plus/icons-vue'
 import { useRoute } from 'vue-router'
@@ -325,6 +326,108 @@ const filteredTasks = computed(() => {
   // if (ownership.value === 'owned') { list = list.filter(t => t.assigneeId === currentUserId) }
   return list
 })
+// 图表容器
+const projectProgressEl = ref<HTMLDivElement | null>(null)
+const memberProgressEl = ref<HTMLDivElement | null>(null)
+let projectChart: echarts.ECharts | null = null
+let memberChart: echarts.ECharts | null = null
+function renderCharts() {
+  nextTick(() => {
+    if (projectProgressEl.value) {
+      projectChart = projectChart || echarts.init(projectProgressEl.value)
+      const starts = taskRows.value.map(t => new Date(t.actualStartDate || t.estimatedStartDate || t.startAt || Date.now()).getTime())
+      const ends = taskRows.value.map(t => new Date(t.actualEndDate || t.estimatedEndDate || t.endAt || Date.now()).getTime())
+      const min = Math.min(...starts)
+      const max = Math.max(...ends)
+      const data = taskRows.value.map((t, idx) => {
+        const s = new Date(t.actualStartDate || t.estimatedStartDate || t.startAt || Date.now()).getTime()
+        const e = new Date(t.actualEndDate || t.estimatedEndDate || t.endAt || Date.now()).getTime()
+        return [s, e, idx]
+      })
+      projectChart.setOption({
+        grid: { left: 80, right: 20, top: 30, bottom: 30 },
+        tooltip: {
+          trigger: 'item',
+          formatter: (params: any) => {
+            const idx = params.value[2]
+            const t = taskRows.value[idx]
+            const s = new Date(t.actualStartDate || t.estimatedStartDate || t.startAt || Date.now())
+            const e = new Date(t.actualEndDate || t.estimatedEndDate || t.endAt || Date.now())
+            const days = Math.max(1, Math.round((e.getTime() - s.getTime()) / (1000*60*60*24)))
+            const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+            return `${t.name || '—'}<br/>开始：${fmt(s)}<br/>结束：${fmt(e)}<br/>工期：${days} 天`
+          }
+        },
+        xAxis: { 
+          type: 'time', 
+          min, 
+          max, 
+          axisLine: { lineStyle: { color: '#ccc' } },
+          axisLabel: {
+            formatter: (val: number) => {
+              const d = new Date(val)
+              const y = d.getFullYear()
+              const m = String(d.getMonth() + 1).padStart(2, '0')
+              const day = String(d.getDate()).padStart(2, '0')
+              return `${y}-${m}-${day}`
+            }
+          }
+        },
+        yAxis: { type: 'category', data: taskRows.value.map(t => t.name || '—') },
+        series: [{
+          type: 'custom',
+          renderItem: function(params: any, api: any) {
+            const start = api.value(0)
+            const end = api.value(1)
+            const idx = api.value(2)
+            const startCoord = api.coord([start, idx])
+            const endCoord = api.coord([end, idx])
+            const barHeight = 12
+            const rectShape = echarts.graphic.clipRectByRect({
+              x: startCoord[0],
+              y: startCoord[1] - barHeight / 2,
+              width: Math.max(1, endCoord[0] - startCoord[0]),
+              height: barHeight
+            }, {
+              x: params.coordSys.x,
+              y: params.coordSys.y,
+              width: params.coordSys.width,
+              height: params.coordSys.height
+            })
+            return rectShape ? {
+              type: 'rect',
+              shape: rectShape,
+              style: api.style({ fill: '#28d0b0' })
+            } : null
+          },
+          data
+        }]
+      })
+    }
+    if (memberProgressEl.value) {
+      memberChart = memberChart || echarts.init(memberProgressEl.value)
+      const groups = new Map<string, number[]>()
+      taskRows.value.forEach(t => {
+        const key = t.assigneeName || '—'
+        const arr = groups.get(key) || []
+        arr.push(Number(t.progress ?? 0))
+        groups.set(key, arr)
+      })
+      const names = Array.from(groups.keys())
+      const values = names.map(n => Math.round((groups.get(n)!.reduce((a, b) => a + b, 0) / groups.get(n)!.length) || 0))
+      memberChart.setOption({
+        grid: { left: 100, right: 30, top: 20, bottom: 30 },
+        tooltip: {
+          trigger: 'item',
+          formatter: (p: any) => `${p.name}：${p.value}%`
+        },
+        xAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%' } },
+        yAxis: { type: 'category', data: names },
+        series: [{ type: 'bar', data: values, barWidth: 12, itemStyle: { color: '#28d0b0' } }]
+      })
+    }
+  })
+}
 function calcDurationDays(start?: string, end?: string): number | '' {
   if (!start || !end) return ''
   const s = new Date(start)
@@ -564,7 +667,8 @@ watch(() => scMenuActive.value, async (idx) => {
   } else if (idx === 2) {
     await Promise.all([fetchTasks(), fetchProjectDetail()])
   } else if (idx === 3) {
-    await fetchProjectDetail()
+    await Promise.all([fetchTasks(), fetchProjectDetail()])
+    renderCharts()
   }
 })
 
@@ -582,6 +686,8 @@ onMounted(async () => {
     await Promise.all([fetchTasks(), fetchProjectDetail()])
   } else if (scMenuActive.value === 3) {
     await fetchProjectDetail()
+    await fetchTasks()
+    renderCharts()
   }
 })
 
@@ -760,24 +866,15 @@ async function fetchCollabFolders() {
             </div>
           </main>
 
-          <!-- 进度看板视图 -->
+          <!-- 进度看板视图（改为竖排双图） -->
           <main class="sc-main" v-if="scMenuActive === 3">
-            <div class="board-wrapper">
-              <div class="board-column">
-                <div class="board-title">待办</div>
-                <div class="board-item" v-for="t in taskRows.filter(i => (i.status ?? 0) === 0)" :key="'todo-'+t.id">{{ t.name }}</div>
-                <div v-if="taskRows.filter(i => (i.status ?? 0) === 0).length === 0" class="empty-row">暂无</div>
-              </div>
-              <div class="board-column">
-                <div class="board-title">进行中</div>
-                <div class="board-item" v-for="t in taskRows.filter(i => i.status === 1)" :key="'doing-'+t.id">{{ t.name }}</div>
-                <div v-if="taskRows.filter(i => i.status === 1).length === 0" class="empty-row">暂无</div>
-              </div>
-              <div class="board-column">
-                <div class="board-title">已完成</div>
-                <div class="board-item" v-for="t in taskRows.filter(i => i.status === 2)" :key="'done-'+t.id">{{ t.name }}</div>
-                <div v-if="taskRows.filter(i => i.status === 2).length === 0" class="empty-row">暂无</div>
-              </div>
+            <div class="chart-card">
+              <div class="chart-title">当前项目进度</div>
+              <div ref="projectProgressEl" class="chart-box"></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">项目成员进度表</div>
+              <div ref="memberProgressEl" class="chart-box"></div>
             </div>
           </main>
 
@@ -1152,6 +1249,11 @@ html.dark {
 .board-column { border: 1px solid v-bind(desktopBboder); border-radius: 8px; padding: 12px; min-height: 240px; }
 .board-title { font-size: 13px; color: v-bind(menuTextColor); margin-bottom: 10px; }
 .board-item { padding: 10px 12px; border: 1px solid v-bind(desktopBboder); border-radius: 6px; margin-bottom: 10px; background: transparent; }
+
+/* 图表卡片（竖排） */
+.chart-card { border: 1px solid v-bind(desktopBboder); border-radius: 8px; padding: 12px; margin-bottom: 16px; }
+.chart-title { font-size: 13px; color: v-bind(menuTextColor); margin-bottom: 10px; }
+.chart-box { width: 100%; height: 260px; }
 
 /* 任务筛选Tab */
 .task-filters { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border: 1px solid v-bind(desktopBboder); border-radius: 8px; padding: 10px; }
