@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import { isDark } from '../../utils/theme'
-import { Refresh, UploadFilled, FolderAdd } from '@element-plus/icons-vue'
+import { Refresh, UploadFilled, FolderAdd, User, Notebook, Finished, Timer, ArrowLeftBold } from '@element-plus/icons-vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getMemberList, getProjectFoldeInfo, getProjectFile, addProjectFolder, getTaskList, createdTask, deleteTask, upDataTask, addMember } from '@/api/team'
@@ -36,7 +36,7 @@ const vTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
 const borderColor = computed(() => isDark.value ? 'transparent' : 'rgba(228, 231, 237, 0.6)')
 const menuBgColor = computed(() => isDark.value ? '#000' : '#faf9f5')
 
-const handleFileOperation = (tab: { name: string }) => {
+const handleFileOperation = async (tab: { name: string }) => {
   // 协同空间操作
   if (scMenuActive.value === 0) {
     switch (tab.name) {
@@ -62,16 +62,38 @@ const handleFileOperation = (tab: { name: string }) => {
     fetchTasks()
     return
   }
+  // 进度看板区域
+  if (scMenuActive.value === 3 && tab.name === '刷新') {
+    await fetchTasks()
+    renderCharts()
+    return
+  }
   if (scMenuActive.value === 2 && tab.name === '分配任务') {
     openAssignDialog()
   }
 }
 
-// 左侧菜单
-const scMenuItems = ref<string[]>(['协同空间', '人员管理', '任务管理', '进度看板', '返回所有项目'])
+// 左侧菜单（带图标）
+type ScMenuItem = { name: string; icon: any }
+const scMenuItems = ref<ScMenuItem[]>([
+  { name: '协同空间', icon: User },
+  { name: '人员管理', icon: Notebook },
+  { name: '任务管理', icon: Finished },
+  { name: '进度看板', icon: Timer },
+  { name: '返回所有项目', icon: ArrowLeftBold },
+])
 const scMenuActive = ref(1)
 
 function onMenuClick(index: number) {
+  // 返回所有项目
+  if (index === 4) {
+    projectId.value = null
+    selectedFolderId.value = null
+    scMenuActive.value = 0
+    ElMessage.success('已返回所有项目')
+    fetchCollabFolders()
+    return
+  }
   // 若未选择项目，禁止进入非“协同空间”菜单
   if (index !== 0 && !projectId.value) {
     ElMessage.warning('请先在协同空间中选择一个项目')
@@ -753,13 +775,28 @@ async function fetchCollabFolders() {
         <div class="sc-content">
           <aside class="sc-sider">
             <div
-              v-for="(item, index) in scMenuItems"
-              :key="item"
+              v-for="(item, index) in scMenuItems.slice(0, 4)"
+              :key="item.name"
               class="sc-menu-item"
               :class="{ active: scMenuActive === index }"
               @click="onMenuClick(index)"
             >
-              {{ item }}
+              <el-icon :size="16" style="margin-right: 8px;">
+                <component :is="item.icon" />
+              </el-icon>
+              <span>{{ item.name }}</span>
+            </div>
+            <div v-if="projectId" class="sc-menu-divider"></div>
+            <div
+              v-if="projectId"
+              class="sc-menu-item"
+              :class="{ active: scMenuActive === 4 }"
+              @click="onMenuClick(4)"
+            >
+              <el-icon :size="16" style="margin-right: 8px;">
+                <component :is="scMenuItems[4].icon" />
+              </el-icon>
+              <span>{{ scMenuItems[4].name }}</span>
             </div>
           </aside>
 
@@ -1141,17 +1178,22 @@ async function fetchCollabFolders() {
 }
 
 .sc-sider {
-  width: 145px;
-  flex: 0 0 145px;
-  min-width: 145px;
+  width: 155px;
+  flex: 0 0 155px;
+  min-width: 155px;
   border-right: 1px solid v-bind(desktopBboder);
   padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .sc-menu-item {
   height: 40px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 0 16px;
   font-size: 14px;
   color: v-bind(subTextColor);
@@ -1159,7 +1201,30 @@ async function fetchCollabFolders() {
   transition: opacity .2s;
 }
 .sc-menu-item:hover { opacity: .8; }
-.sc-menu-item.active { color: v-bind(menuTextColor); font-weight: 600; }
+.sc-menu-item.active {
+  color: #fff;
+  font-weight: 400;
+  background: inherit;
+  background-color: rgba(255, 189, 51, 1);
+  border-radius: 10px;
+  filter: drop-shadow(none);
+  transition: none;
+  font-family: "PingFangHK-Regular", "PingFang HK", sans-serif;
+  font-style: normal;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  // width: 125px;
+  height: 25px;
+  // margin: 0 auto;
+}
+
+/* 菜单分割线（仅在选择项目后显示） */
+.sc-menu-divider {
+  height: 1px;
+  background-color: v-bind(desktopBboder);
+  margin: 8px 12px;
+}
 
 .sc-main {
   flex: 1 1 auto;
