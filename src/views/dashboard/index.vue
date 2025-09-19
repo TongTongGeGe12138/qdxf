@@ -3,13 +3,39 @@
         <div class="title">👋 欢迎使用 BeesFPD</div>
         <div class="container">
             <div class="container-left">
+                <div class="left-title-g">
+                    <div style="display: flex;">
+                        <div class="main-title" style="font-size: 28px;display: flex;">智能绘制2.0
+                        </div>
+                        <div
+                            style="background: url('../../assets/beta_icon.png');width: 45px;height: 20px;box-sizing: border-box;background-size: 100% 100%;margin-left: 10px;margin-top: 10px;">
+                        </div>
+                    </div>
+
+                    <div class="sub-title">全新算法引擎重构底层架构，V2算法加持覆盖更多场景 <span
+                            style="color: #ffbd33;padding-left: 10px;text-decoration: underline; cursor: pointer;" @click="handlegoClick('more')">发布计划说明</span></div>
+                    <div class="card-grid">
+                        <div class="card" v-for="(item, index) in hvacCardListss" :key="index"
+                            @click="handleCardClick(item)">
+                            <div class="fire-icon-container" :class="isDark ? 'dark-mode' : 'light-mode'">
+                                <img v-if="item.value" :src="getIconUrl(item.value)" :alt="item.title"
+                                    class="fire-icon" />
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">{{ item.title }}</div>
+                                <div class="card-desc">{{ item.extra?.englishName }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="left-title">
                     <div class="main-title">智能绘制</div>
                     <div class="sub-title">用智能设计重新定义消防工程，五分钟解决消防点线布置</div>
                 </div>
                 <div class="search-section">
                     <div class="search-input">
-                        <el-input v-model="searchText" placeholder="搜索应用..." :prefix-icon="Search" class="search-input" />
+                        <el-input v-model="searchText" placeholder="搜索应用..." :prefix-icon="Search"
+                            class="search-input" />
                     </div>
                     <div class="tags">
                         <el-tag v-for="tag in tags" :key="tag.name" :class="{ 'is-active': activeTag === tag.name }"
@@ -63,15 +89,17 @@
                         <img :src="getIconUrl('Setting')" alt="设置" class="header-icon"
                             :class="{ 'dark-icon': isDark, 'light-icon': !isDark }" />
                         <span>消防设备选型</span>
-                        <el-icon class="expand-icon"  @click="handleEquipmentClick('more')">
+                        <el-icon class="expand-icon" @click="handleEquipmentClick('more')">
                             <MoreFilled />
                         </el-icon>
                     </div>
                     <div class="list-items">
-                        <div class="list-item" v-for="item in equipmentList" :key="item" @click="handleEquipmentClick(item)">
+                        <div class="list-item" v-for="item in equipmentList" :key="item"
+                            @click="handleEquipmentClick(item)">
                             <div class="dot"></div>{{ item }}
                         </div>
-                        <div class="list-item more" @click="handleEquipmentClick('more')">更多选型 <el-icon class="double-arrow">
+                        <div class="list-item more" @click="handleEquipmentClick('more')">更多选型 <el-icon
+                                class="double-arrow">
                                 <DArrowRight />
                             </el-icon></div>
                     </div>
@@ -81,7 +109,7 @@
                         <img :src="getIconUrl('Shop')" alt="商店" class="header-icon"
                             :class="{ 'dark-icon': isDark, 'light-icon': !isDark }" />
                         <span>消防认证供应商</span>
-                        <el-icon class="expand-icon"  @click="handleEquipmentClick('more')">
+                        <el-icon class="expand-icon" @click="handleEquipmentClick('more')">
                             <MoreFilled />
                         </el-icon>
                     </div>
@@ -99,7 +127,7 @@
     </div>
 
     <!-- 标准说明弹框 -->
-    <el-dialog v-model="dialogVisible" title="撬点智能绘制平台上传图纸标准" width="800px" :close-on-click-modal="false"
+    <el-dialog v-model="dialogVisible" title="智能绘制平台上传图纸标准" width="800px" :close-on-click-modal="false"
         class="standard-dialog">
         <el-scrollbar height="calc(100vh - 200px)">
             <div class="operate-box">
@@ -163,7 +191,7 @@
             <div class="app-dialog-content">
                 <div class="app-header">
                     <div class="app-icon fire-icon-container" :class="isDark ? 'dark-mode' : 'light-mode'">
-                        <img v-if="currentCard?.value" :src="getIconUrl(currentCard.value)" :alt="currentCard.name"
+                        <img v-if="currentCard?.value" :src="getIconUrl(currentCard.value )" :alt="currentCard.name"
                             class="fire-icon" @error="console.log('Failed to load image:', currentCard.value)" />
                     </div>
                     <div class="app-title">
@@ -174,7 +202,7 @@
                 </div>
                 <div class="app-desc">
                     {{ currentCard?.description || (currentCard?.name +
-                    '，无需本地部署，通过云端在线服务，实现智能给排水调试、喷头一键生成、管线自动布置。基于消防规范与智能算法，快速生成合规设计方案，支持多场景应用，助力企业高效完成消防系统设计与运维，降低成本与安全风险。')
+                        '，无需本地部署，通过云端在线服务，实现智能给排水调试、喷头一键生成、管线自动布置。基于消防规范与智能算法，快速生成合规设计方案，支持多场景应用，助力企业高效完成消防系统设计与运维，降低成本与安全风险。')
                     }}
                 </div>
                 <div class="app-preview">
@@ -188,25 +216,13 @@
                         </span>
                     </div>
                     <div class="preview-container">
-                        <video
-                            v-if="hasPreviewVideo && playPreview"
-                            ref="previewVideoRef"
-                            controls
-                            autoplay
-                            class="preview-video"
-                            preload="metadata"
-                            @error="onPreviewVideoError"
-                        >
+                        <video v-if="hasPreviewVideo && playPreview" ref="previewVideoRef" controls autoplay
+                            class="preview-video" preload="metadata" @error="onPreviewVideoError">
                             <source v-if="isHevcSupportedPreview" :src="previewHevcUrl" type="video/mp4; codecs=hevc" />
                             <source :src="previewH264Url" type="video/mp4; codecs=avc1.42E01E" />
                             您的浏览器不支持视频播放。
                         </video>
-                        <img 
-                            v-else 
-                            src="@/assets/operate/one.png" 
-                            alt="应用截图" 
-                            class="preview-image" 
-                        />
+                        <img v-else src="@/assets/operate/one.png" alt="应用截图" class="preview-image" />
                     </div>
                 </div>
             </div>
@@ -217,38 +233,28 @@
     </el-dialog>
 
     <!-- 权限弹框 -->
-    <el-dialog
-        v-model="permissionDialogVisible"
-        title="暂无权限"
-        width="400px"
-        :close-on-click-modal="false"
-    >
+    <el-dialog v-model="permissionDialogVisible" title="暂无权限" width="400px" :close-on-click-modal="false">
         <p style="text-align: left;">此版块功能仅限于企业版，您暂未获得使用资格</p>
         <template #footer>
-          <span class="dialog-footer">
-            <!-- <div class="dialog-button cancel" @click="permissionDialogVisible = false">取消</div> -->
-            <div class="dialog-button confirm" @click="handlePermissionClick">我已知晓</div>
-          </span>
+            <span class="dialog-footer">
+                <!-- <div class="dialog-button cancel" @click="permissionDialogVisible = false">取消</div> -->
+                <div class="dialog-button confirm" @click="handlePermissionClick">我已知晓</div>
+            </span>
         </template>
     </el-dialog>
-    <el-dialog
-        v-model="permissionDialogVisibless"
-        title="内测中"
-        width="400px"
-        :close-on-click-modal="false"
-    >
+    <el-dialog v-model="permissionDialogVisibless" title="内测中" width="400px" :close-on-click-modal="false">
         <p style="text-align: left;">此版块功能内测中，即将开放</p>
         <template #footer>
-          <span class="dialog-footer">
-            <!-- <div class="dialog-button cancel" @click="permissionDialogVisible = false">取消</div> -->
-            <div class="dialog-button confirm" @click="handlePermissionClickss">我已知晓</div>
-          </span>
+            <span class="dialog-footer">
+                <!-- <div class="dialog-button cancel" @click="permissionDialogVisible = false">取消</div> -->
+                <div class="dialog-button confirm" @click="handlePermissionClickss">我已知晓</div>
+            </span>
         </template>
     </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { Search, Monitor, MoreFilled, Timer, Warning, Notification, Operation, ScaleToOriginal, Switch, Aim, Cpu, Smoking, Connection, Link, Right, DArrowRight,  QuestionFilled } from '@element-plus/icons-vue'
+import { Search, Monitor, MoreFilled, Timer, Warning, Notification, Operation, ScaleToOriginal, Switch, Aim, Cpu, Smoking, Connection, Link, Right, DArrowRight, QuestionFilled } from '@element-plus/icons-vue'
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { isDark } from '../../utils/theme'
@@ -266,11 +272,17 @@ const router = useRouter()
 // 获取所有svg图标
 const getIconUrl = (name: string) => {
     if (!name) return '';
+    // 别名映射：新键暂时统一使用老图标
+    // const aliasMap: Record<string, string> = {
+    //     fire_water_drainage: 'sprinkler'
+    // };
+    // const normalizedName = aliasMap[name] || name;
+    const normalizedName =  name;
     try {
         // 使用动态导入
-        return new URL(`../../assets/tb/${name}.svg`, import.meta.url).href;
+        return new URL(`../../assets/tb/${normalizedName}.svg`, import.meta.url).href;
     } catch (error) {
-        console.error('Error loading icon:', name, error);
+        console.error('Error loading icon:', normalizedName, error);
         return '';
     }
 }
@@ -278,7 +290,7 @@ const getIconUrl = (name: string) => {
 // 获取视频链接
 const getVideoUrl = (value: string) => {
     if (!value) return '';
-    const availableVideos = ['extinguishing', 'firehose_extinguisher', 'rain_water_curtain', 'sprinkler','firealarm','firedoor_monitoring','lighting_evacuation','watermist'];
+    const availableVideos = ['extinguishing', 'firehose_extinguisher', 'rain_water_curtain', 'sprinkler', 'firealarm', 'firedoor_monitoring', 'lighting_evacuation', 'watermist','fire_water_drainage'];
     if (availableVideos.includes(value)) {
         return `https://work.beesfpd.com/tutorials/${value}_h265.mp4`;
     }
@@ -294,51 +306,51 @@ const previewHevcUrl = computed(() => currentCard.value ? `https://work.beesfpd.
 const previewH264Url = computed(() => currentCard.value ? `https://work.beesfpd.com/tutorials/${(currentCard.value as any).value}_h264.mp4` : '')
 
 const checkHevcSupportPreview = async () => {
-  try {
-    if ((navigator as any).mediaCapabilities?.decodingInfo) {
-      const result = await (navigator as any).mediaCapabilities.decodingInfo({
-        type: 'file',
-        video: {
-          contentType: 'video/mp4; codecs=hevc',
-          width: 1920,
-          height: 1080,
-          bitrate: 3000000,
-          framerate: 30
+    try {
+        if ((navigator as any).mediaCapabilities?.decodingInfo) {
+            const result = await (navigator as any).mediaCapabilities.decodingInfo({
+                type: 'file',
+                video: {
+                    contentType: 'video/mp4; codecs=hevc',
+                    width: 1920,
+                    height: 1080,
+                    bitrate: 3000000,
+                    framerate: 30
+                }
+            })
+            isHevcSupportedPreview.value = !!result?.supported
+            return
         }
-      })
-      isHevcSupportedPreview.value = !!result?.supported
-      return
+        const testVideo = document.createElement('video')
+        const canPlay = testVideo.canPlayType('video/mp4; codecs=hevc')
+        isHevcSupportedPreview.value = canPlay === 'probably' || canPlay === 'maybe'
+    } catch {
+        isHevcSupportedPreview.value = false
     }
-    const testVideo = document.createElement('video')
-    const canPlay = testVideo.canPlayType('video/mp4; codecs=hevc')
-    isHevcSupportedPreview.value = canPlay === 'probably' || canPlay === 'maybe'
-  } catch {
-    isHevcSupportedPreview.value = false
-  }
 }
 
 const onPreviewVideoError = () => {
-  if (isHevcSupportedPreview.value) {
-    isHevcSupportedPreview.value = false
-    nextTick(() => previewVideoRef.value?.load())
-  }
+    if (isHevcSupportedPreview.value) {
+        isHevcSupportedPreview.value = false
+        nextTick(() => previewVideoRef.value?.load())
+    }
 }
 
 // 关闭弹框时停止并重置预览视频
 const stopPreviewVideo = () => {
-  const el = previewVideoRef.value
-  if (!el) return
-  try {
-    el.pause()
-    el.currentTime = 0
-    el.removeAttribute('src')
-    el.load()
-  } catch {}
+    const el = previewVideoRef.value
+    if (!el) return
+    try {
+        el.pause()
+        el.currentTime = 0
+        el.removeAttribute('src')
+        el.load()
+    } catch { }
 }
 
 const onAppDialogClosed = () => {
-  playPreview.value = false
-  stopPreviewVideo()
+    playPreview.value = false
+    stopPreviewVideo()
 }
 
 // 初始化 userStore
@@ -513,8 +525,10 @@ const handleFireApplication = async (list: ProjectItem[]) => {
 const dialogVisible = ref(false)
 
 // 移除页面加载时自动打开弹框的逻辑
-onMounted(() => {
-    fetchData()
+onMounted(async () => {
+    await fetchData()
+    await fetchHvacCards()
+    
 })
 
 const tags = [
@@ -577,6 +591,29 @@ const hvacCardList = [
     },
 
 ]
+const hvacCardListss = ref<Array<any>>([])
+
+// 加载顶部「智能绘制2.0」卡片列表（与 fetchData 一致的展示效果）
+const fetchHvacCards = async () => {
+    try {
+        const res = await getAigcChildrenList(current.value, 2)
+        if (res?.code !== 200 || !Array.isArray(res?.data)) {
+            throw new Error('获取智能绘制2.0数据失败')
+        }
+        // 复用本页前置处理逻辑
+        const childrenData = Array.isArray(res.data) ? res.data : []
+        const processed = getAigcCadStatus(childrenData)
+        hvacCardListss.value = processed.map((it: any) => ({
+            title: it.name ?? '',
+            description: it.description ?? '',
+            icon: it.value ?? '',
+            action: 'open_app',
+            ...it
+        }))
+    } catch (error) {
+        ElMessage.error(error instanceof Error ? error.message : '获取数据失败')
+    }
+}
 
 const equipmentList = [
     '火灾自动报警系统',
@@ -631,11 +668,15 @@ const supplierList = ref<Array<Supplier>>([
 
 // 处理供应商链接点击
 const handleSupplierClick = (url: string) => {
-    window.open(url,  'noopener,noreferrer');
+    window.open(url, 'noopener,noreferrer');
 };
 const handleEquipmentClick = (item: string) => {
     console.log(item);
-    window.open('https://www.beesioe.com',  'noopener,noreferrer');
+    window.open('https://www.beesioe.com', 'noopener,noreferrer');
+}
+const handlegoClick = (item: string) => {
+    console.log(item);
+    window.open('https://www.beesfpd.com/', 'noopener,noreferrer');
 }
 
 // 添加新的响应式变量
@@ -656,21 +697,11 @@ const closeHoverColor = computed(() => isDark.value ? '#f3cc2e' : '#409eff')
 
 // 处理 CAD 状态
 const getAigcCadStatus = (data: ProjectItem[]) => {
-    console.log('进入 getAigcCadStatus 函数，原始数据:', data);
-
     const val = allList.value.filter((key: any) => key.value === current.value)[0];
-    console.log('找到的当前项:', val);
-
     if (!val) {
-        console.warn('未找到匹配的当前项，返回原始数据');
         return data;
     }
-
-    // 首先过滤掉没有 version 的项目
     const filteredData = data.filter(item => item.extra && item.extra.version);
-    console.log('过滤后的数据:', filteredData);
-
-    // 定义图标映射
     const iconMap: { [key: string]: any } = {
         'sprinkler': Timer,
         'firehose_extinguisher': Warning,
@@ -686,10 +717,9 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
         'firepump_monitoring': Connection,
         'pressurization': Smoking,
         'ventilation_pressurization': Link,
-        'smoke_control': Smoking
+        'smoke_control': Smoking,
+        'fire_water_drainage': Timer,
     };
-
-    // 定义组件分组
     const groupMap: { [key: string]: string } = {
         'sprinkler': '智能给排水',
         'firehose_extinguisher': '智能给排水',
@@ -699,6 +729,7 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
         'foam': '智能给排水',
         'deluge': '智能给排水',
         'firemonitor': '智能给排水',
+        'fire_water_drainage': '智能给排水',
         'firealarm': '智能电气',
         'lighting_evacuation': '智能电气',
         'firedoor_monitoring': '智能电气',
@@ -710,6 +741,7 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
 
     const result = filteredData.map((item: any) => {
         const newItem = { ...item };
+
         if (val.name === '智能消防' || val.name === '装饰消防') {
             newItem.contentShow = fireList.value.some(fireItem => fireItem.title === item.name);
         } else {
@@ -718,11 +750,6 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
         if (newItem.extra) {
             newItem.extra.icon = iconMap[item.value] || Monitor;
             newItem.extra.group = groupMap[item.value] || '';
-            console.log('设置项目分组:', {
-                name: newItem.name,
-                value: newItem.value,
-                group: newItem.extra.group
-            });
         }
         return newItem;
     });
@@ -741,20 +768,6 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
 // 添加启动应用点击处理函数
 const handleLaunchClick = async () => {
     const card = currentCard.value;
-    console.log('启动应用数据:', {
-        名称: card?.name,
-        值: card?.value,
-        描述: card?.description,
-        额外信息: {
-            版本: card?.extra?.version,
-            链接: card?.extra?.url,
-            提示: card?.extra?.tip,
-            英文名: card?.extra?.englishName,
-            分组: card?.extra?.group
-        },
-        显示状态: card?.contentShow
-    });
-
     if (!card?.extra?.url) {
         ElMessage.info('未配置跳转链接');
         cardDialogVisible.value = false;
@@ -822,15 +835,15 @@ onMounted(() => {
 
 // 关闭弹框或离开页面时，确保视频停止
 watch(cardDialogVisible, (visible) => {
-  if (!visible) {
-    onAppDialogClosed()
-  }
-  if (visible) {
-    playPreview.value = true
-  }
+    if (!visible) {
+        onAppDialogClosed()
+    }
+    if (visible) {
+        playPreview.value = true
+    }
 })
 onUnmounted(() => {
-  onAppDialogClosed()
+    onAppDialogClosed()
 })
 
 // 添加计算属性来过滤secondaryList
@@ -838,16 +851,10 @@ onUnmounted(() => {
 
 const filteredSecondaryList = computed(() => {
     let filtered = secondaryList.value;
-    console.log('原始列表数据:', filtered);
 
     // 标签筛选
     if (activeTag.value !== '所有') {
         filtered = filtered.filter(item => {
-            console.log('检查项目:', {
-                name: item.name,
-                value: item.value,
-                group: item.extra?.group
-            });
             return item.extra?.group === activeTag.value;
         });
     }
@@ -856,31 +863,27 @@ const filteredSecondaryList = computed(() => {
     if (searchText.value) {
         const searchLower = searchText.value.toLowerCase();
         filtered = filtered.filter(item => {
-            return item.name.toLowerCase().includes(searchLower) ||
+            return item.name.toLowerCase().includes(searchLower) || 
                 (item.description && item.description.toLowerCase().includes(searchLower)) ||
                 (item.value && item.value.toLowerCase().includes(searchLower));
         });
     }
-
-    console.log('筛选后的列表:', filtered);
     return filtered;
 });
 
 const handleTagClick = (tagName: string) => {
-    console.log('标签点击:', tagName);
     activeTag.value = tagName;
-    console.log('当前筛选后的列表:', filteredSecondaryList.value);
 };
 
 // 处理更多应用卡片点击
 const handleMoreAppCardClick = (item: any) => {
-    if(item.action === 'open_app'){
+    if (item.action === 'open_app') {
         permissionDialogVisibless.value = true;
-    }else if(item.action === 'cad'){
+    } else if (item.action === 'cad') {
         const resolvedRoute = router.resolve('/converter/pdf-to-cad');
         const targetUrl = window.location.origin + resolvedRoute.href;
         window.open(targetUrl, '_blank');
-    }else{
+    } else {
         permissionDialogVisible.value = true;
     }
     // if (item.action === 'open_app') {
@@ -948,6 +951,12 @@ const handlePermissionClickss = () => {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+}
+.left-title{
+    margin-top: 40px;
+}
+.left-title-g{
+    // margin-top: 20px;
 }
 
 .right-title {
@@ -1903,88 +1912,88 @@ const handlePermissionClickss = () => {
 }
 
 .dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
 
-  .dialog-button {
-    padding: 8px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 14px;
+    .dialog-button {
+        padding: 8px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
 
-    &.cancel {
-      background-color: #F5F5F5;
-      color: #666666;
-      border: 1px solid #E4E4E4;
+        &.cancel {
+            background-color: #F5F5F5;
+            color: #666666;
+            border: 1px solid #E4E4E4;
 
-      &:hover {
-        background-color: #E8E8E8;
-        border-color: #D4D4D4;
-      }
+            &:hover {
+                background-color: #E8E8E8;
+                border-color: #D4D4D4;
+            }
+        }
+
+        &.confirm {
+            background-color: #FABD33;
+            color: #1B2126;
+
+            &:hover {
+                background-color: rgba(249, 222, 74, 0.8);
+            }
+        }
     }
-
-    &.confirm {
-      background-color: #FABD33;
-      color: #1B2126;
-
-      &:hover {
-        background-color: rgba(249, 222, 74, 0.8);
-      }
-    }
-  }
 }
 
 html.dark {
-  .dialog-footer {
-    .dialog-button {
-      &.cancel {
-        background-color: #2B2B2B;
-        color: #C4C4D3;
-        border: 1px solid #3B3B3B;
+    .dialog-footer {
+        .dialog-button {
+            &.cancel {
+                background-color: #2B2B2B;
+                color: #C4C4D3;
+                border: 1px solid #3B3B3B;
 
-        &:hover {
-          background-color: #3B3B3B;
-          border-color: #4B4B4B;
+                &:hover {
+                    background-color: #3B3B3B;
+                    border-color: #4B4B4B;
+                }
+            }
+
+            &.confirm {
+                background-color: #FABD33;
+                color: #1B2126;
+
+                &:hover {
+                    background-color: rgba(249, 222, 74, 0.8);
+                }
+            }
         }
-      }
-
-      &.confirm {
-        background-color: #FABD33;
-        color: #1B2126;
-
-        &:hover {
-          background-color: rgba(249, 222, 74, 0.8);
-        }
-      }
     }
-  }
 }
 
 .welcome-card {
-  background-color: v-bind(cardBgColor);
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  color: v-bind(vTextColor);
+    background-color: v-bind(cardBgColor);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: v-bind(vTextColor);
 }
 
 .welcome-card h2 {
-  margin: 0 0 10px;
+    margin: 0 0 10px;
 }
 
 .welcome-card p {
-  margin: 0;
+    margin: 0;
 }
 
 .welcome-card .highlight {
-  color: #ff9900;
-  font-weight: bold;
+    color: #ff9900;
+    font-weight: bold;
 }
 
 .stat-cards {
-  display: grid;
-  // ... existing code ...
+    display: grid;
+    // ... existing code ...
 }
 </style>

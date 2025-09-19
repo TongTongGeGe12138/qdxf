@@ -5,7 +5,7 @@ import { isDark } from '../../utils/theme'
 import { Refresh, UploadFilled, FolderAdd, User, Notebook, Finished, Timer, ArrowLeftBold } from '@element-plus/icons-vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getMemberList, getProjectFoldeInfo, getProjectFile, addProjectFolder, getTaskList, createdTask, deleteTask, upDataTask, addMember } from '@/api/team'
+import { getMemberList, getProjectFoldeInfo, getProjectFile, addProjectFolder, getTaskList, createdTask, deleteTask, upDataTask, addMember, addProjectFile } from '@/api/team'
 import { getProvinceList, getCityList } from '@/api/location'
 import ProjectDetailsAside from '@/components/ProjectDetailsAside.vue'
 
@@ -26,6 +26,8 @@ const rightTabs = computed(() => {
 })
 const searchValue = ref('')
 const operationLoading = ref(false)
+const fileInputRef = ref<HTMLInputElement | null>(null)
+let searchTimer: number | null = null
 
 // 主题变量（与 desktop 页一致）
 const cardBgColor = computed(() => isDark.value ? '#000' : '#faf9f5')
@@ -44,7 +46,7 @@ const handleFileOperation = async (tab: { name: string }) => {
         fetchCollabFolders()
         break
       case '上传':
-        ElMessage.info('上传：功能待接入')
+        fileInputRef.value?.click()
         break
       case '新建':
         openCreateDialog()
@@ -71,6 +73,36 @@ const handleFileOperation = async (tab: { name: string }) => {
   if (scMenuActive.value === 2 && tab.name === '分配任务') {
     openAssignDialog()
   }
+}
+
+function handleRootUploadChange(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input?.files?.[0]
+  if (!file) return
+  // 5MB 限制
+  const MAX_SIZE = 5 * 1024 * 1024
+  if (file.size > MAX_SIZE) {
+    ElMessage.warning('文件不能超过 5MB')
+    input.value = ''
+    return
+  }
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  operationLoading.value = true
+  addProjectFile(formData)
+    .then(async () => {
+      ElMessage.success('上传成功')
+      await fetchCollabFolders()
+    })
+    .catch(() => {
+      ElMessage.error('上传失败')
+    })
+    .finally(() => {
+      operationLoading.value = false
+      if (input) input.value = ''
+    })
 }
 
 // 左侧菜单（带图标）
@@ -164,6 +196,15 @@ const projectDetail = ref({
   createdAt: '2025-05-23'
 })
 const folderIcon = '/src/assets/file-icons/folder-large.svg'
+function getFileIcon(ext?: string) {
+  const e = (ext || '').toLowerCase()
+  if (e === 'dwg') return '/src/assets/DWG.svg'
+  if (e === 'pdf') return '/src/assets/PDF.svg'
+  if (e === 'png') return '/src/assets/PNG.png'
+  if (e === 'jpg' || e === 'jpeg') return '/src/assets/PNG.png'
+  if (e === 'svg') return '/src/assets/SVG.png'
+  return '/src/assets/simplified_document_icon.svg'
+}
 
 // 新建项目弹框（与 desktop 保持一致）
 const createDialogVisible = ref(false)
@@ -311,6 +352,8 @@ type TaskItem = {
 }
 const taskRows = ref<TaskItem[]>([])
 const tasksLoading = ref(false)
+const showTasksLoading = ref(false)
+let tasksLoadingTimer: number | null = null
 const taskStatus = ref<number | 'all'>('all')
 const statusTabs = ref([
   { label: '所有', value: 'all' as const },
@@ -351,8 +394,8 @@ const filteredTasks = computed(() => {
 // 图表容器
 const projectProgressEl = ref<HTMLDivElement | null>(null)
 const memberProgressEl = ref<HTMLDivElement | null>(null)
-let projectChart: echarts.ECharts | null = null
-let memberChart: echarts.ECharts | null = null
+let projectChart: any = null
+let memberChart: any = null
 function renderCharts() {
   nextTick(() => {
     if (projectProgressEl.value) {
@@ -463,6 +506,8 @@ function calcDurationDays(start?: string, end?: string): number | '' {
 async function fetchTasks() {
   if (!projectId.value) return
   tasksLoading.value = true
+  if (tasksLoadingTimer) window.clearTimeout(tasksLoadingTimer)
+  tasksLoadingTimer = window.setTimeout(() => { showTasksLoading.value = true }, 250)
   try {
     const res: any = await getTaskList({ projectId: projectId.value, page: 1, pageSize: 1000 })
     if (res && (res.code === 200 || res.success)) {
@@ -502,6 +547,8 @@ async function fetchTasks() {
     }
   } finally {
     tasksLoading.value = false
+    if (tasksLoadingTimer) window.clearTimeout(tasksLoadingTimer)
+    tasksLoadingTimer = window.setTimeout(() => { showTasksLoading.value = false }, 120)
   }
 }
 
@@ -694,6 +741,15 @@ watch(() => scMenuActive.value, async (idx) => {
   }
 })
 
+// 协同空间搜索防抖
+watch(() => searchValue.value, () => {
+  if (scMenuActive.value !== 0) return
+  if (searchTimer) window.clearTimeout(searchTimer)
+  searchTimer = window.setTimeout(() => {
+    fetchCollabFolders()
+  }, 300)
+})
+
 onMounted(async () => {
   resolveProjectId()
   if (!projectId.value) {
@@ -714,9 +770,11 @@ onMounted(async () => {
 })
 
 // 协同空间目录
-type FolderItem = { id: string | number; name: string }
+type FolderItem = { id: string | number; name: string; type?: 'folder' | 'file'; ext?: string }
 const collabFolders = ref<FolderItem[]>([])
 const collabLoading = ref(false)
+const showCollabLoading = ref(false)
+let collabLoadingTimer: number | null = null
 const selectedFolderId = ref<string | number | null>(null)
 function onFolderSelect(f: FolderItem) {
   selectedFolderId.value = f.id
@@ -728,19 +786,29 @@ function onFolderSelect(f: FolderItem) {
 async function fetchCollabFolders() {
   try {
     collabLoading.value = true
+    if (collabLoadingTimer) window.clearTimeout(collabLoadingTimer)
+    collabLoadingTimer = window.setTimeout(() => { showCollabLoading.value = true }, 250)
     // 使用目录接口参数：/team/project/resource?page=1&pageSize=16&search=&folders=false
     const res: any = await getProjectFile({ page: 1, pageSize: 16, search: searchValue.value || '', folders: false })
     const list = (res?.data?.data || res?.data?.list || res?.data || []) as any[]
     const rows = Array.isArray(list) ? list : []
-    const onlyFolders = rows.filter((it: any) => it?.type === 'folder' || it?.contentType === 0 || it?.length === 0)
-    collabFolders.value = onlyFolders.map((it: any, i: number) => ({
-      id: it.id ?? it.folderId ?? i + 1,
-      name: it.name || it.folderName || it.title || '未命名文件夹',
-    }))
+    collabFolders.value = rows.map((it: any, i: number) => {
+      const name = it.name || it.folderName || it.title || '未命名'
+      const isFolder = it?.type === 'folder' || it?.contentType === 0 || it?.length === 0
+      const ext = typeof name === 'string' && name.includes('.') ? (name.split('.').pop() || '').toLowerCase() : ''
+      return {
+        id: it.id ?? it.folderId ?? i + 1,
+        name,
+        type: isFolder ? 'folder' : 'file',
+        ext,
+      } as FolderItem
+    })
   } catch (e) {
     ElMessage.error('获取协同空间目录失败')
   } finally {
     collabLoading.value = false
+    if (collabLoadingTimer) window.clearTimeout(collabLoadingTimer)
+    collabLoadingTimer = window.setTimeout(() => { showCollabLoading.value = false }, 120)
   }
 }
 </script>
@@ -761,7 +829,7 @@ async function fetchCollabFolders() {
             </div>
           </div>
           <div class="dcontent-top-right">
-            <el-input v-model="searchValue" placeholder="搜索项目或文件" class="search-input" clearable size="small" />
+            <el-input v-model="searchValue" placeholder="搜索项目或文件" class="search-input" clearable size="small" @keyup.enter="scMenuActive === 0 && fetchCollabFolders()" />
             <div class="right-tabs">
               <div v-for="tab in rightTabs" :key="tab.name" class="right-tab">
                 <el-icon :size="18" style="margin-right: 4px;">
@@ -770,6 +838,13 @@ async function fetchCollabFolders() {
                 <span @click="handleFileOperation(tab)" :class="{ 'loading': operationLoading }">{{ tab.name }}</span>
               </div>
             </div>
+            <!-- 隐藏上传输入：仅支持单文件上传，限制大小 5MB -->
+            <input
+              ref="fileInputRef"
+              type="file"
+              style="display:none"
+              @change="handleRootUploadChange"
+            />
           </div>
         </div>
         <div class="sc-content">
@@ -837,10 +912,10 @@ async function fetchCollabFolders() {
           </main>
 
           <main class="sc-main" v-else-if="scMenuActive === 0">
-            <div class="folder-grid" v-loading="collabLoading">
+            <div class="folder-grid" v-loading="showCollabLoading">
               <div class="folder-item" v-for="f in collabFolders" :key="f.id" :class="{ 'is-selected': selectedFolderId === f.id }" @click="onFolderSelect(f)">
                 <div class="folder-icon">
-                  <img :src="folderIcon" alt="folder" />
+                  <img :src="f.type === 'folder' ? folderIcon : getFileIcon(f.ext)" :alt="f.type === 'folder' ? 'folder' : 'file'" />
                 </div>
                 <div class="folder-name">{{ f.name }}</div>
               </div>
@@ -869,7 +944,7 @@ async function fetchCollabFolders() {
                 </label>
               </div>
             </div>
-            <div class="task-table-wrapper" v-loading="tasksLoading">
+            <div class="task-table-wrapper" v-loading="showTasksLoading">
               <div class="task-table-scroll">
                 <div class="task-table">
                   <div class="thead">
@@ -894,7 +969,7 @@ async function fetchCollabFolders() {
                           v-if="(t.ownerId && t.assigneeId) ? (t.ownerId === t.assigneeId) : (t.ownerName === t.assigneeName)"
                           @click.stop="handleTaskOperation('提交进度', t)"
                         >提交进度</span>
-                      </div>
+                      </div>  
                     </div>
                     <div v-if="filteredTasks.length === 0" class="empty-row">暂无任务</div>
                   </div>

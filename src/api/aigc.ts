@@ -11,7 +11,7 @@ const Api = {
  */
 export function getAigcPrimaryList(): Promise<ProjectListResult> {
   return request.get<ProjectListResult>({
-    url: Api.AigcUrl
+    url: Api.AigcUrl,
   });
 }
 
@@ -19,9 +19,10 @@ export function getAigcPrimaryList(): Promise<ProjectListResult> {
  * 获取AIGC组件分类（子级）
  * @param categoryPath - 分类路径
  */
-export function getAigcChildrenList(categoryPath: string): Promise<ProjectListResult> {
+export function getAigcChildrenList(categoryPath: string | number ,version?: number): Promise<ProjectListResult> {
   return request.get<ProjectListResult>({
-    url: `${Api.AigcUrl}/${categoryPath}`
+    url: `${Api.AigcUrl}/${categoryPath}`,
+    params: version !== undefined ? { version } : undefined
   });
 }
 

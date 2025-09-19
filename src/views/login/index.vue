@@ -9,13 +9,13 @@
       </div>
       <div class="right">
         <!-- 动画容器，绝对定位覆盖表单 -->
-        <transition name="fade-out">
+        <!-- <transition name="fade-out">
           <div
             v-show="!showLoginForm"
             ref="animationContainer"
             class="animation-overlay"
           ></div>
-        </transition>
+        </transition> -->
         <!-- 登录表单容器始终渲染 -->
         <div class="form-container">
           <!-- <div class="login-type-switch">
