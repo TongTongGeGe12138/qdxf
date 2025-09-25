@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- 主配电箱 -->
+                <rect x="8" y="5" width="8" height="12" fill="#34495E" stroke="#2C3E50" stroke-width="0.3" rx="0.8"/>
+                <rect x="8.2" y="5.2" width="7.6" height="11.6" fill="#5D6D7E" rx="0.6"/>
+                
+                <!-- 配电箱面板 -->
+                <rect x="9" y="6.5" width="6" height="9" fill="#1C1C1C" stroke="#404040" stroke-width="0.2" rx="0.3"/>
+                <rect x="9.2" y="6.7" width="5.6" height="8.6" fill="#2C2C2C"/>
+                
+                <!-- 断路器开关 -->
+                <rect x="9.8" y="7.5" width="1.2" height="1.5" fill="#27AE60" rx="0.2"/>
+                <rect x="11.4" y="7.5" width="1.2" height="1.5" fill="#27AE60" rx="0.2"/>
+                <rect x="13" y="7.5" width="1.2" height="1.5" fill="#E74C3C" rx="0.2"/>
+                
+                <rect x="9.8" y="9.5" width="1.2" height="1.5" fill="#F39C12" rx="0.2"/>
+                <rect x="11.4" y="9.5" width="1.2" height="1.5" fill="#27AE60" rx="0.2"/>
+                <rect x="13" y="9.5" width="1.2" height="1.5" fill="#27AE60" rx="0.2"/>
+                
+                <!-- LED指示灯 -->
+                <circle cx="10.4" cy="13" r="0.3" fill="#00FF00"/>
+                <circle cx="12" cy="13" r="0.3" fill="#00FF00"/>
+                <circle cx="13.6" cy="13" r="0.3" fill="#FFD700"/>
+                
+                <!-- 电路线缆 -->
+                <path d="M5 9 Q6 8 7 9 Q8 10 8 11" stroke="#FF6B35" stroke-width="0.6" fill="none"/>
+                <path d="M16 11 Q17 10 18 11 Q19 12 19 13" stroke="#FF6B35" stroke-width="0.6" fill="none"/>
+                <path d="M5 13 Q6 12 7 13 Q8 14 8 15" stroke="#4A90E2" stroke-width="0.6" fill="none"/>
+                
+                <!-- 接地线 -->
+                <path d="M12 17 L12 19 M11.5 19 L12.5 19 M11.7 19.3 L12.3 19.3 M11.9 19.6 L12.1 19.6" stroke="#2C3E50" stroke-width="0.3" fill="none"/>
+                
+                <!-- 电源插座 -->
+                <rect x="3" y="15" width="2.5" height="2" fill="#F8F9FA" stroke="#BDC3C7" stroke-width="0.2" rx="0.3"/>
+                <circle cx="3.7" cy="15.7" r="0.2" fill="#2C3E50"/>
+                <circle cx="4.3" cy="15.7" r="0.2" fill="#2C3E50"/>
+                <rect x="3.9" y="16.3" width="0.2" height="0.5" fill="#2C3E50"/>
+                
+                <!-- 电压表 -->
+                <circle cx="3.5" cy="11" r="1.2" fill="#F8F9FA" stroke="#BDC3C7" stroke-width="0.2"/>
+                <circle cx="3.5" cy="11" r="0.9" fill="#FFFFFF"/>
+                <text x="3.5" y="11.3" text-anchor="middle" fill="#2C3E50" font-size="0.6" font-weight="bold">380V</text>
+                
+                <!-- AI智能芯片标识 -->
+                <rect x="13.5" y="14" width="2.8" height="1.2" fill="#9B59B6" rx="0.3"/>
+                <rect x="13.7" y="14.2" width="2.4" height="0.8" fill="#8E44AD" rx="0.2"/>
+                <text x="14.9" y="14.7" text-anchor="middle" fill="#FFFFFF" font-size="0.7" font-weight="bold">AI</text>
+                <circle cx="13.9" cy="14.4" r="0.06" fill="#FFFFFF" opacity="0.8"/>
+                <circle cx="15.9" cy="14.4" r="0.06" fill="#FFFFFF" opacity="0.8"/>
+                <circle cx="14.9" cy="14.3" r="0.05" fill="#00FF00" opacity="0.9"/>
+                
+                <!-- 数据传输线 -->
+                <path d="M16.3 14.5 Q17.2 14 18.5 14.2" stroke="#3498DB" stroke-width="0.3" stroke-dasharray="0.3,0.3" fill="none"/>
+            </svg>

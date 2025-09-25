@@ -290,7 +290,7 @@ const getIconUrl = (name: string) => {
 // 获取视频链接
 const getVideoUrl = (value: string) => {
     if (!value) return '';
-    const availableVideos = ['extinguishing', 'firehose_extinguisher', 'rain_water_curtain', 'sprinkler', 'firealarm', 'firedoor_monitoring', 'lighting_evacuation', 'watermist','fire_water_drainage'];
+    const availableVideos = ['extinguishing', 'firehose_extinguisher', 'rain_water_curtain', 'sprinkler', 'firealarm', 'firedoor_monitoring', 'lighting_evacuation', 'watermist','fire_water_v2','fire_electrical_v2','fire_hvac_v2','fire_decoration_v2'];
     if (availableVideos.includes(value)) {
         return `https://work.beesfpd.com/tutorials/${value}_h265.mp4`;
     }
@@ -718,7 +718,7 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
         'pressurization': Smoking,
         'ventilation_pressurization': Link,
         'smoke_control': Smoking,
-        'fire_water_drainage': Timer,
+        // 'fire_water_v2': Timer,
     };
     const groupMap: { [key: string]: string } = {
         'sprinkler': '智能给排水',
@@ -729,7 +729,10 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
         'foam': '智能给排水',
         'deluge': '智能给排水',
         'firemonitor': '智能给排水',
-        'fire_water_drainage': '智能给排水',
+        'fire_water_v2': '智能给排水',
+        'fire_electrical_v2': '智能给排水',
+        'fire_hvac_v2': '智能给排水',
+        'fire_decoration_v2': '智能给排水',
         'firealarm': '智能电气',
         'lighting_evacuation': '智能电气',
         'firedoor_monitoring': '智能电气',
