@@ -21,6 +21,7 @@ import {
   addProjectResourceFile,
   getProjectResourceFile,
   addProjectResource,
+  addThirdResource,
   editProjectResource,
   getProjectFoldeInfo
 } from '@/api/project';
@@ -397,6 +398,7 @@ const handleFileSelected = async (file: FileItem) => {
     }
   }
 }
+
 
 // 计算背景色
 const cardBgColor = computed(() => isDark.value ? '#000' : '#faf9f5')
@@ -811,20 +813,6 @@ const handleConfirmOperation = async () => {
       }
 
       try {
-        console.log('开始创建项目...');
-        console.log('createProjectForm.value:', createProjectForm.value);
-        console.log('selectedProvince.value:', selectedProvince.value);
-        console.log('selectedCity.value:', selectedCity.value);
-        console.log('operationType.value:', operationType.value);
-        console.log('fileLibraryStore.currentPath.length:', fileLibraryStore.currentPath.length);
-        
-        // 检查表单数据的有效性
-        console.log('表单数据检查:');
-        console.log('- name:', createProjectForm.value.name);
-        console.log('- selectedProvince:', createProjectForm.value.selectedProvince);
-        console.log('- selectedCity:', createProjectForm.value.selectedCity);
-        console.log('- clientName:', createProjectForm.value.clientName);
-        
         const params = {
           name: createProjectForm.value.name,
           locationId: createProjectForm.value.selectedProvince,
@@ -855,45 +843,43 @@ const handleConfirmOperation = async () => {
         operationLoading.value = false;
         return;
       }
-    } else {
-      // 二级及n级目录创建文件夹
-      if (!renameValue.value) {
-        ElMessage.warning('请输入文件夹名称');
-        operationLoading.value = false;
-        return;
-      }
-      try {
-        if (!fileLibraryStore.projectId) {
-          throw new Error('项目ID不存在');
+      } else {
+        // 二级及n级目录创建文件夹
+        if (!renameValue.value) {
+          ElMessage.warning('请输入文件夹名称');
+          operationLoading.value = false;
+          return;
         }
+        try {
+          if (!fileLibraryStore.projectId) {
+            throw new Error('项目ID不存在');
+          }
 
-        // 获取当前文件夹ID（面包屑最后一级）
-        const currentFolderId = fileLibraryStore.folderPath[fileLibraryStore.folderPath.length - 1]?.id;
-        if (!currentFolderId) {
-          throw new Error('当前文件夹ID不存在');
+          // 获取当前文件夹ID（面包屑最后一级）
+          const currentFolderId = fileLibraryStore.folderPath[fileLibraryStore.folderPath.length - 1]?.id;
+          if (!currentFolderId) {
+            throw new Error('当前文件夹ID不存在');
+          }
+
+        // 根据当前路径层级选择不同的API
+        if (fileLibraryStore.currentPath.length === 1) {
+          // 第二层：使用 addProjectResource（项目根目录下创建文件夹）
+          await addProjectResource({
+            projectId: fileLibraryStore.projectId,
+            name: renameValue.value
+          });
+        } else {
+          // 第三层及以上：使用 addThirdResource（子文件夹中创建文件夹）
+          await addThirdResource({
+            projectId: fileLibraryStore.projectId,
+            folderId: currentFolderId,
+            name: renameValue.value
+          });
         }
-
-        // 使用addProjectResource接口创建文件夹
-        await addProjectResource({
-          projectId: fileLibraryStore.projectId,
-          name: renameValue.value
-        });
+        
         ElMessage.success('创建成功');
-        // 刷新列表
-        const res = await getProjectResourceFile({
-          projectId: fileLibraryStore.projectId,
-          folderId: currentFolderId,
-          page: 1,
-          pageSize: 20,
-          search: searchValue.value
-        });
-        if (res.code === 200) {
-          const list = res.data.data.map((item: any) => ({
-            ...item,
-            type: isFolder(item) ? 'folder' : 'file'
-          }));
-          fileLibraryStore.setLibraryList(list || []);
-        }
+        // 刷新列表 - 使用store的refreshCurrentList方法
+        await fileLibraryStore.refreshCurrentList(1, 20);
       } catch (error) {
         ElMessage.error('创建失败');
         operationLoading.value = false;
@@ -925,8 +911,34 @@ const handleConfirmOperation = async () => {
         if (!file.id) {
           throw new Error('文件ID不存在');
         }
+        // 回收站还原：根据文件类型确定正确的projectId
+        let recoverProjectId;
+        
+        if (file.type === 'folder') {
+          // 文件夹还原：
+          // 1. 如果是第一层项目文件夹，使用自身ID作为projectId
+          // 2. 如果是子文件夹，尝试从多个可能的字段获取项目ID
+          recoverProjectId = file.projectId || file.folderId || file.id;
+        } else {
+          // 文件还原：
+          // 1. 优先使用 projectId 字段
+          // 2. 其次使用 folderId 字段（可能是父文件夹ID）
+          // 3. 最后使用 fileId 或 id 字段
+          recoverProjectId = file.projectId || file.folderId || file.fileId || file.id;
+        }
+        
+        console.log('还原文件信息:', {
+          fileId: file.id,
+          fileName: file.name,
+          fileType: file.type,
+          projectId: file.projectId,
+          folderId: file.folderId,
+          originalFileId: file.fileId,
+          selectedProjectId: recoverProjectId
+        });
+        
         await recoverFile({
-          projectId: file.id,
+          projectId: recoverProjectId,
           id: file.id
         });
         ElMessage.success('还原成功');
@@ -938,37 +950,116 @@ const handleConfirmOperation = async () => {
           if (!file.id) {
             throw new Error('文件夹ID不存在');
           }
-          await deleteProjectFolder(file.id);
+          // 根据当前路径层级选择不同的删除逻辑
+          if (fileLibraryStore.currentPath.length === 0) {
+            // 第一层目录：直接删除项目文件夹
+            await deleteProjectFolder(file.id);
+          } else {
+            // 子目录：需要传递projectId
+            if (!fileLibraryStore.projectId) {
+              throw new Error('项目ID不存在');
+            }
+            await deleteProjectFolder(file.id);
+          }
         } else {
           if (!file.id) {
             throw new Error('文件ID不存在');
           }
-          await deleteProjectResourceFile({
-            projectId: file.id,
-            fileId: file.id
-          });
+          // 根据当前路径层级选择不同的删除参数
+          if (fileLibraryStore.currentPath.length === 0) {
+            // 第一层目录：直接使用文件ID作为项目ID
+            await deleteProjectResourceFile({
+              projectId: file.id,
+              fileId: file.id
+            });
+          } else {
+            // 子目录：使用当前项目ID
+            if (!fileLibraryStore.projectId) {
+              throw new Error('项目ID不存在');
+            }
+            await deleteProjectResourceFile({
+              projectId: fileLibraryStore.projectId,
+              fileId: file.id
+            });
+          }
         }
         ElMessage.success('删除成功');
         // 刷新回收站列表
         await getTrashList(searchValue.value);
+
+        // 如果当前在回收站且删除成功后列表为空，自动回到第一级目录
+        if (activeIndex.value === 2) {
+          const trashRes = await getTrashedList({
+            page: 1,
+            pageSize: 20,
+            search: searchValue.value
+          });
+          if (trashRes.code === 200 && trashRes.data.data.length === 0) {
+            // 如果回收站为空，切换到我的项目
+            activeIndex.value = 0;
+            fileLibraryStore.currentPath = [];
+            fileLibraryStore.projectId = null;
+            fileLibraryStore.folderPath = [];
+            // 刷新项目列表
+            const projectRes = await getProjectFile({
+              page: 1,
+              pageSize: 20,
+              search: searchValue.value
+            });
+            if (projectRes.code === 200) {
+              const list = projectRes.data.data.map((item: any) => ({
+                ...item,
+                type: isFolder(item) ? 'folder' : 'file'
+              }));
+              fileLibraryStore.setLibraryList(list || []);
+              fileLibraryStore.setTotal(projectRes.data.total || 0);
+            }
+          }
+        }
         break;
       case 'trash':
         if (file.type === 'folder') {
           if (!file.id) {
             throw new Error('文件夹ID不存在');
           }
-          await transhFile({
-            projectId: file.id,
-            id: file.id
-          });
+          // 根据当前路径层级选择不同的删除参数
+          if (fileLibraryStore.currentPath.length === 0) {
+            // 第一层目录：直接使用文件夹ID作为项目ID
+            await transhFile({
+              projectId: file.id,
+              id: file.id
+            });
+          } else {
+            // 子目录：使用当前项目ID
+            if (!fileLibraryStore.projectId) {
+              throw new Error('项目ID不存在');
+            }
+            await transhFile({
+              projectId: fileLibraryStore.projectId,
+              id: file.id
+            });
+          }
         } else {
           if (!file.id) {
             throw new Error('文件ID不存在');
           }
-          await transhFile({
-            projectId: file.id,
-            id: file.id
-          });
+          // 根据当前路径层级选择不同的删除参数
+          if (fileLibraryStore.currentPath.length === 0) {
+            // 第一层目录：直接使用文件ID作为项目ID
+            await transhFile({
+              projectId: file.id,
+              id: file.id
+            });
+          } else {
+            // 子目录：使用当前项目ID
+            if (!fileLibraryStore.projectId) {
+              throw new Error('项目ID不存在');
+            }
+            await transhFile({
+              projectId: fileLibraryStore.projectId,
+              id: file.id
+            });
+          }
         }
         ElMessage.success('已放入回收站');
         // 刷新列表
@@ -984,6 +1075,13 @@ const handleConfirmOperation = async () => {
             type: isFolder(item) ? 'folder' : 'file'
           }));
           fileLibraryStore.setLibraryList(list || []);
+
+          // 如果当前在子目录且删除成功后回到第一级，自动重置路径
+          if (fileLibraryStore.currentPath.length > 0) {
+            fileLibraryStore.currentPath = [];
+            fileLibraryStore.projectId = null;
+            fileLibraryStore.folderPath = [];
+          }
         }
         break;
       case 'upload':
@@ -1323,6 +1421,9 @@ onUnmounted(() => {
           <el-input v-model="createProjectForm.clientName" placeholder="请输入建设方/委托方" />
         </el-form-item>
       </el-form>
+    </template>
+    <template v-else-if="operationType === 'create' && fileLibraryStore.currentPath.length > 0">
+      <el-input v-model="renameValue" placeholder="请输入文件夹名称" />
     </template>
     <template v-else-if="operationType === 'edit'">
       <el-form :model="formDatassss" label-width="130px">

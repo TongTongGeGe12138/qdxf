@@ -55,6 +55,7 @@ export class VAxios {
 
     // 根据 externalUrlStatus 动态设置 baseURL
     if (opt.externalUrlStatus !== undefined) {
+      console.log(opt.externalUrlStatus,999999);
       let baseURL = '';
       
       if (import.meta.env.PROD) {
@@ -90,6 +91,9 @@ export class VAxios {
           case 2:
             // CAD API地址
             baseURL = opt.externalUrlPrefixCad || '/cad';
+            break;
+          case 3:
+            baseURL = '/test';
             break;
           default:
             baseURL = opt.apiUrl || '/api';

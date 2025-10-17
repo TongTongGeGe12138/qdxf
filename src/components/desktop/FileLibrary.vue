@@ -154,8 +154,7 @@ const showPagination = computed(() => {
 
 // 计算属性：根据当前路径层级决定显示内容
 const files = computed<FileItem[]>(() => {
-  const actualPath = filePath.value?.slice(1) || [];
-  const showBackButton = actualPath.length > 0;
+  const showBackButton = fileLibraryStore.currentPath.length > 0;
   const currentList = fileLibraryStore.libraryList || [];
   if (showBackButton) {
     return [{ id: 0, name: '返回上级', type: 'back' as const }, ...currentList];
