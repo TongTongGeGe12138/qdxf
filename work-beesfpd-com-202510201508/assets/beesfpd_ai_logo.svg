@@ -1,0 +1,126 @@
+<svg viewBox="0 0 140 30" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 深色模式版本 -->
+    <g id="logo-dark">
+      <!-- Icon -->
+      <g transform="translate(2, 2)">
+        <!-- Outer frame -->
+        <path d="M13 1 L23 5 L23 15 L19 21 L11 21 L7 15 L7 5 Z" 
+              fill="none" 
+              stroke="#ffffff" 
+              stroke-width="1.5" 
+              stroke-linejoin="round"/>
+        
+        <!-- Inner AI brain pattern -->
+        <g opacity="1">
+          <!-- Central core -->
+          <circle cx="15" cy="11" r="2" fill="#ffffff"/>
+          
+          <!-- Neural nodes -->
+          <circle cx="10" cy="8" r="1" fill="#ffffff"/>
+          <circle cx="20" cy="8" r="1" fill="#ffffff"/>
+          <circle cx="10" cy="14" r="1" fill="#ffffff"/>
+          <circle cx="20" cy="14" r="1" fill="#ffffff"/>
+          
+          <!-- Connections -->
+          <path d="M10 8 L13 10 M20 8 L17 10 M10 14 L13 12 M20 14 L17 12" 
+                stroke="#ffffff" 
+                stroke-width="1" 
+                stroke-linecap="round"/>
+        </g>
+        
+        <!-- Accent elements -->
+        <path d="M23 5 L21 3 M7 5 L9 3" 
+              stroke="#F9DE4A" 
+              stroke-width="1.5" 
+              stroke-linecap="round"/>
+      </g>
+      
+      <!-- Brand Name -->
+      <g transform="translate(32, 0)">
+        <text x="0" y="20" 
+              font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif" 
+              font-size="16" 
+              font-weight="700" 
+              letter-spacing="-0.01em"
+              fill="#ffffff">Bees<tspan fill="#F9DE4A">FPD</tspan></text>
+        
+        <!-- Subtle underline accent -->
+        <path d="M0 23 L64 23" 
+              stroke="#F9DE4A" 
+              stroke-width="1" 
+              opacity="0.3"/>
+      </g>
+      
+      <!-- Additional accent elements -->
+      <g opacity="0.6">
+        <circle cx="120" cy="8" r="0.8" fill="#F9DE4A"/>
+        <circle cx="125" cy="12" r="0.6" fill="#F9DE4A"/>
+        <circle cx="122" cy="18" r="0.7" fill="#F9DE4A"/>
+      </g>
+    </g>
+    
+    <!-- 浅色模式版本（默认） -->
+    <g id="logo-light">
+      <!-- Icon -->
+      <g transform="translate(2, 2)">
+        <!-- Outer frame -->
+        <path d="M13 1 L23 5 L23 15 L19 21 L11 21 L7 15 L7 5 Z" 
+              fill="none" 
+              stroke="#000000" 
+              stroke-width="1.5" 
+              stroke-linejoin="round"/>
+        
+        <!-- Inner AI brain pattern -->
+        <g opacity="1">
+          <!-- Central core -->
+          <circle cx="15" cy="11" r="2" fill="#000000"/>
+          
+          <!-- Neural nodes -->
+          <circle cx="10" cy="8" r="1" fill="#000000"/>
+          <circle cx="20" cy="8" r="1" fill="#000000"/>
+          <circle cx="10" cy="14" r="1" fill="#000000"/>
+          <circle cx="20" cy="14" r="1" fill="#000000"/>
+          
+          <!-- Connections -->
+          <path d="M10 8 L13 10 M20 8 L17 10 M10 14 L13 12 M20 14 L17 12" 
+                stroke="#000000" 
+                stroke-width="1" 
+                stroke-linecap="round"/>
+        </g>
+        
+        <!-- Accent elements -->
+        <path d="M23 5 L21 3 M7 5 L9 3" 
+              stroke="#F9DE4A" 
+              stroke-width="1.5" 
+              stroke-linecap="round"/>
+      </g>
+      
+      <!-- Brand Name -->
+      <g transform="translate(32, 0)">
+        <text x="0" y="20" 
+              font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif" 
+              font-size="16" 
+              font-weight="700" 
+              letter-spacing="-0.01em"
+              fill="#000000">Bees<tspan fill="#F9DE4A">FPD</tspan></text>
+        
+        <!-- Subtle underline accent -->
+        <path d="M0 23 L64 23" 
+              stroke="#F9DE4A" 
+              stroke-width="1" 
+              opacity="0.3"/>
+      </g>
+      
+      <!-- Additional accent elements -->
+      <g opacity="0.6">
+        <circle cx="120" cy="8" r="0.8" fill="#F9DE4A"/>
+        <circle cx="125" cy="12" r="0.6" fill="#F9DE4A"/>
+        <circle cx="122" cy="18" r="0.7" fill="#F9DE4A"/>
+      </g>
+    </g>
+  </defs>
+  
+  <!-- 默认显示浅色版本 -->
+  <use href="#logo-light"/>
+</svg>

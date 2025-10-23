@@ -254,7 +254,7 @@ import {
     unbindWxAll
 } from '@/api/userCenter';
 import { getProfessionList, getProfessionalList } from '@/api/dict';
-import { getProvinceList, getCityList } from '@/api/location';
+import { getProvinceList, getCityList, getAddressInfo } from '@/api/location';
 import type { UploadProps } from 'element-plus';
 import Cropper from 'cropperjs';
 import 'cropperjs/dist/cropper.css';
@@ -290,36 +290,10 @@ const originalUser = { ...user };
 const allProvinces = ref<any[]>([]);
 const allCities = ref<any[]>([]);
 
-const getAllProvincesAndCities = async () => {
-    const provinceRes = await getProvinceList();
-    if (provinceRes.code === 200) {
-        allProvinces.value = provinceRes.data;
-        // 拉取所有城市
-        let allCityArr: any[] = [];
-        for (const province of provinceRes.data) {
-            const cityRes = await getCityList(province.id);
-            if (cityRes.code === 200) {
-                allCityArr = allCityArr.concat(cityRes.data.map((c: any) => ({ ...c, provinceId: province.id, provinceName: province.name })));
-            }
-        }
-        allCities.value = allCityArr;
-    }
-};
+// 按需加载：不再全量预取所有城市，仅在选择省份时加载城市列表
 
-function getLocationNameById(locationId: string | number | null | undefined) {
-    if (!locationId) return '-';
-    // 先查城市
-    const city = allCities.value.find((c: any) => String(c.id) === String(locationId));
-    if (city) {
-        return `中国,${city.provinceName},${city.name}`;
-    }
-    // 查省份
-    const province = allProvinces.value.find((p: any) => String(p.id) === String(locationId));
-    if (province) {
-        return `中国,${province.name}`;
-    }
-    return '-';
-}
+// 已移除旧的 getLocationNameById，按需加载下不再使用
+const locationDisplay = ref('-');
 
 const profileItems = computed(() => [
     { label: '姓名', value: user.nickName || '-', key: 'nickName', editable: true },
@@ -327,7 +301,7 @@ const profileItems = computed(() => [
     { label: '性别', value: user.gender === 1 ? '男' : (user.gender === 2 ? '女' : '未设置'), key: 'gender', editable: true },
     { label: '专业身份', value: user.profession || '-', key: 'profession', editable: true },
     { label: '职业资格', value: user.qualifications || '-', key: 'qualifications', editable: true },
-    { label: '所在地区', value: getLocationNameById(user.locationId), key: 'address', editable: false },
+    { label: '所在地区', value: locationDisplay.value, key: 'address', editable: false },
 ]);
 
 const fetchUserInfo = async () => {
@@ -336,6 +310,26 @@ const fetchUserInfo = async () => {
         if (res.data) {
             Object.assign(user, res.data);
             Object.assign(originalUser, res.data);
+            // 优先使用后端 address
+            if (user.address) {
+                locationDisplay.value = user.address;
+            } else if (user.locationId) {
+                try {
+                    const info = await getAddressInfo(user.locationId);
+                    if (info && info.code === 200) {
+                        // 期望 info.data 返回 { name, parentName } 之类，这里做兜底拼接
+                        const data: any = info.data || {};
+                        const name = data.name || '';
+                        const parentName = data.parentName || '';
+                        const parts = ['中国', parentName, name].filter(Boolean);
+                        locationDisplay.value = parts.length > 1 ? parts.join(',') : (name || '-');
+                    }
+                } catch (e) {
+                    // 忽略错误，保持默认显示
+                }
+            } else {
+                locationDisplay.value = '-';
+            }
         }
     } catch (error) {
         console.error('Fetch user info error:', error);
@@ -528,12 +522,12 @@ const handleConfirmUpdate = async () => {
 
             // 构建完整的请求体，包含所有必要字段
             const params = {
-                userName: dialogFormData.value.userName,
+                // userName: dialogFormData.value.userName,
                 nickName: dialogFormData.value.nickName,
                 gender: dialogFormData.value.gender,
                 profession: dialogFormData.value.profession,
                 qualifications: dialogFormData.value.qualifications,
-                registedDate: dialogFormData.value.registedDate,
+                // registedDate: dialogFormData.value.registedDate,
                 address: addressString,
                 locationId: locationId,
                 phoneInvisible: dialogFormData.value.phoneInvisible,
@@ -543,16 +537,12 @@ const handleConfirmUpdate = async () => {
                 status: false // 状态字段
             };
 
-            console.log('发送的参数:', params);
-            console.log('UserCenterUpdateUserInfo 函数:', UserCenterUpdateUserInfo);
 
             await UserCenterUpdateUserInfo(params);
-            console.log('API 调用成功');
             await fetchUserInfo(); // 重新获取用户信息
             editDialogVisible.value = false;
             ElMessage.success('更新成功');
         } catch (error) {
-            console.error('更新失败:', error);
             ElMessage.error('更新失败，请重试');
         }
     } else if (activeTab.value === 'security') {
@@ -560,12 +550,12 @@ const handleConfirmUpdate = async () => {
             console.log('开始处理账号安全更新');
             // 账号安全标签页只需要更新 phoneInvisible 字段
             const params = {
-                userName: dialogFormData.value.userName,
+                // userName: dialogFormData.value.userName,
                 nickName: dialogFormData.value.nickName,
                 gender: dialogFormData.value.gender,
                 profession: dialogFormData.value.profession,
                 qualifications: dialogFormData.value.qualifications,
-                registedDate: dialogFormData.value.registedDate,
+                // registedDate: dialogFormData.value.registedDate,
                 address: dialogFormData.value.address,
                 locationId: dialogFormData.value.locationId,
                 phoneInvisible: dialogFormData.value.phoneInvisible,
@@ -575,9 +565,7 @@ const handleConfirmUpdate = async () => {
                 status: false
             };
 
-            console.log('发送的参数:', params);
             await UserCenterUpdateUserInfo(params);
-            console.log('API 调用成功');
             await fetchUserInfo(); // 重新获取用户信息
             editDialogVisible.value = false;
             ElMessage.success('更新成功');
@@ -985,7 +973,6 @@ const handleConfirmChangePassword = async () => {
 };
 
 onMounted(async () => {
-    await getAllProvincesAndCities();
     await fetchUserInfo();
     await fetchProfessionOptions();
     await fetchQualificationOptions();

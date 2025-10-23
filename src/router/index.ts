@@ -29,6 +29,15 @@ const routes: Array<RouteRecordRaw> = [
         }
       },
       {
+        path: '/workspace',
+        name: 'Workspace',
+        component: () => import('../views/workspace/index.vue'),
+        meta: {
+          title: '工作空间',
+          icon: '左栏 - 我的桌面'
+        }
+      },
+      {
         path: '/smart-computing',
         name: 'SmartComputing',
         // component: () => import('@/views/smart-computing/index.vue'),
@@ -120,6 +129,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/login/index.vue')
   },
   {
+    path: '/register',
+    name: 'Register',
+    component: () => import('../views/login/index.vue')
+  },
+  {
     path: '/converter',
     name: 'Converter',
     component: () => import('@/views/converter/index.vue'),
@@ -189,6 +203,11 @@ router.beforeEach((to, _from, next) => {
   // 如果访问登录页面且已登录，重定向到首页
   if (to.path === '/login' && userStore.isLoggedIn) {
     next('/dashboard')
+    return
+  }
+  // 注册页无需登录
+  if (to.path === '/register') {
+    next()
     return
   }
   // 如果访问需要登录的页面但未登录，重定向到登录页

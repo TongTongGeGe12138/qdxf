@@ -139,7 +139,7 @@
                 </el-tooltip>
               </el-form-item>
 
-              <el-form-item prop="identity" >
+              <el-form-item prop="identity" v-if="false">
                 <el-select
                   v-model="registerForm.identity"
                   placeholder="您是尊贵的"
@@ -157,7 +157,7 @@
                 </el-select>
               </el-form-item>
 
-              <el-form-item prop="description">
+              <el-form-item prop="description" v-if="!hasReferralFromUrl">
                 <el-input v-model="registerForm.description" placeholder="若有分享码，请填写" />
               </el-form-item>
 
@@ -332,6 +332,7 @@ const professionOptions = ref<ProfessionOption[]>([])
 const showLoginForm = ref(false)
 const animationContainer = ref<HTMLElement | null>(null)
 let animationInstance: any = null
+const hasReferralFromUrl = ref(false)
 
 // 协议弹窗状态
 // const agreementModalVisible = ref(false)
@@ -348,7 +349,7 @@ const registerForm = reactive<RegisterForm>({
   password: '',
   confirmPassword: '',
   verifyCode: '',
-  identity: '',
+  identity: '其他',
   description: '',
   agreement: true
 })
@@ -368,6 +369,7 @@ const errorMessages = reactive<ErrorMessages>({
   mobile: '',
   verifyCode: ''
 })
+
 
 // 表单验证规则
 const loginRules = {
@@ -423,9 +425,7 @@ const registerRules = reactive({
     { required: true, message: '请输入验证码', trigger: 'blur' },
     { len: 4, message: '验证码长度应为4位', trigger: 'blur' }
   ],
-  identity: [
-    { required: true, message: '请选择专业身份', trigger: 'change' }
-  ]
+  // identity 字段隐藏，默认“其他”，不再校验
 })
 
 const forgotRules = reactive({
@@ -603,26 +603,49 @@ const validateField = async (formEl: FormInstance | undefined, field: string): P
   }
 }
 
+// 从地址栏提取 utm_* 参数，映射到 utm 对象
+const extractUtmFromQuery = () => {
+  const q = route.query as Record<string, any>
+  const utm: Record<string, string> = {}
+
+  const mappings: Array<[string, string]> = [
+    ['utm_source', 'source'],
+    ['utm_medium', 'medium'],
+    ['utm_campaign', 'campaign'],
+    ['utm_content', 'content'],
+    ['utm_term', 'term'],
+  ]
+
+  mappings.forEach(([queryKey, utmKey]) => {
+    const value = q[queryKey]
+    if (value != null && value !== '') {
+      utm[utmKey] = String(value)
+    }
+  })
+
+  return utm
+}
+
 const handleRegister = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
   
   await formEl.validate(async (valid, fields) => {
     if (valid) {
       try {
-        const res = await GetUserCenterRegister({
+        const utmParams = extractUtmFromQuery()
+        const payload: any = {
           phone: registerForm.mobile,
           code: registerForm.verifyCode,
           password: registerForm.password,
           PwdTwo: registerForm.confirmPassword,
-          profession:registerForm.identity || '',
-          utm: {
-            source: 'referral',
-            // medium: 'offline',
-            // campaign: '',
-            // content: registerForm.description || 'dev',
-            // term: registerForm.identity || ''
-          },
-        })
+          profession: registerForm.identity || '',
+          referrer: String(registerForm.description ?? ''),
+        }
+        if (Object.keys(utmParams).length > 0) {
+          payload.utm = utmParams
+        }
+
+        const res = await GetUserCenterRegister(payload)
 
         if (res.code === 200) {
           ElMessage.success('注册成功')
@@ -641,7 +664,8 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
       Object.keys(fields).forEach(key => {
         const fieldErrors = fields[key]
         if (fieldErrors && fieldErrors.length > 0) {
-          errorMsg += `\n${key}: ${fieldErrors[0].message}`
+          // const label = getFieldLabel(key)
+          errorMsg += `${fieldErrors[0].message}；`
         }
       })
       ElMessage.error(errorMsg)
@@ -693,6 +717,16 @@ watch(() => loginForm.password, () => {
   errorMessages.password = ''
 })
 
+// 限制分享码最长 25 个字符，超过置空
+watch(
+  () => registerForm.description,
+  (val) => {
+    if (typeof val === 'string' && val.length > 25) {
+      registerForm.description = ''
+    }
+  }
+)
+
 watch(loginType, (newType) => {
   if (newType === 'qrcode') {
     nextTick(() => {
@@ -726,6 +760,16 @@ onMounted(() => {
   if (loginType.value === 'qrcode') {
     initWxLogin()
   }
+
+// URL 存在 referrer 时，切换到注册并预填分享码
+const rawReferrer = route.query.referrer as string | undefined
+if (rawReferrer && String(rawReferrer).trim() !== '') {
+  loginType.value = 'register'
+  const code = String(rawReferrer)
+  const clean = code.length <= 25 ? code : ''
+  registerForm.description = clean
+  hasReferralFromUrl.value = clean.length > 0
+}
 })
 
 onUnmounted(() => {
@@ -787,9 +831,24 @@ const handleResetPassword = async (formEl: FormInstance | undefined) => {
       Object.keys(fields).forEach(key => {
         const fieldErrors = fields[key]
         if (fieldErrors && fieldErrors.length > 0) {
-          errorMsg += `\n${key}: ${fieldErrors[0].message}`
+          // const label = getFieldLabel(key)
+          errorMsg += `${fieldErrors[0].message}；`
         }
       })
+
+// 当地址栏 referrer 变化时：自动切换到注册并同步分享码
+watch(
+  () => route.query.referrer,
+  (newCode) => {
+    hasReferralFromUrl.value = !!newCode
+    if (newCode) {
+      loginType.value = 'register'
+      const code = String(newCode)
+      registerForm.description = code.length <= 25 ? code : ''
+      hasReferralFromUrl.value = registerForm.description.length > 0
+    }
+  }
+)
       ElMessage.error(errorMsg)
     }
   })

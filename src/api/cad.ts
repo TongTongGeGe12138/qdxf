@@ -12,10 +12,10 @@ interface P2dResponse {
 export function getP2d(data: { DwgUrl: string }) {
   return requestCad.post<P2dResponse>(
     {
-      url: '/Jd_Project/GetP2d',
+      url: 'test/Jd_Project/GetP2d',
       data,
     },
-    { externalUrlStatus: 1 },
+    { externalUrlStatus: 0 },
   );
 }
 

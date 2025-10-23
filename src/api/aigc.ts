@@ -3,7 +3,8 @@ import { request } from '@/utils/request';
 
 const Api = {
   AigcUrl: '/aigc/category',
-  ComponentUrl: '/aigc/component'
+  ComponentUrl: '/aigc/component',
+  ProjectUrl: '/aigc/project'
 };
 
 /**
@@ -32,5 +33,18 @@ export function getAigcChildrenList(categoryPath: string | number ,version?: num
 export function getAigcAllList(): Promise<ProjectListResult> {
   return request.get<ProjectListResult>({
     url: `${Api.ComponentUrl}/all`
+  });
+}
+
+/**
+ * 获取AIGC项目列表
+ * @param page - 页码
+ * @param pageSize - 每页数量
+ * @param search - 搜索关键词
+ */
+export function getAigcProjectList(page: number = 1, pageSize: number = 100, search?: string): Promise<ProjectListResult> {
+  return request.get<ProjectListResult>({
+    url: Api.ProjectUrl,
+    params: { page, pageSize, ...(search ? { search } : {}) }
   });
 }

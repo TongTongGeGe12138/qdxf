@@ -86,7 +86,7 @@ export class VAxios {
             break;
           case 1:
             // 外部API地址（日志相关）
-            baseURL = opt.externalUrlPrefix || '/log';
+            baseURL = opt.externalUrlPrefix || '/api';
             break;
           case 2:
             // CAD API地址

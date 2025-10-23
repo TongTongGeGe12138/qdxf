@@ -1,0 +1,1 @@
+import{r as t}from"./index-Bz-KOdQ0.js";const r={ProvinceListUrl:"/location/china/province"};function n(){return t.get({url:r.ProvinceListUrl})}function o(i){return t.get({url:`${r.ProvinceListUrl}/${i}/city`})}export{o as a,n as g};

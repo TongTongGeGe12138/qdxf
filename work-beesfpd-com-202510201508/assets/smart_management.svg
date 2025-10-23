@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- 主控制面板 -->
+                <rect x="6" y="7" width="12" height="10" fill="#34495E" rx="1"/>
+                <rect x="6.2" y="7.2" width="11.6" height="9.6" fill="#2C3E50" rx="0.8"/>
+                
+                <!-- 顶部状态栏 -->
+                <rect x="7" y="8" width="10" height="1.5" fill="#1ABC9C" rx="0.3"/>
+                <text x="12" y="9" text-anchor="middle" fill="#FFFFFF" font-size="0.8" font-weight="bold">消防管理</text>
+                
+                <!-- 中央一键控制按钮 -->
+                <circle cx="12" cy="13" r="2.5" fill="#E74C3C"/>
+                <circle cx="12" cy="13" r="1.8" fill="#C0392B"/>
+                <text x="12" y="13.5" text-anchor="middle" fill="#FFFFFF" font-size="1.2" font-weight="bold">一键</text>
+                
+                <!-- 状态指示灯 -->
+                <circle cx="8.5" cy="11" r="0.4" fill="#27AE60"/>
+                <circle cx="10" cy="11" r="0.4" fill="#F39C12"/>
+                <circle cx="11.5" cy="11" r="0.4" fill="#3498DB"/>
+                
+                <!-- 系统状态指示灯 -->
+                <circle cx="13.5" cy="11" r="0.4" fill="#27AE60"/>
+                <circle cx="15" cy="11" r="0.4" fill="#E74C3C"/>
+                <circle cx="16.5" cy="11" r="0.4" fill="#95A5A6"/>
+                
+                <!-- 底部控制开关 -->
+                <rect x="8" y="15.5" width="3" height="0.8" fill="#3498DB" rx="0.4"/>
+                <circle cx="10.6" cy="15.9" r="0.3" fill="#FFFFFF"/>
+                
+                <rect x="13" y="15.5" width="3" height="0.8" fill="#27AE60" rx="0.4"/>
+                <circle cx="15.6" cy="15.9" r="0.3" fill="#FFFFFF"/>
+                
+                <!-- 左侧智能大脑 -->
+                <circle cx="3.5" cy="12" r="1.2" fill="#9B59B6"/>
+                <path d="M2.9 11.7 Q3.5 11.3 4.1 11.7 M2.9 12.3 Q3.5 12.7 4.1 12.3" stroke="#FFFFFF" stroke-width="0.2" fill="none"/>
+                
+                <!-- 右侧监控元素 -->
+                <rect x="19.5" y="11" width="1.5" height="1" fill="#7F8C8D" rx="0.2"/>
+                <circle cx="20.25" cy="11.5" r="0.25" fill="#2C3E50"/>
+                <circle cx="20.25" cy="11.5" r="0.1" fill="#3498DB"/>
+                
+                <!-- 连接线 -->
+                <path d="M4.7 12 Q5.5 11.5 6 10" stroke="#9B59B6" stroke-width="0.25" fill="none" opacity="0.6"/>
+                <path d="M18 12 Q18.8 11.5 19.5 11.5" stroke="#7F8C8D" stroke-width="0.25" fill="none" opacity="0.6"/>
+                
+                <!-- 信号波纹 -->
+                <circle cx="12" cy="13" r="3.2" fill="none" stroke="#E74C3C" stroke-width="0.15" opacity="0.3"/>
+                <circle cx="12" cy="13" r="3.8" fill="none" stroke="#E74C3C" stroke-width="0.1" opacity="0.2"/>
+                
+                <!-- 数据传输点 -->
+                <circle cx="20.5" cy="14" r="0.2" fill="#1ABC9C"/>
+                <circle cx="20.5" cy="15" r="0.15" fill="#16A085" opacity="0.7"/>
+            </svg>

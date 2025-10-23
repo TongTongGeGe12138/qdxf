@@ -57,9 +57,6 @@ class SimpleLoginAnimation {
                             <div class="step-content" id="content1">
                                 <div style="margin-bottom: 12px;">正在评估系统状态...</div>
                                 <div style="font-family: 'Courier New', monospace; font-size: 13px;">
-                                    <div>会员容量: <span style="color: #f5d13a;">1,000,000</span></div>
-                                    <div>注册会员: <span style="color: #f5d13a;">63,021</span></div>
-                                    <div>在线会员: <span class="number-display" id="onlineCount">0</span></div>
                                     <div>算力状态: <span style="color: #2ecc71;">良好</span></div>
                                 </div>
                             </div>
@@ -402,8 +399,8 @@ class SimpleLoginAnimation {
                 ease: 'power2.out'
             }, '-=0.2')
             .call(() => this.showStep(1, '系统评估'))
-            .call(() => this.startCountAnimation(), null, '+=0.2')
-            .call(() => this.switchToStep(2, '网络检测'), null, '+=1.8')
+            .call(() => this.startCountAnimation(), null, '+=0.1')
+            .call(() => this.switchToStep(2, '网络检测'), null, '+=0.5')
             .call(() => this.startNetworkDetection(), null, '+=0.2')
             .call(() => this.switchToStep(3, '路由优化'), null, '+=1.0')
             .to({}, { duration: 1.0 });
@@ -457,7 +454,7 @@ class SimpleLoginAnimation {
         const target = this.calculateOnlineUsers();
         const element = document.getElementById('onlineCount');
         if (element) {
-            this.animateNumber(element, target, 1000);
+            this.animateNumber(element, target, 400);
         }
     }
     
@@ -474,7 +471,7 @@ class SimpleLoginAnimation {
         }
     }
     
-    animateNumber(element, target, duration = 1000) {
+    animateNumber(element, target, duration = 600) {
         const start = 0;
         const increment = target / (duration / 16);
         let current = start;

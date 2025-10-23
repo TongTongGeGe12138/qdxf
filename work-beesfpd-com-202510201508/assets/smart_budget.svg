@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- 主体计算器 -->
+                <rect x="8" y="5" width="8" height="12" fill="#34495E" rx="1"/>
+                <rect x="8.2" y="5.2" width="7.6" height="11.6" fill="#2C3E50" rx="0.8"/>
+                
+                <!-- 显示屏 -->
+                <rect x="9" y="6.5" width="6" height="2.5" fill="#1ABC9C" rx="0.3"/>
+                <text x="12" y="8.2" text-anchor="middle" fill="#FFFFFF" font-size="1.2" font-weight="bold">￥12.5K</text>
+                
+                <!-- 简化按键网格 -->
+                <rect x="9.5" y="10" width="1.2" height="1" fill="#3498DB" rx="0.2"/>
+                <rect x="11" y="10" width="1.2" height="1" fill="#3498DB" rx="0.2"/>
+                <rect x="12.5" y="10" width="1.2" height="1" fill="#3498DB" rx="0.2"/>
+                <rect x="14" y="10" width="1.2" height="1" fill="#E74C3C" rx="0.2"/>
+                
+                <rect x="9.5" y="11.5" width="1.2" height="1" fill="#3498DB" rx="0.2"/>
+                <rect x="11" y="11.5" width="1.2" height="1" fill="#3498DB" rx="0.2"/>
+                <rect x="12.5" y="11.5" width="1.2" height="1" fill="#3498DB" rx="0.2"/>
+                <rect x="14" y="11.5" width="1.2" height="1" fill="#E74C3C" rx="0.2"/>
+                
+                <rect x="9.5" y="13" width="2.7" height="1" fill="#F39C12" rx="0.2"/>
+                <rect x="12.5" y="13" width="1.2" height="1" fill="#3498DB" rx="0.2"/>
+                <rect x="14" y="13" width="1.2" height="2.5" fill="#27AE60" rx="0.2"/>
+                
+                <rect x="9.5" y="14.5" width="1.2" height="1" fill="#3498DB" rx="0.2"/>
+                <rect x="11" y="14.5" width="1.2" height="1" fill="#3498DB" rx="0.2"/>
+                <rect x="12.5" y="14.5" width="1.2" height="1" fill="#3498DB" rx="0.2"/>
+                
+                <!-- 智能大脑图标 -->
+                <circle cx="5" cy="8" r="1.5" fill="#9B59B6"/>
+                <path d="M4.2 7.7 Q5 7.2 5.8 7.7 M4.2 8.3 Q5 8.8 5.8 8.3" stroke="#FFFFFF" stroke-width="0.25" fill="none"/>
+                
+                <!-- 连接线 -->
+                <path d="M6.5 8 Q7.2 7.5 8 6.5" stroke="#9B59B6" stroke-width="0.3" fill="none" opacity="0.6"/>
+                
+                <!-- 精准标识 -->
+                <circle cx="19" cy="12" r="1.2" fill="#1ABC9C"/>
+                <path d="M18.4 12 L18.7 12.3 L19.6 11.4" stroke="#FFFFFF" stroke-width="0.3" fill="none"/>
+                
+                <!-- 数据点 -->
+                <circle cx="18" cy="8" r="0.3" fill="#3498DB" opacity="0.7"/>
+                <circle cx="19.5" cy="9" r="0.25" fill="#3498DB" opacity="0.6"/>
+                <circle cx="18.5" cy="15" r="0.25" fill="#3498DB" opacity="0.6"/>
+            </svg>

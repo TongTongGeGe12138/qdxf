@@ -69,11 +69,15 @@ export default defineConfig({
                     target: 'https://api-work.beesfpd.com',
                     changeOrigin: true,
                 },
-                // 2. 其他 /api 统一代理到后端根，并移除 /api 前缀
-                '/api': {
+                '^/api/(?!test($|/)).*': {
                     target: 'https://api-work.beesfpd.com/',
                     changeOrigin: true,
-                    // rewrite: (path) => path.replace(/^\/api/, ''),
+                },
+                //匹配所有api/test的请求地址
+                '^/api/test(?:$|/).*': {
+                    target: 'https://api-aigc.beesfpd.com/',
+                    changeOrigin: true,
+                    rewrite: (path) => path.replace(/^\/api\/test/, '/api')
                 }
             },
             // 3. 日志等（保持原有映射）

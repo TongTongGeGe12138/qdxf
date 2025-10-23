@@ -14,8 +14,20 @@
 
                     <div class="sub-title">全新算法引擎重构底层架构，V2算法加持覆盖更多场景 <span
                             style="color: #ffbd33;padding-left: 10px;text-decoration: underline; cursor: pointer;" @click="handlegoClick('more')">发布计划说明</span></div>
+                    <div class="search-section">
+                        <div class="search-input">
+                            <el-input v-model="searchText2" placeholder="搜索应用..." :prefix-icon="Search"
+                                class="search-input" />
+                        </div>
+                        <div class="tags">
+                            <el-tag v-for="tag in tags2" :key="tag.name" :class="{ 'is-active': activeTag2 === tag.name }"
+                                @click="handleTagClick2(tag.name)">
+                                {{ tag.name }}
+                            </el-tag>
+                        </div>
+                    </div>
                     <div class="card-grid">
-                        <div class="card" v-for="(item, index) in hvacCardListss" :key="index"
+                        <div class="card" v-for="(item, index) in filteredHvacList" :key="index"
                             @click="handleCardClick(item)">
                             <div class="fire-icon-container" :class="isDark ? 'dark-mode' : 'light-mode'">
                                 <img v-if="item.value" :src="getIconUrl(item.value)" :alt="item.title"
@@ -384,6 +396,8 @@ interface Supplier {
 
 const searchText = ref('')
 const activeTag = ref('所有')
+const searchText2 = ref('')
+const activeTag2 = ref('所有')
 const allList = ref<ProjectItemExtended[]>([])
 const applicationList = ref<ProjectItemExtended[]>([])
 const fireList = ref<AigcModuleComponent[]>([])
@@ -532,6 +546,13 @@ onMounted(async () => {
 })
 
 const tags = [
+    { name: '所有' },
+    { name: '智能给排水' },
+    { name: '智能电气' },
+    { name: '智能暖通' }
+]
+
+const tags2 = [
     { name: '所有' },
     { name: '智能给排水' },
     { name: '智能电气' },
@@ -730,8 +751,8 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
         'deluge': '智能给排水',
         'firemonitor': '智能给排水',
         'fire_water_v2': '智能给排水',
-        'fire_electrical_v2': '智能给排水',
-        'fire_hvac_v2': '智能给排水',
+        'fire_electrical_v2': '智能电气',
+        'fire_hvac_v2': '智能暖通',
         'fire_decoration_v2': '智能给排水',
         'firealarm': '智能电气',
         'lighting_evacuation': '智能电气',
@@ -874,8 +895,34 @@ const filteredSecondaryList = computed(() => {
     return filtered;
 });
 
+const filteredHvacList = computed(() => {
+    let filtered = hvacCardListss.value;
+
+    // 标签筛选
+    if (activeTag2.value !== '所有') {
+        filtered = filtered.filter(item => {
+            return item.extra?.group === activeTag2.value;
+        });
+    }
+
+    // 搜索文本筛选
+    if (searchText2.value) {
+        const searchLower = searchText2.value.toLowerCase();
+        filtered = filtered.filter(item => {
+            return item.title.toLowerCase().includes(searchLower) || 
+                (item.extra?.englishName && item.extra.englishName.toLowerCase().includes(searchLower)) ||
+                (item.value && item.value.toLowerCase().includes(searchLower));
+        });
+    }
+    return filtered;
+});
+
 const handleTagClick = (tagName: string) => {
     activeTag.value = tagName;
+};
+
+const handleTagClick2 = (tagName: string) => {
+    activeTag2.value = tagName;
 };
 
 // 处理更多应用卡片点击
@@ -1031,6 +1078,7 @@ const handlePermissionClickss = () => {
     align-items: center;
     gap: 20px;
     width: 100%;
+    margin-top: 20px;
 }
 
 .search-input {
