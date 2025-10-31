@@ -19,15 +19,15 @@ const routes: Array<RouteRecordRaw> = [
           icon: 'smart_application'
         }
       },
-      {
-        path: '/workspace',
-        name: 'Workspace',
-        component: () => import('../views/workspace/index.vue'),
-        meta: {
-          title: '工作空间',
-          icon: '顶栏 - 工作空间'
-        }
-      },
+      // {
+      //   path: '/workspace',
+      //   name: 'Workspace',
+      //   component: () => import('../views/workspace/index.vue'),
+      //   meta: {
+      //     title: '工作空间',
+      //     icon: '顶栏 - 工作空间'
+      //   }
+      // },
       {
         path: '/desktop',
         name: 'Desktop',
