@@ -254,6 +254,7 @@ import { getProfessionList } from '@/api/dict'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { useFileLibraryStore } from '@/store/modules/fileLibrary'
+import { resetLoginExpiredFlag } from '@/utils/request'
 // import qrcodeIcon from '@/assets/qrcode-scan.svg?url';
 // import phoneIcon from '@/assets/phone.svg?url';
 import ssss from '@/assets/tb/dark.svg?url';
@@ -379,12 +380,11 @@ const loginRules = {
     trigger: 'blur',
     validateStatus: 'success'
   }],
-  password: [{
-    required: true,
-    message: '请输入密码',
-    trigger: 'blur',
-    validateStatus: 'success'
-  }],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, max: 16, message: '请输入6-16位包含字母大小写及数字密码', trigger: 'blur' },
+    { pattern: PASSWORD_REGEX, message: '密码必须包含大小写字母和数字', trigger: 'blur' }
+  ],
   agreement: [{
     validator: (_: any, value: boolean, callback: any) => {
       if (!value) {
@@ -470,11 +470,11 @@ const loadProfessionList = async () => {
         label: item.name
       }))
     } else {
-      ElMessage.error('获取专业身份列表失败')
+      // ElMessage.error('获取专业身份列表失败')
     }
   } catch (error) {
     console.error('获取专业身份列表错误：', error)
-    ElMessage.error('获取专业身份列表失败')
+    // ElMessage.error('获取专业身份列表失败')
   }
 }
 
@@ -501,6 +501,9 @@ const handleLogin = async () => {
           refreshToken: response.data.refreshToken,
           extra: response.data.extra
         })
+
+        // 重置登录过期标志，下次登出后才会再次显示提示
+        resetLoginExpiredFlag()
 
         ElMessage.success('登录成功')
         const redirect = route.query.redirect as string
@@ -542,8 +545,19 @@ const validateForm = async (formEl: FormInstance | undefined) => {
 
   try {
     let isValid = false
-    await formEl.validate((valid) => {
+    await formEl.validate((valid, fields) => {
       isValid = valid
+      // 如果校验不通过，提取错误信息
+      if (!valid && fields) {
+        // 处理密码字段的错误
+        if (fields.password && fields.password.length > 0) {
+          errorMessages.password = fields.password[0].message || '密码格式不正确'
+        }
+        // 处理账户字段的错误
+        if (fields.account && fields.account.length > 0) {
+          errorMessages.account = fields.account[0].message || '账户不能为空'
+        }
+      }
     })
     return isValid
   } catch (error) {

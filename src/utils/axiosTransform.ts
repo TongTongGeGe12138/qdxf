@@ -50,8 +50,22 @@ export const transform: AxiosTransform = {
   },
 
   requestInterceptors: (config, options) => {
+    // 不需要 token 的接口白名单
+    const tokenWhiteList = [
+      '/Jd_Project/GetP2d'  // getP2d 接口不需要 token
+    ];
+    
     const token = localStorage.getItem('token');
-    if (token) {
+    
+    // 检查当前请求是否在白名单中
+    const url = config.url || '';
+    const isInWhiteList = tokenWhiteList.some(whiteUrl => url.includes(whiteUrl));
+    
+    // 如果 withToken 明确设置为 false，或者在白名单中，则不添加 token
+    const shouldNotHaveToken = options?.withToken === false || isInWhiteList;
+    
+    // 如果不需要跳过 token，则添加 token
+    if (token && !shouldNotHaveToken) {
       config.headers.Authorization = options?.authenticationScheme
         ? `${options.authenticationScheme} ${token}`
         : token;

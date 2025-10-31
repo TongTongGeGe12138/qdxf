@@ -29,13 +29,13 @@
                                       @click.stop="resetUpload" title="重新上传" style="z-index: 30; position: relative;" />
                               </div>
                               <div class="file-name">{{ getFileNameWithoutExt(file.name) }}{{ status !== 'success' ? ` (${formatSize(file.size!)})` : '' }}</div>
-                              <div v-if="status === 'idle' || status === 'uploading'" style="display: flex; gap: 10px;">
+                              <div v-if="status === 'idle'" style="display: flex; gap: 10px;">
                                   <el-button class="convert-btn"
                                       type="primary" @click.stop="handleUploadSvg(file.raw as File)" style="z-index: 30; position: relative;top: -10px;">开始转换SVG</el-button>
                                   <el-button class="convert-btn"
                                       type="primary" @click.stop="handleUploadPng(file.raw as File)" style="z-index: 30; position: relative;top: -10px;">开始转换PNG</el-button>
                               </div>
-                              <div v-if="status === 'processing' || status === 'converting'" class="progress-center">
+                              <div v-if="status === 'uploading' || status === 'processing' || status === 'converting'" class="progress-center">
                                   <div class="progress-bar-box">
                                       <el-progress :percentage="progress" :stroke-width="18" 
                                           color="#000" style="width:220px;" :show-text="false" />
@@ -43,14 +43,14 @@
                                   </div>
                                   <div class="progress-text">{{ progress }}%</div>
                                   <div class="convert-status">
-                                      <el-icon v-if="status === 'processing' || status === 'converting'"
+                                      <el-icon v-if="status === 'uploading' || status === 'processing' || status === 'converting'"
                                           class="spin-icon">
                                           <Loading />
                                       </el-icon>
                                       <el-icon v-else-if="status === 'success'" class="success-icon">
                                           <CircleCheckFilled />
                                       </el-icon>
-                                      <span v-if="status === 'processing' || status === 'converting'">转换中</span>
+                                      <span v-if="status === 'uploading' || status === 'processing' || status === 'converting'">{{ status === 'uploading' ? '上传中' : '转换中' }}</span>
                                   </div>
                               </div>
                               <template v-if="status === 'success' && downloadUrl">
@@ -170,21 +170,28 @@ async function validateToken(): Promise<boolean> {
 
 // 登录判断封装到 handleUpload（PNG）
 async function handleUpload(file: File) {
+  // 先检查文件大小（本地验证，不需要网络）
+  if (file && file.size && file.size > MAX_FILE_SIZE) {
+      ElMessage.error('文件大小不能超过10MB')
+      return
+  }
+  
+  // 立刻开始上传，显示 loading，不要等待 token 验证
+  currentOutput.value = 'png'
+  uploadDwgToPng(file)
+  
+  // 然后异步验证 token
   const isValid = await validateToken()
   const currentPath = router.currentRoute.value.fullPath
   if (!isValid) {
       if (typeof localStorage !== 'undefined') {
           localStorage.removeItem('token')
       }
+      // 取消上传
+      cancelConvert()
       router.push({ path: '/login', query: { redirect: currentPath } })
       return
   }
-  if (file && file.size && file.size > MAX_FILE_SIZE) {
-      ElMessage.error('文件大小不能超过10MB')
-      return
-  }
-  currentOutput.value = 'png'
-  uploadDwgToPng(file)
 }
 
 // PNG 上传别名，便于模板绑定

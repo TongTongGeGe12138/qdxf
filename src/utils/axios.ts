@@ -74,6 +74,10 @@ export class VAxios {
             // CAD API地址
             baseURL = 'https://api-work.beesfpd.com/api';
             break;
+          case 3:
+            // 测试API地址 - 线上使用 https://api-aigc.beesfpd.com
+            baseURL = 'https://api-aigc.beesfpd.com/api';
+            break;
           default:
             baseURL = 'https://api-work.beesfpd.com/api';
         }
@@ -93,7 +97,8 @@ export class VAxios {
             baseURL = opt.externalUrlPrefixCad || '/cad';
             break;
           case 3:
-            baseURL = '/test';
+            // 测试API地址 - 本地使用代理前缀 /api/test，线上在 axios 配置中直接使用完整 URL
+            baseURL = '/api/test';
             break;
           default:
             baseURL = opt.apiUrl || '/api';

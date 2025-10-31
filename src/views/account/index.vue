@@ -90,7 +90,7 @@
                     <el-tab-pane label="账号安全" name="security">
                         <el-form label-position="right" label-width="80px" style="padding-top: 5px;padding-right: 2px;">
                             <el-form-item label="用户名">
-                                <el-input v-model="dialogFormData.userName" placeholder="请输入用户名" class="custom-input" />
+                                <span>{{ user.userName }}</span>
                             </el-form-item>
                             <el-form-item label="手机号">
                                 <div class="phone-row">
@@ -911,9 +911,15 @@ const passwordForm = reactive({
     confirmPassword: '',
 });
 
-const validatePass = (value: any, callback: any) => {
+const validatePass = (_rule: any, value: any, callback: any) => {
     if (value === '') {
-        callback(new Error('请输入密码'));
+        callback(new Error('请输入新密码'));
+    } else if (value.length < 6 || value.length > 16) {
+        callback(new Error('密码长度应为6-16位'));
+    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
+        callback(new Error('密码必须包含大小写字母和数字'));
+    } else if (value === passwordForm.oldPassword) {
+        callback(new Error('新密码不能与旧密码相同'));
     } else {
         if (passwordForm.confirmPassword !== '') {
             if (!passwordFormRef.value) return;
@@ -922,7 +928,7 @@ const validatePass = (value: any, callback: any) => {
         callback();
     }
 };
-const validatePass2 = (value: any, callback: any) => {
+const validatePass2 = (_rule: any, value: any, callback: any) => {
     if (value === '') {
         callback(new Error('请再次输入密码'));
     } else if (value !== passwordForm.newPassword) {

@@ -470,11 +470,11 @@ const loadProfessionList = async () => {
         label: item.name
       }))
     } else {
-      ElMessage.error('获取专业身份列表失败')
+      // ElMessage.error('获取专业身份列表失败')
     }
   } catch (error) {
     console.error('获取专业身份列表错误：', error)
-    ElMessage.error('获取专业身份列表失败')
+    // ElMessage.error('获取专业身份列表失败')
   }
 }
 

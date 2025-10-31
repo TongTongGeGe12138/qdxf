@@ -21,6 +21,8 @@ let failedQueue: Array<{
   resolve: (value?: any) => void;
   reject: (error?: any) => void;
 }> = [];
+// 标记是否已显示登录过期提示
+let isShowingLoginExpiredMessage = false;
 
 // 处理等待中的请求
 const processQueue = (error: any, token: string | null = null) => {
@@ -33,6 +35,11 @@ const processQueue = (error: any, token: string | null = null) => {
   });
   
   failedQueue = [];
+};
+
+// 重置登录过期标志 - 在登录成功时调用
+export const resetLoginExpiredFlag = () => {
+  isShowingLoginExpiredMessage = false;
 };
 
 // 创建 axios 实例
@@ -51,7 +58,8 @@ service.interceptors.request.use(
     const whiteList = ['/signup', '/auth/signin', '/auth/token/refresh']; 
 
     // 在这里可以添加token等认证信息
-    const token = localStorage.getItem('token');
+    const userStore = useUserStore();
+    const token = userStore.accessToken || localStorage.getItem('token');
     
     // 检查当前请求是否在白名单中
     if (token && config.headers && !whiteList.includes(config.url || '')) {
@@ -77,13 +85,6 @@ service.interceptors.response.use(
 
     // 处理特定的错误码
     switch (res.code) {
-      case 401:
-        ElMessage.error('未授权，请重新登录');
-        // 处理登出逻辑
-        const userStore = useUserStore();
-        userStore.clearUserInfo();
-        router.push('/login');
-        break;
       case 403:
         ElMessage.error('没有权限访问');
         break;
@@ -91,7 +92,9 @@ service.interceptors.response.use(
         ElMessage.error('请求的资源不存在');
         break;
       default:
-        ElMessage.error(res.msg || '请求失败');
+        if (res.code !== 401) {
+          ElMessage.error(res.msg || '请求失败');
+        }
     }
 
     return Promise.reject(new Error(res.msg || '请求失败'));
@@ -104,12 +107,14 @@ service.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          // 如果是刷新token的请求失败，直接跳转登录页
           if (originalRequest.url?.includes('/auth/token/refresh')) {
-            const userStore = useUserStore();
-            userStore.clearUserInfo();
-            ElMessage.error('登录已过期，请重新登录');
-            router.push('/login');
+            if (!isShowingLoginExpiredMessage) {
+              isShowingLoginExpiredMessage = true;
+              const userStore = useUserStore();
+              userStore.clearUserInfo();
+              ElMessage.error('请重新登录');
+                router.push('/login');
+            }
             return Promise.reject(error);
           }
           
@@ -158,15 +163,21 @@ service.interceptors.response.use(
             }
           } catch (refreshError) {
             console.error('Token refresh error:', refreshError);
-            
-            // 处理等待中的请求
             processQueue(refreshError, null);
             
-            // 清除用户信息并跳转登录页
-            const userStore = useUserStore();
-            userStore.clearUserInfo();
-            ElMessage.error('登录已过期，请重新登录');
-            router.push('/login');
+            if (!isShowingLoginExpiredMessage) {
+              isShowingLoginExpiredMessage = true;
+              const userStore = useUserStore();
+              userStore.clearUserInfo();
+              
+              // 显示一次错误提示
+              ElMessage.error('请重新登录');
+              
+              // 设置延迟后再跳转，确保不会有多个错误提示
+              setTimeout(() => {
+                router.push('/login');
+              }, 300);
+            }
             
             return Promise.reject(refreshError);
           } finally {

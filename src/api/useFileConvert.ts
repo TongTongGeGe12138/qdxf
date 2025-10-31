@@ -115,7 +115,9 @@ export function useFileConvert() {
       const res: any = await uploadFile(formData)
       if (res.success && res.data && res.data.fileId) {
         fileId.value = res.data.fileId
-        status.value = 'converting'
+        // 上传完成后立即进入 processing 状态显示 loading，而不是中间状态
+        status.value = 'processing'
+        progress.value = 0
         await startConvert()
       } else {
         throw new Error(res.error || '上传失败')
@@ -163,7 +165,7 @@ export function useFileConvert() {
       const res = await request.post({ url: convertUrl, data: payload })
       if (res.success && res.data && res.data.taskId) {
         taskId.value = res.data.taskId
-        status.value = 'processing'
+        // 状态已在 handleUpload 中设为 processing，继续保持
         pollProgress()
       } else {
         throw new Error(res.error || '发起转换失败')

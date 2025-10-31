@@ -1270,8 +1270,6 @@ onMounted(async () => {
       await getTrashList(searchValue.value);
     }
   } catch (error) {
-    ElMessage.error('加载列表失败');
-    // API调用失败时，清空列表
     fileLibraryStore.setLibraryList([]);
     fileLibraryStore.setTotal(0);
   }

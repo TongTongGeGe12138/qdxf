@@ -48,3 +48,23 @@ export function getAigcProjectList(page: number = 1, pageSize: number = 100, sea
     params: { page, pageSize, ...(search ? { search } : {}) }
   });
 }
+
+/**
+ * 获取AIGC项目详情
+ * @param id - 项目ID
+ */
+export function getAigcProjectDetail(id: string): Promise<ProjectListResult> {
+  return request.get<ProjectListResult>({
+    url: `${Api.ProjectUrl}/${id}`
+  });
+}
+
+/**
+ * 删除AIGC项目
+ * @param id - 项目ID
+ */
+export function deleteAigcProject(id: string): Promise<ProjectListResult> {
+  return request.delete<ProjectListResult>({
+    url: `${Api.ProjectUrl}/${id}`
+  });
+}

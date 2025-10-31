@@ -203,6 +203,7 @@ onUnmounted(() => {
     justify-content: space-between;
     border-bottom: 1px solid var(--el-border-color-light);
     background-color: var(--el-bg-color-overlay);
+    border-radius: 12px 12px 0 0;
 
     .title {
       font-size: 16px;

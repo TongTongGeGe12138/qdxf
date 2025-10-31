@@ -34,7 +34,10 @@ export const useUserStore = defineStore('user', {
         this.accessToken = data.accessToken
         localStorage.setItem('token', data.accessToken)
       }
-      if (data.refreshToken) this.refreshToken = data.refreshToken
+      if (data.refreshToken) {
+        this.refreshToken = data.refreshToken
+        localStorage.setItem('refreshToken', data.refreshToken)
+      }
       if (data.extra !== undefined) this.extra = data.extra
 
       // 同步到 sessionStorage
@@ -55,8 +58,12 @@ export const useUserStore = defineStore('user', {
       }
       // 若 sessionStorage 为空但本地仍保留 token，则回填 store，避免 UI 误判未登录
       const token = localStorage.getItem('token')
-      if (token) {
-        this.setUserInfo({ accessToken: token })
+      const refreshToken = localStorage.getItem('refreshToken')
+      if (token || refreshToken) {
+        this.setUserInfo({ 
+          accessToken: token || '',
+          refreshToken: refreshToken || ''
+        })
       }
     },
 
@@ -67,6 +74,7 @@ export const useUserStore = defineStore('user', {
       this.extra = null
       sessionStorage.removeItem('userInfo')
       localStorage.removeItem('token')
+      localStorage.removeItem('refreshToken')
     },
 
     async logout() {

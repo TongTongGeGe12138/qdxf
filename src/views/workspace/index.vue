@@ -40,9 +40,8 @@
                     <div class="content-left">
                         <!-- 项目列表网格 -->
                         <div class="projects-grid" v-if="projectList.length > 0">
-                            <div class="project-card" v-for="project in projectList" :key="project.id"
-                                @click="handleAppCardClick(project)">
-                                <div class="project-thumbnail">
+                            <div class="project-card" v-for="project in projectList" :key="project.id">
+                                <div class="project-thumbnail" @click.stop="handleOpenProject(project)">
                                     <img v-if="project.preview" :src="project.preview" :alt="project.name" />
                                     <div v-else class="no-preview">
                                         <el-icon :size="40">
@@ -51,12 +50,12 @@
                                     </div>
                                 </div>
                                 <div class="project-info">
-                                    <div class="project-info-icon" :class="isDark ? 'dark-mode' : 'light-mode'">
+                                    <div class="project-info-icon" :class="isDark ? 'dark-mode' : 'light-mode'" @click.stop="handleOpenProject(project)">
                                         <img v-if="project.aigcCategory" :src="getIconUrl(project.aigcCategory)" :alt="project.name" class="info-icon" />
                                     </div>
                                     <div class="project-text-content">
-                                        <h4 class="project-name">{{ project.name }}</h4>
-                                        <p class="project-time" v-if="project.createdAt">{{ formatDate(project.createdAt) }}</p>
+                                        <div class="project-name">{{ project.name }}</div>
+                                        <p class="project-time" v-if="project.createdAt">创建于 {{project.createdAt }}</p>
                                     </div>
                                     <div class="project-actions">
                                         <div class="action-btn" @click.stop="handleOpenProject(project)">
@@ -83,15 +82,22 @@
 
                 <!-- 底部分页 -->
                 <div class="pagination-container">
-                    <el-pagination layout="prev, pager, next, jumper, ->, total" :total="total" :page-size="pageSize"
-                        :current-page="currentPage" @current-change="handlePageChange" />
+                    <el-pagination 
+                        v-model:current-page="currentPage" 
+                        v-model:page-size="pageSize" 
+                        :total="total"
+                        :page-sizes="[10, 20, 50, 100]"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        @current-change="handlePageChange"
+                        @size-change="handlePageSizeChange"
+                    />
                 </div>
             </div>
         </el-card>
 
         <!-- 新建项目弹窗 -->
-        <el-dialog v-model="createDialogVisible" title="选择应用" width="800px" :close-on-click-modal="false"
-            :close-on-press-escape="false">
+        <el-dialog v-model="createDialogVisible" title="选择应用" width="900px" :close-on-click-modal="false"
+            :close-on-press-escape="false" style="background: tagsBgColor!important">
             <!-- 搜索和筛选行 -->
             <div class="search-section">
                 <div class="search-input">
@@ -119,7 +125,7 @@
                             <div class="card-desc">{{ item.extra?.englishName }}</div>
                         </div>
                         <!-- 在卡片右下角显示"最近使用"文字 -->
-                        <div v-if="dialogSource === 'open' && index === 0 && recentlyUsedApp" class="recently-used-label">
+                        <div v-if="dialogSource === 'open' && recentlyUsedApp && item.value === recentlyUsedApp.value" class="recently-used-label">
                             最近使用
                         </div>
                     </div>
@@ -162,6 +168,18 @@
                 版本：{{ currentCard?.extra?.version }}
             </div>
         </el-dialog>
+
+        <!-- 删除项目确认弹窗 -->
+        <el-dialog v-model="deleteDialogVisible" title="是否确认删除？" width="400px" :close-on-click-modal="false"
+            :close-on-press-escape="false" :before-close="handleDeleteDialogClose">
+            <p>确定要删除项目吗？若删除，将无法还原。</p>
+            <template #footer>
+                <span class="dialog-footer">
+                    <div class="dialog-button cancel" @click="deleteDialogVisible = false">取消</div>
+                    <div class="dialog-button confirm" @click="handleConfirmDelete" :class="{ 'is-loading': deleteLoading }">{{ deleteLoading ? '删除中...' : '确定' }}</div>
+                </span>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
@@ -169,7 +187,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { isDark } from '../../utils/theme'
 import { Refresh, Search, Picture, FolderAdd, Delete } from '@element-plus/icons-vue'
-import { getAigcProjectList, getAigcPrimaryList, getAigcChildrenList } from '@/api/aigc'
+import { getAigcProjectList, getAigcPrimaryList, getAigcChildrenList, deleteAigcProject } from '@/api/aigc'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { ProjectItem } from '@/api/model/detailModel'
 import { stashToken } from '@/api/userCenter'
@@ -197,6 +215,9 @@ const createDialogVisible = ref(false)  // 第一个弹框（搜索+卡片网格
 const appPreviewDialogVisible = ref(false)  // 第二个弹框（应用详情）
 const selectedApp = ref<any>(null)  // 选中的应用
 const currentCard = ref<any>(null)  // 当前卡片详情
+const currentProject = ref<any>(null)  // 当前项目（打开模式下）
+const deleteDialogVisible = ref(false)  // 删除确认对话框
+const deleteLoading = ref(false)  // 删除加载状态
 const dialogSource = ref<'new' | 'open'>('new') // 弹框来源：'new' 或 'open'
 
 // 选择对话框数据
@@ -226,9 +247,9 @@ const getIconUrl = (name: string) => {
 }
 
 // 样式计算属性
-const cardBgColor = computed(() => isDark.value ? 'rgb(10,10,10)' : 'rgba(255, 255, 255, 1)')
+const cardBgColor = computed(() => isDark.value ? 'rgb(10,10,10)' : 'transparent')
 const cardHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#FFF8CC')
-const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
+const menuTextColor = computed(() => isDark.value ? '#EDEDED' : '#303133')
 const desktopBboder = computed(() => isDark.value ? 'rgba(231,231,224,.3)' : '#D7D7D7')
 const subTextColor = computed(() => isDark.value ? '#A1A1A1' : '#A1A1A1')
 const vTextColor = computed(() => isDark.value ? '#EDEDED' : '#13343C')
@@ -241,6 +262,7 @@ const tagsBgColor = computed(() => isDark.value ? '#0A0A0A' : '#faf9f5')
 const tagTextColor = computed(() => isDark.value ? '#C4C4D3' : '#000000')
 const tagHoverBgColor = computed(() => isDark.value ? '#1B2126' : '#F9F9F9')
 const tagActiveBgColor = computed(() => isDark.value ? '#191919' : '#F2F2F2')
+const newbj = computed(() => isDark.value ? '#1B2126' : ' #E5F6E6')
 
 // 计算过滤后的应用列表
 const filteredSelectionList = computed(() => {
@@ -291,7 +313,6 @@ const fetchProjectList = async (page: number = 1, search?: string) => {
             projectList.value = []
         }
     } catch (error) {
-        console.error('获取项目列表失败:', error)
         ElMessage.error('获取项目列表失败')
         projectList.value = []
     } finally {
@@ -326,7 +347,6 @@ const fetchSelectionAppList = async () => {
             }
         }
     } catch (error) {
-        console.error('获取应用列表失败:', error)
     }
 }
 
@@ -375,6 +395,8 @@ const handleSearch = () => {
 
 // 新建项目
 const handleCreateProject = () => {
+    selectionActiveTag.value = '所有'
+    selectionSearchText.value = ''
     dialogSource.value = 'new'
     createDialogVisible.value = true
 }
@@ -405,35 +427,68 @@ const handlePageChange = (page: number) => {
     fetchProjectList(page)
 }
 
-// 格式化日期
-const formatDate = (dateString: string) => {
-    if (!dateString) return ''
-    const date = new Date(dateString)
-    return date.toLocaleDateString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    })
+// 每页显示条数变化
+const handlePageSizeChange = (size: number) => {
+    pageSize.value = size
+    fetchProjectList(1, searchValue.value)
 }
+
+// // 格式化日期
+// const formatDate = (dateString: string) => {
+//     if (!dateString) return ''
+//     const date = new Date(dateString)
+//     return date.toLocaleDateString('zh-CN', {
+//         year: 'numeric',
+//         month: '2-digit',
+//         day: '2-digit'
+//     })
+// }
 
 // 启动应用
 const handleLaunchClick = async () => {
     const card = currentCard.value
     
-    // 打开模式：打印日志
+    // 打开模式：已有项目，跳转到 FloorInformation
     if (dialogSource.value === 'open') {
-        console.log('打开项目：', {
-            projectName: selectedApp.value?.name,
-            appName: card?.name,
-            appValue: card?.value,
-            category: card?.extra?.group
-        })
-        ElMessage.info('打开项目（日志已输出）')
+        if (!card?.extra?.url) {
+            ElMessage.info('未配置跳转链接')
+            appPreviewDialogVisible.value = false
+            return
+        }
+
+        try {
+            const { data, code } = await stashToken({
+                accessToken: userStore.accessToken,
+                refreshToken: userStore.refreshToken,
+            })
+
+            if (code === 200) {
+                const path = `${card.extra.group || ''}/${card.extra.englishName || ''}`
+                const extraQuery = card.extra.url.split('?')[1]
+                const projectId = currentProject.value?.id
+                const name = currentProject.value?.name
+                const query = `id=${data}&path=${path}&projectId=${projectId}&name=${name}${extraQuery ? `&${extraQuery}` : ''}`
+                const encodedQuery = `sign=${encodeURIComponent(RC4Encrypt(query))}`
+                const baseUrl = 'https://aigc.beesfpd.com'
+                const basePath = card.extra.url.split('?')[0] || card.extra.url
+                const fullUrl = `${baseUrl}${basePath}#/FloorInformation/${projectId}?${encodedQuery}`
+
+                logPost({ event: 'APP_LAUNCH_CLICK', category: path, projectId })
+
+                window.open(fullUrl, '_blank', 'noopener,noreferrer')
+            } else {
+                ElMessage.error('获取身份凭证失败')
+            }
+        } catch (error) {
+            ElMessage.error('跳转失败')
+            console.error(error)
+        }
+
         appPreviewDialogVisible.value = false
         return
     }
     
-    // 新建模式：原有逻辑
+    // 新建模式：无项目 ID，跳转到 UploadFiles
     if (!card?.extra?.url) {
         ElMessage.info('未配置跳转链接')
         appPreviewDialogVisible.value = false
@@ -463,7 +518,6 @@ const handleLaunchClick = async () => {
         }
     } catch (error) {
         ElMessage.error('跳转失败')
-        console.error(error)
     }
 
     appPreviewDialogVisible.value = false
@@ -475,7 +529,12 @@ const handleOpenProject = (project: any) => {
     console.log('打开的项目完整信息：', project)
     
     selectedApp.value = project
+    currentProject.value = project  // 保存完整的项目信息
     dialogSource.value = 'open'
+    
+    // 重置筛选条件
+    selectionActiveTag.value = '所有'
+    selectionSearchText.value = ''
     
     // 根据 aigcCategory 查找匹配的应用
     const matchedApp = selectionAppList.value.find(app => app.value === project.aigcCategory)
@@ -488,27 +547,45 @@ const handleOpenProject = (project: any) => {
 
 // 删除项目
 const handleDeleteProject = (project: any) => {
-    ElMessageBox.confirm(`确定要删除项目 "${project.name}" 吗？`, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-    }).then(async () => {
-        try {
-            const res = await getAigcProjectList(currentPage.value, pageSize.value, searchValue.value)
-            if (res && res.code === 200) {
-                projectList.value = res.data?.data || res.data || []
-                total.value = res.data?.total || 0
-                ElMessage.success('项目删除成功')
-            } else {
-                ElMessage.error('项目删除失败')
-            }
-        } catch (error) {
-            console.error('删除项目失败:', error)
+    currentProject.value = project
+    deleteDialogVisible.value = true
+}
+
+// 确认删除项目
+const handleConfirmDelete = async () => {
+    deleteLoading.value = true
+    try {
+        const res = await deleteAigcProject(currentProject.value.id)
+        if (res && res.code === 200) {
+            ElMessage.success('项目删除成功')
+            deleteDialogVisible.value = false
+            fetchProjectList(currentPage.value, searchValue.value)
+        } else {
             ElMessage.error('项目删除失败')
         }
-    }).catch(() => {
-        // 用户取消删除
-    })
+    } catch (error) {
+        console.error('删除项目失败:', error)
+        ElMessage.error('项目删除失败')
+    } finally {
+        deleteLoading.value = false
+    }
+}
+
+// 删除对话框关闭前处理
+const handleDeleteDialogClose = (done: () => void) => {
+    if (deleteLoading.value) {
+        ElMessageBox.confirm('有未完成的删除操作，确定要关闭吗？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+        }).then(() => {
+            done()
+        }).catch(() => {
+            // 用户取消关闭
+        })
+    } else {
+        done()
+    }
 }
 
 // 页面加载时获取数据
@@ -521,6 +598,7 @@ onMounted(async () => {
 <style scoped lang="less">
 .workspace-container {
     height: 100%;
+    overflow: hidden;
 
     :deep(.el-card) {
         box-shadow: none !important;
@@ -549,6 +627,8 @@ onMounted(async () => {
 
 .workspace-content {
     min-height: 300px;
+    display: flex;
+    flex-direction: column;
     color: var(--el-text-color-regular);
     border: 1px solid v-bind(desktopBboder);
     border-radius: 10px;
@@ -651,7 +731,7 @@ onMounted(async () => {
 
         .content-left {
             flex: 1;
-            padding-top: 30px;
+            padding-top: 10px;
             padding-left: 10px;
             //   padding-right: 280px;
 
@@ -659,11 +739,36 @@ onMounted(async () => {
                 // display: grid;
                 display: flex;
                 flex-wrap: wrap;
+                align-content: flex-start;
+                width: 100%;
+                height: 560px;
+                overflow-y: auto;
+                overflow-x: hidden;
+                padding-right: 8px;
+                margin-bottom: 30px;
+                box-sizing: border-box;
                 // grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+
+                &::-webkit-scrollbar {
+                    width: 8px;
+                }
+
+                &::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+
+                &::-webkit-scrollbar-thumb {
+                    background: rgba(0, 0, 0, 0.2);
+                    border-radius: 4px;
+
+                    &:hover {
+                        background: rgba(0, 0, 0, 0.3);
+                    }
+                }
 
                 .project-card {
                     width: 350px;
-                    height: 300px;
+                    height: 257px;
                     background: rgba(255, 255, 255, 0.04);
                     border: 1px solid v-bind(desktopBboder);
                     border-radius: 8px;
@@ -672,8 +777,6 @@ onMounted(async () => {
                     transition: all 0.3s ease;
                     margin-left: 20px;
                     margin-top: 20px;
-                    margin-bottom: 30px;
-
                     // &:hover {
                     //     border-color: #ff9900;
                     //     box-shadow: 0 2px 8px rgba(255, 153, 0, 0.1);
@@ -684,7 +787,7 @@ onMounted(async () => {
                         width: 350px;
                         height: 200px;
                         aspect-ratio: 1;
-                        background-color: rgba(0, 0, 0, 0.3);
+                        background-color:  #ececec;
                         display: flex;
                         align-items: center;
                         justify-content: center;
@@ -702,16 +805,16 @@ onMounted(async () => {
                             justify-content: center;
                             width: 100%;
                             height: 100%;
-                            color: #888;
+                            color: #e3d9d9;
                         }
                     }
 
                     .project-info {
-                        height: 100px;
-                        padding: 12px;
+                        height: 57px;
+                        padding: 8px;
                         display: flex;
                         align-items: center;
-                        gap: 12px;
+                        gap: 8px;
 
                         .project-info-icon {
                             width: 36px;
@@ -742,11 +845,12 @@ onMounted(async () => {
                             min-width: 0;
                             overflow: hidden;
                         }
+             
 
                         .project-name {
                             margin: 0;
                             font-size: 14px;
-                            font-weight: 500;
+                            // font-weight: 500;
                             color: v-bind(menuTextColor);
                             overflow: hidden;
                             text-overflow: ellipsis;
@@ -764,19 +868,22 @@ onMounted(async () => {
 
                         .project-actions {
                             display: none;
-                            gap: 8px;
+                            gap: 4px;
                             flex-shrink: 0;
+                            margin-left: 8px;
 
                             .action-btn {
                                 display: flex;
                                 align-items: center;
+                                justify-content: center;
                                 font-size: 12px;
                                 color: #8E9094;
                                 cursor: pointer;
-                                padding: 0 10px;
+                                padding: 0 4px;
                                 height: 32px;
                                 border-radius: 4px;
                                 transition: color 0.2s, opacity 0.2s;
+                                white-space: nowrap;
 
                                 &:hover {
                                     opacity: 0.7;
@@ -784,8 +891,14 @@ onMounted(async () => {
                             }
                         }
                     }
+                    .project-info:hover{
+                        background-color:  v-bind(newbj);
+                    }
 
                     &:hover {
+                        .project-info{
+                        background-color:  v-bind(newbj);
+                    }
                         .project-actions {
                             display: flex;
                         }
@@ -919,12 +1032,13 @@ onMounted(async () => {
 
         .card-wrapper {
             position: relative;
+            // overflow: hidden;
         }
 
         .card {
             background-color: v-bind(cardBgColor);
             border-radius: 8px;
-            padding: 12px;
+            // padding: 12px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -945,6 +1059,7 @@ onMounted(async () => {
             .fire-icon-container {
                 width: 45px;
                 height: 45px;
+                margin-left: 12px;
 
                 .fire-icon {
                     width: 42px;
@@ -974,13 +1089,14 @@ onMounted(async () => {
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
+                    padding-right: 60px;
                 }
             }
 
             .recently-used-label {
                 position: absolute;
-                bottom: 0;
-                right: 0;
+                bottom: 8px;
+                right: 8px;
                 background-color: v-bind(menuBgColor);
                 color: v-bind(subTextColor);
                 font-size: 10px;
@@ -1177,7 +1293,37 @@ onMounted(async () => {
 .dialog-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 12px;
+    margin-top: 20px;
+
+    .dialog-button {
+        padding: 8px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        margin-left: 12px;
+
+        &.cancel {
+            background-color: #F5F5F5;
+            color: #666666;
+            border: 1px solid #E4E4E4;
+
+            &:hover {
+                background-color: #E8E8E8;
+                border-color: #D4D4D4;
+            }
+        }
+
+        &.confirm {
+            background-color: #FABD33;
+            color: #1B2126;
+
+            &:hover {
+                background-color: rgba(250,189,51, .6);
+            }
+        }
+    }
 
     :deep(.el-button) {
         padding: 8px 20px;
@@ -1188,6 +1334,27 @@ onMounted(async () => {
 html.dark {
     .box-card {
         background-color: #000 !important;
+    }
+    .dialog-button {
+        &.cancel {
+            background-color: #2B2B2B;
+            color: #C4C4D3;
+            border: 1px solid #3B3B3B;
+
+            &:hover {
+                background-color: #3B3B3B;
+                border-color: #4B4B4B;
+            }
+        }
+
+        &.confirm {
+            background-color: rgba(249, 222, 74, 1);
+            color: #1B2126;
+
+            &:hover {
+                background-color: #B4B4C3;
+            }
+        }
     }
 }
 </style>

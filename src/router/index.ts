@@ -20,6 +20,15 @@ const routes: Array<RouteRecordRaw> = [
         }
       },
       {
+        path: '/workspace',
+        name: 'Workspace',
+        component: () => import('../views/workspace/index.vue'),
+        meta: {
+          title: '工作空间',
+          icon: '顶栏 - 工作空间'
+        }
+      },
+      {
         path: '/desktop',
         name: 'Desktop',
         component: () => import('../views/desktop/index.vue'),
@@ -28,15 +37,7 @@ const routes: Array<RouteRecordRaw> = [
           icon: '左栏 - 我的桌面'
         }
       },
-      {
-        path: '/workspace',
-        name: 'Workspace',
-        component: () => import('../views/workspace/index.vue'),
-        meta: {
-          title: '工作空间',
-          icon: '左栏 - 我的桌面'
-        }
-      },
+
       {
         path: '/smart-computing',
         name: 'SmartComputing',
