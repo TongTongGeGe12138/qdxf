@@ -254,7 +254,7 @@ import { getProfessionList } from '@/api/dict'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { useFileLibraryStore } from '@/store/modules/fileLibrary'
-import { resetLoginExpiredFlag } from '@/utils/request'
+import { resetLoginExpiredMessage } from '@/utils/request'
 // import qrcodeIcon from '@/assets/qrcode-scan.svg?url';
 // import phoneIcon from '@/assets/phone.svg?url';
 import ssss from '@/assets/tb/dark.svg?url';
@@ -502,8 +502,8 @@ const handleLogin = async () => {
           extra: response.data.extra
         })
 
-        // 重置登录过期标志，下次登出后才会再次显示提示
-        resetLoginExpiredFlag()
+        // 重置登出处理标记
+        resetLoginExpiredMessage()
 
         ElMessage.success('登录成功')
         const redirect = route.query.redirect as string
@@ -584,7 +584,6 @@ const sendVerifyCode = async () => {
       ElMessage.error((res as any).msg || '验证码发送失败')
     }
   } catch (error) {
-    console.error('验证码发送错误：', error)
     ElMessage.error('验证码发送失败，请稍后重试')
   }
 }

@@ -21,8 +21,10 @@ let failedQueue: Array<{
   resolve: (value?: any) => void;
   reject: (error?: any) => void;
 }> = [];
-// 标记是否已显示登录过期提示
-let isShowingLoginExpiredMessage = false;
+// 用 Promise 保证只执行一次登出
+let logoutPromise: Promise<void> | null = null;
+// 标记是否已显示登出提示（防止多次提示）
+let isShownLoginExpiredMessage = false;
 
 // 处理等待中的请求
 const processQueue = (error: any, token: string | null = null) => {
@@ -37,9 +39,44 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
-// 重置登录过期标志 - 在登录成功时调用
-export const resetLoginExpiredFlag = () => {
-  isShowingLoginExpiredMessage = false;
+// 重置登出处理标记 - 在登录成功时调用
+export const resetLoginExpiredMessage = () => {
+  logoutPromise = null;
+  isShownLoginExpiredMessage = false;
+};
+
+// 处理登录过期的辅助函数
+const handleLoginExpired = async () => {
+  // 如果已经有登出 Promise 在进行，则直接等待并返回
+  if (logoutPromise) {
+    console.log('已有登出请求在进行，等待中...');
+    await logoutPromise;
+    return;
+  }
+  
+  // 立即清除信息
+  const userStore = useUserStore();
+  userStore.clearUserInfo();
+  
+  // 只显示一次提示
+  if (!isShownLoginExpiredMessage) {
+    isShownLoginExpiredMessage = true;
+    ElMessage.error('登录已过期，请重新登录');
+    console.log('显示登出提示');
+  }
+  
+  // 创建登出 Promise（用于其他异步请求共享）
+  logoutPromise = new Promise<void>((resolve) => {
+    setTimeout(() => {
+      console.log('执行 location.replace');
+      // 使用 location.replace 替换当前页面
+      location.replace(location.origin + location.pathname + '#/login');
+      resolve();
+    }, 50);
+  });
+  
+  // 等待登出完成
+  await logoutPromise;
 };
 
 // 创建 axios 实例
@@ -85,6 +122,14 @@ service.interceptors.response.use(
 
     // 处理特定的错误码
     switch (res.code) {
+      case 401:
+        // 如果已经在处理登出，直接返回
+        if (logoutPromise) {
+          return;
+        }
+        // 业务 401 - 登录过期
+        handleLoginExpired();
+        return;
       case 403:
         ElMessage.error('没有权限访问');
         break;
@@ -92,29 +137,31 @@ service.interceptors.response.use(
         ElMessage.error('请求的资源不存在');
         break;
       default:
-        if (res.code !== 401) {
-          ElMessage.error(res.msg || '请求失败');
-        }
+        ElMessage.error(res.msg || '请求失败');
     }
 
     return Promise.reject(new Error(res.msg || '请求失败'));
   },
   async (error) => {
     console.error('Response error:', error);
+    console.log('错误状态码:', error.response?.status, '错误URL:', error.config?.url);
     
     const originalRequest = error.config;
     
     if (error.response) {
       switch (error.response.status) {
         case 401:
+          console.log('捕获401错误，当前路由:', router.currentRoute.value.path);
+          
+          // 如果已经在登录页，就不再处理
+          if (router.currentRoute.value.path === '/login') {
+            console.log('已在登录页，不处理');
+            return Promise.reject(error);
+          }
+
           if (originalRequest.url?.includes('/auth/token/refresh')) {
-            if (!isShowingLoginExpiredMessage) {
-              isShowingLoginExpiredMessage = true;
-              const userStore = useUserStore();
-              userStore.clearUserInfo();
-              ElMessage.error('请重新登录');
-                router.push('/login');
-            }
+            console.log('token刷新失败，执行登出...');
+            await handleLoginExpired();
             return Promise.reject(error);
           }
           
@@ -162,22 +209,10 @@ service.interceptors.response.use(
               throw new Error('Token refresh failed');
             }
           } catch (refreshError) {
-            console.error('Token refresh error:', refreshError);
+            console.error('token刷新异常，执行登出...', refreshError);
             processQueue(refreshError, null);
             
-            if (!isShowingLoginExpiredMessage) {
-              isShowingLoginExpiredMessage = true;
-              const userStore = useUserStore();
-              userStore.clearUserInfo();
-              
-              // 显示一次错误提示
-              ElMessage.error('请重新登录');
-              
-              // 设置延迟后再跳转，确保不会有多个错误提示
-              setTimeout(() => {
-                router.push('/login');
-              }, 300);
-            }
+            await handleLoginExpired();
             
             return Promise.reject(refreshError);
           } finally {

@@ -459,7 +459,8 @@ const fetchData = async () => {
         const primaryRes = await getAigcPrimaryList();
 
         if (primaryRes?.code !== 200 || !Array.isArray(primaryRes?.data)) {
-            throw new Error('获取主分类数据失败');
+            // throw new Error('获取主分类数据失败');
+            return;
         }
 
         const list = primaryRes.data;
@@ -619,7 +620,8 @@ const fetchHvacCards = async () => {
     try {
         const res = await getAigcChildrenList(current.value, 2)
         if (res?.code !== 200 || !Array.isArray(res?.data)) {
-            throw new Error('获取智能绘制2.0数据失败')
+            // throw new Error('获取智能绘制2.0数据失败')
+            return;
         }
         // 复用本页前置处理逻辑
         const childrenData = Array.isArray(res.data) ? res.data : []
