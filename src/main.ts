@@ -6,6 +6,7 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import i18n from './i18n'
 import { initTheme } from './utils/theme'
 import { useUserStore } from './stores/user'
 import { gsap } from 'gsap'
@@ -24,6 +25,7 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 app.use(ElementPlus)
 app.use(router)
 app.use(store)
+app.use(i18n)
 
 // 初始化用户信息
 const userStore = useUserStore()

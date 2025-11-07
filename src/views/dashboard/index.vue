@@ -1,22 +1,22 @@
 <template>
     <div class="dashboard-container">
-        <div class="title">👋 欢迎使用 BeesFPD</div>
+        <div class="title">{{ t('message.welcome') }}</div>
         <div class="container">
             <div class="container-left">
                 <div class="left-title-g">
                     <div style="display: flex;">
-                        <div class="main-title" style="font-size: 28px;display: flex;">智能绘制2.0
+                        <div class="main-title" style="font-size: 28px;display: flex;">{{ t('message.smartDrawing2') }}
                         </div>
                         <div
                             style="background: url('../../assets/beta_icon.png');width: 45px;height: 20px;box-sizing: border-box;background-size: 100% 100%;margin-left: 10px;margin-top: 10px;">
                         </div>
                     </div>
 
-                    <div class="sub-title">全新算法引擎重构底层架构，V2算法加持覆盖更多场景 <span
-                            style="color: #ffbd33;padding-left: 10px;text-decoration: underline; cursor: pointer;" @click="handlegoClick('more')">发布计划说明</span></div>
+                    <div class="sub-title">{{ t('message.newAlgorithm') }} <span
+                            style="color: #ffbd33;padding-left: 10px;text-decoration: underline; cursor: pointer;" @click="handlegoClick('more')">{{ t('message.releaseNotes') }}</span></div>
                     <div class="search-section">
                         <div class="search-input">
-                            <el-input v-model="searchText2" placeholder="搜索应用..." :prefix-icon="Search"
+                            <el-input v-model="searchText2" :placeholder="t('message.searchApps')" :prefix-icon="Search"
                                 class="search-input" />
                         </div>
                         <div class="tags">
@@ -41,12 +41,12 @@
                     </div>
                 </div>
                 <div class="left-title">
-                    <div class="main-title">智能绘制</div>
-                    <div class="sub-title">用智能设计重新定义消防工程，五分钟解决消防点线布置</div>
+                    <div class="main-title">{{ t('message.smartDrawing') }}</div>
+                    <div class="sub-title">{{ t('message.smartDrawingDesc') }}</div>
                 </div>
                 <div class="search-section">
                     <div class="search-input">
-                        <el-input v-model="searchText" placeholder="搜索应用..." :prefix-icon="Search"
+                        <el-input v-model="searchText" :placeholder="t('message.searchApps')" :prefix-icon="Search"
                             class="search-input" />
                     </div>
                     <div class="tags">
@@ -75,7 +75,7 @@
                     </div>
                 </div>
                 <div class="left-title" style="margin-top: 40px;margin-bottom: 0;">
-                    <div class="main-title">更多应用</div>
+                    <div class="main-title">{{ t('message.moreApps') }}</div>
                     <div class="sub-title">专注服务于建筑设计的云端应用</div>
                 </div>
                 <div class="card-grid">
@@ -93,14 +93,14 @@
             </div>
             <div class="container-right">
                 <div class="right-title">
-                    <div class="main-title">供应链精选</div>
-                    <div class="sub-title">平台精选供应商，品质保证</div>
+                    <div class="main-title">{{ t('message.supplyChain') }}</div>
+                    <div class="sub-title">{{ t('message.platformSelected') }}</div>
                 </div>
                 <div class="equipment-list">
                     <div class="list-header">
-                        <img :src="getIconUrl('Setting')" alt="设置" class="header-icon"
+                        <img :src="getIconUrl('Setting')" :alt="t('message.equipmentSelection')" class="header-icon"
                             :class="{ 'dark-icon': isDark, 'light-icon': !isDark }" />
-                        <span>消防设备选型</span>
+                        <span>{{ t('message.equipmentSelection') }}</span>
                         <el-icon class="expand-icon" @click="handleEquipmentClick('more')">
                             <MoreFilled />
                         </el-icon>
@@ -110,7 +110,7 @@
                             @click="handleEquipmentClick(item)">
                             <div class="dot"></div>{{ item }}
                         </div>
-                        <div class="list-item more" @click="handleEquipmentClick('more')">更多选型 <el-icon
+                        <div class="list-item more" @click="handleEquipmentClick('more')">{{ t('message.moreModels') }} <el-icon
                                 class="double-arrow">
                                 <DArrowRight />
                             </el-icon></div>
@@ -118,9 +118,9 @@
                 </div>
                 <div class="supplier-list">
                     <div class="list-header">
-                        <img :src="getIconUrl('Shop')" alt="商店" class="header-icon"
+                        <img :src="getIconUrl('Shop')" :alt="t('message.certifiedSuppliers')" class="header-icon"
                             :class="{ 'dark-icon': isDark, 'light-icon': !isDark }" />
-                        <span>消防认证供应商</span>
+                        <span>{{ t('message.certifiedSuppliers') }}</span>
                         <el-icon class="expand-icon" @click="handleEquipmentClick('more')">
                             <MoreFilled />
                         </el-icon>
@@ -139,13 +139,13 @@
     </div>
 
     <!-- 标准说明弹框 -->
-    <el-dialog v-model="dialogVisible" title="智能绘制平台上传图纸标准" width="800px" :close-on-click-modal="false"
+    <el-dialog v-model="dialogVisible" :title="t('message.standardExplanation')" width="800px" :close-on-click-modal="false"
         class="standard-dialog">
         <el-scrollbar height="calc(100vh - 200px)">
             <div class="operate-box">
                 <div class="text-box">
                     <div class="standard-item">
-                        <span>1. 应确保图纸文件在本地能够使用AutoCAD正常打开。</span>
+                        <span>1. {{ t('message.ensureDrawing') }}</span>
                     </div>
                     <div class="standard-item">
                         <span>2. 天正绘制的图纸在上传平台前，应先导出为T3版本，非T3版本图纸上传后，部分图线无法解析显示。</span>
@@ -210,21 +210,19 @@
                         <div class="name">{{ currentCard?.name }}</div>
                         <div class="desc">{{ currentCard?.extra?.englishName }}</div>
                     </div>
-                    <el-button type="primary" class="launch-btn" @click="handleLaunchClick">启动应用</el-button>
+                    <el-button type="primary" class="launch-btn" @click="handleLaunchClick">{{ t('message.launchApp') }}</el-button>
                 </div>
                 <div class="app-desc">
-                    {{ currentCard?.description || (currentCard?.name +
-                        '，无需本地部署，通过云端在线服务，实现智能给排水调试、喷头一键生成、管线自动布置。基于消防规范与智能算法，快速生成合规设计方案，支持多场景应用，助力企业高效完成消防系统设计与运维，降低成本与安全风险。')
-                    }}
+                    {{ currentCard?.description || (currentCard?.name + t('message.noLocalDeployment')) }}
                 </div>
                 <div class="app-preview">
                     <div class="app-preview-header">
-                        <span class="app-preview-title">应用介绍</span>
+                        <span class="app-preview-title">{{ t('message.appIntroduction') }}</span>
                         <span class="app-preview-standard" @click="handleStandardClick">
                             <el-icon>
                                 <QuestionFilled />
                             </el-icon>
-                            智能绘制平台上传图纸标准
+                            {{ t('message.standardExplanation') }}
                         </span>
                     </div>
                     <div class="preview-container">
@@ -269,6 +267,7 @@
 import { Search, Monitor, MoreFilled, Timer, Warning, Notification, Operation, ScaleToOriginal, Switch, Aim, Cpu, Smoking, Connection, Link, Right, DArrowRight, QuestionFilled } from '@element-plus/icons-vue'
 import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { isDark } from '../../utils/theme'
 import { getAigcPrimaryList, getAigcChildrenList } from '@/api/aigc'
 import type { ProjectItem } from '@/api/model/detailModel'
@@ -280,6 +279,7 @@ import { logPost } from '../../utils/log'
 
 // 初始化 router
 const router = useRouter()
+const { t } = useI18n()
 
 // 获取所有svg图标
 const getIconUrl = (name: string) => {
@@ -459,7 +459,9 @@ const fetchData = async () => {
         const primaryRes = await getAigcPrimaryList();
 
         if (primaryRes?.code !== 200 || !Array.isArray(primaryRes?.data)) {
-            // throw new Error('获取主分类数据失败');
+            // 401错误由拦截器处理，其他错误可选择显示
+            // const { t } = useI18n()
+            // ElMessage.error(t('message.getPrimaryCategoryFailed'))
             return;
         }
 
@@ -620,7 +622,9 @@ const fetchHvacCards = async () => {
     try {
         const res = await getAigcChildrenList(current.value, 2)
         if (res?.code !== 200 || !Array.isArray(res?.data)) {
-            // throw new Error('获取智能绘制2.0数据失败')
+            // 401错误由拦截器处理，其他错误可选择显示
+            // const { t } = useI18n()
+            // ElMessage.error(t('message.getSmartDrawing2DataFailed'))
             return;
         }
         // 复用本页前置处理逻辑

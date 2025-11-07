@@ -15,25 +15,25 @@ const routes: Array<RouteRecordRaw> = [
         name: 'Dashboard',
         component: () => import('../views/dashboard/index.vue'),
         meta: {
-          title: '智能应用',
+          title: 'message.smartApps',
           icon: 'smart_application'
         }
       },
-      {
-        path: '/workspace',
-        name: 'Workspace',
-        component: () => import('../views/workspace/index.vue'),
-        meta: {
-          title: '工作空间',
-          icon: '顶栏 - 工作空间'
-        }
-      },
+      // {
+      //   path: '/workspace',
+      //   name: 'Workspace',
+      //   component: () => import('../views/workspace/index.vue'),
+      //   meta: {
+      //     title: '工作空间',
+      //     icon: '顶栏 - 工作空间'
+      //   }
+      // },
       {
         path: '/desktop',
         name: 'Desktop',
         component: () => import('../views/desktop/index.vue'),
         meta: {
-          title: '我的桌面',
+          title: 'message.myDesktop',
           icon: '左栏 - 我的桌面'
         }
       },
@@ -45,7 +45,7 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/smart-computing/temp.vue'),
         // component: () => import('@/views/smart-computing/test.vue'),
         meta: {
-          title: '团队协同',
+          title: 'message.teamCollaboration',
           icon: '左栏 - 团队协同',
         }
       },
@@ -54,7 +54,7 @@ const routes: Array<RouteRecordRaw> = [
         name: 'KnowledgeBase',
         component: () => import('../views/knowledge-base/index.vue'),
         meta: {
-          title: '行业资源',
+          title: 'message.industryResources',
           icon: '左栏 - 知识库'
         }
       },
@@ -63,7 +63,7 @@ const routes: Array<RouteRecordRaw> = [
         name: 'LearningCenter',
         component: () => import('@/views/learning-center/index.vue'),
         meta: {
-          title: '学习中心',
+          title: 'message.learningCenter',
           icon: '左栏 - 学习中心'
         }
       },
@@ -82,7 +82,7 @@ const routes: Array<RouteRecordRaw> = [
         name: 'DesignSquare',
         component: () => import('@/views/design-square/index.vue'),
         meta: {
-          title: '设计广场',
+          title: 'message.designSquare',
           icon: '左栏 - 设计广场',
         }
       },

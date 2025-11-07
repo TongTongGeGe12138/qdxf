@@ -11,7 +11,7 @@
                 <el-menu-item v-for="route in visibleRoutes" :key="route.path" :index="route.path">
                     <img :src="getIconUrl(route.meta?.icon as string)"
                         :alt="route.meta?.title as string" class="menu-icon" @click.stop />
-                    <span>{{ route.meta?.title }}</span>
+                    <span class="menu-title">{{ t((route.meta?.title as string) || 'message.smartApps') }}</span>
                 </el-menu-item>
             </el-menu>
         </el-aside>
@@ -24,27 +24,27 @@
                     <el-dropdown>
                         <span class="el-dropdown-link">
                             <el-avatar :icon="UserFilled" size="small" style="margin-right: 10px;" />
-                            个人中心
+                            {{ t('message.personalCenter') }}
                         </span>
                         <template #dropdown>
                             <el-dropdown-menu>
                                 <el-dropdown-item @click="goToAccount">
                                     <div class="icon-container">
-                                        <img :src="getIconUrl('zhgl')" alt="账户管理" class="dropdown-icon" />
+                                        <img :src="getIconUrl('zhgl')" :alt="t('message.accountManagement')" class="dropdown-icon" />
                                     </div>
-                                    账户管理
+                                    {{ t('message.accountManagement') }}
                                 </el-dropdown-item>
                                 <el-dropdown-item @click="toGang">
                                     <div class="icon-container" >
-                                        <img :src="getIconUrl('grzx')" alt="返回官网" class="dropdown-icon"  />
+                                        <img :src="getIconUrl('grzx')" :alt="t('message.backToWebsite')" class="dropdown-icon"  />
                                     </div>
-                                    返回官网
+                                    {{ t('message.backToWebsite') }}
                                 </el-dropdown-item>
                                 <el-dropdown-item divided @click="handleLogout">
                                     <div class="icon-container">
-                                        <img :src="getIconUrl('tcdl')" alt="退出登录" class="dropdown-icon" />
+                                        <img :src="getIconUrl('tcdl')" :alt="t('message.logout')" class="dropdown-icon" />
                                     </div>
-                                    退出登录
+                                    {{ t('message.logout') }}
                                 </el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
@@ -85,6 +85,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { UserFilled } from '@element-plus/icons-vue'
 import { isDark, toggleDark, applyTheme } from '../utils/theme'
 import ThemeTransition from '../components/ThemeTransition.vue'
@@ -94,6 +95,7 @@ import { useUserStore } from '../stores/user'
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const { t } = useI18n()
 const isCollapse = ref(false)
 const loading = ref(false)
 const showQR = ref(false)
@@ -278,6 +280,14 @@ const testLoading = () => {
     height: calc(100% - 60px);
     background-color: v-bind(menuBgColor) !important;
     transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    max-width: 150px;
 }
 
 .el-header {

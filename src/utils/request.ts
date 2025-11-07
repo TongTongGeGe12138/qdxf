@@ -8,6 +8,7 @@ import { transform } from './axiosTransform';
 import { UserRefresh } from '@/api/userCenter';
 import { useUserStore } from '@/stores/user';
 import router from '@/router';
+import { useI18n } from 'vue-i18n';
 
 // 环境变量
 const host = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -61,7 +62,8 @@ const handleLoginExpired = async () => {
   // 只显示一次提示
   if (!isShownLoginExpiredMessage) {
     isShownLoginExpiredMessage = true;
-    ElMessage.error('登录已过期，请重新登录');
+    const { t } = useI18n();
+    ElMessage.error(t('message.loginExpired'));
     console.log('显示登出提示');
   }
   
@@ -130,12 +132,16 @@ service.interceptors.response.use(
         // 业务 401 - 登录过期
         handleLoginExpired();
         return;
-      case 403:
-        ElMessage.error('没有权限访问');
+      case 403: {
+        const { t } = useI18n();
+        ElMessage.error(t('message.permissionDenied'));
         break;
-      case 404:
-        ElMessage.error('请求的资源不存在');
+      }
+      case 404: {
+        const { t } = useI18n();
+        ElMessage.error(t('message.resourceNotFound'));
         break;
+      }
       default:
         ElMessage.error(res.msg || '请求失败');
     }
@@ -219,22 +225,30 @@ service.interceptors.response.use(
             isRefreshing = false;
           }
           break;
-        case 403:
-          ElMessage.error('没有权限访问');
+        case 403: {
+          const { t } = useI18n();
+          ElMessage.error(t('message.permissionDenied'));
           break;
-        case 404:
-          ElMessage.error('请求的资源不存在');
+        }
+        case 404: {
+          const { t } = useI18n();
+          ElMessage.error(t('message.resourceNotFound'));
           break;
-        case 500:
-          ElMessage.error('服务器错误，请稍后重试');
+        }
+        case 500: {
+          const { t } = useI18n();
+          ElMessage.error(t('message.serverError'));
           break;
+        }
         default:
           ElMessage.error(error.response.data?.message || '请求失败');
       }
     } else if (error.request) {
-      ElMessage.error('网络错误，请检查您的网络连接');
+      const { t } = useI18n();
+      ElMessage.error(t('message.networkError'));
     } else {
-      ElMessage.error('请求配置错误');
+      const { t } = useI18n();
+      ElMessage.error(t('message.requestConfigError'));
     }
     
     return Promise.reject(error);

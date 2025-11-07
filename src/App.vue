@@ -1,15 +1,25 @@
 <template>
-  <el-config-provider>
+  <el-config-provider :locale="currentLocale">
     <router-view />
   </el-config-provider>
 </template>
 
 <script setup lang="ts">
 import { ElConfigProvider } from 'element-plus'
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { useI18n } from 'vue-i18n'
+// @ts-ignore
+import zhCN from 'element-plus/dist/locale/zh-cn.mjs'
+// @ts-ignore
+import en from 'element-plus/dist/locale/en.mjs'
 
 const userStore = useUserStore()
+const { locale } = useI18n()
+
+const currentLocale = computed(() => {
+  return locale.value === 'zh' ? zhCN : en
+})
 
 onMounted(() => {
   // 加载存储的用户信息
