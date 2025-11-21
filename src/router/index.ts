@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory  } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { nextTick } from 'vue'
+import i18n from '../i18n'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -236,7 +237,15 @@ router.afterEach((to, from) => {
 // 动态设置页面标题
 router.afterEach((to) => {
   if (to.meta && to.meta.title) {
-    document.title = to.meta.title as string
+    const title = to.meta.title as string
+    // 检查是否是 i18n key（以 'message.' 开头）
+    if (title.startsWith('message.')) {
+      const key = title.substring('message.'.length)
+      const translatedTitle = (i18n.global.t as any)(`message.${key}`)
+      document.title = `${translatedTitle} - BeesFPD`
+    } else {
+      document.title = title
+    }
   } else {
     document.title = 'BeesFPD - 只关注消防领域的智慧云平台'
   }

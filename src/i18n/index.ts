@@ -120,7 +120,13 @@ const messages = {
                appIntroduction: 'Application Introduction',
                noLocalDeployment: 'No local deployment required, online service through cloud, realize intelligent water supply and drainage debugging, sprinkler one-click generation, automatic pipeline layout. Based on fire protection standards and intelligent algorithms, quickly generate compliant design solutions, support multiple scenario applications, help enterprises efficiently complete fire protection system design and operation, reduce costs and safety risks.',
                supplyChain: 'Supply Chain Selection',
-               platformSelected: 'Platform selected suppliers, quality assurance'
+               platformSelected: 'Platform selected suppliers, quality assurance',
+               
+               // 标签分类
+               tagAll: 'All',
+               tagWaterSupply: 'Smart Water Supply and Drainage',
+               tagElectrical: 'Smart Electrical',
+               tagHvac: 'Smart HVAC'
              }
            },
   zh: {
@@ -223,7 +229,13 @@ const messages = {
                appIntroduction: '应用介绍',
                noLocalDeployment: '，无需本地部署，通过云端在线服务，实现智能给排水调试、喷头一键生成、管线自动布置。基于消防规范与智能算法，快速生成合规设计方案，支持多场景应用，助力企业高效完成消防系统设计与运维，降低成本与安全风险。',
                supplyChain: '供应链精选',
-               platformSelected: '平台精选供应商，品质保证'
+               platformSelected: '平台精选供应商，品质保证',
+               
+               // 标签分类
+               tagAll: '所有',
+               tagWaterSupply: '智能给排水',
+               tagElectrical: '智能电气',
+               tagHvac: '智能暖通'
              }
            }
          }

@@ -285,11 +285,11 @@ const { t } = useI18n()
 const getIconUrl = (name: string) => {
     if (!name) return '';
     // 别名映射：新键暂时统一使用老图标
-    // const aliasMap: Record<string, string> = {
-    //     fire_water_drainage: 'sprinkler'
-    // };
-    // const normalizedName = aliasMap[name] || name;
-    const normalizedName =  name;
+    const aliasMap: Record<string, string> = {
+        'fire_water_drainage': 'sprinkler',
+        'fire_wsd_suite_v2': 'fire_water_v2'
+    };
+    const normalizedName = aliasMap[name] || name;
     try {
         // 使用动态导入
         return new URL(`../../assets/tb/${normalizedName}.svg`, import.meta.url).href;
@@ -395,9 +395,9 @@ interface Supplier {
 }
 
 const searchText = ref('')
-const activeTag = ref('所有')
+const activeTag = ref('')
 const searchText2 = ref('')
-const activeTag2 = ref('所有')
+const activeTag2 = ref('')
 const allList = ref<ProjectItemExtended[]>([])
 const applicationList = ref<ProjectItemExtended[]>([])
 const fireList = ref<AigcModuleComponent[]>([])
@@ -546,21 +546,30 @@ onMounted(async () => {
     await fetchData()
     await fetchHvacCards()
     
+    // 初始化活跃标签
+    nextTick(() => {
+        if (tags.value.length > 0) {
+            activeTag.value = tags.value[0].name
+        }
+        if (tags2.value.length > 0) {
+            activeTag2.value = tags2.value[0].name
+        }
+    })
 })
 
-const tags = [
-    { name: '所有' },
-    { name: '智能给排水' },
-    { name: '智能电气' },
-    { name: '智能暖通' }
-]
+const tags = computed(() => [
+    { name: t('message.tagAll') },
+    { name: t('message.tagWaterSupply') },
+    { name: t('message.tagElectrical') },
+    { name: t('message.tagHvac') }
+])
 
-const tags2 = [
-    { name: '所有' },
-    { name: '智能给排水' },
-    { name: '智能电气' },
-    { name: '智能暖通' }
-]
+const tags2 = computed(() => [
+    { name: t('message.tagAll') },
+    { name: t('message.tagWaterSupply') },
+    { name: t('message.tagElectrical') },
+    { name: t('message.tagHvac') }
+])
 
 // 计算样式
 const searchInputBorderColor = computed(() => isDark.value ? 'rgba(255, 255, 255, .3)' : '#dcdfe6');
@@ -745,7 +754,8 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
         'pressurization': Smoking,
         'ventilation_pressurization': Link,
         'smoke_control': Smoking,
-        // 'fire_water_v2': Timer,
+        'fire_water_v2': Timer,
+        'fire_wsd_suite_v2': Timer,
     };
     const groupMap: { [key: string]: string } = {
         'sprinkler': '智能给排水',
@@ -757,6 +767,7 @@ const getAigcCadStatus = (data: ProjectItem[]) => {
         'deluge': '智能给排水',
         'firemonitor': '智能给排水',
         'fire_water_v2': '智能给排水',
+        'fire_wsd_suite_v2': '智能给排水',
         'fire_electrical_v2': '智能电气',
         'fire_hvac_v2': '智能暖通',
         'fire_decoration_v2': '智能给排水',
@@ -1011,13 +1022,8 @@ const handlePermissionClickss = () => {
 .left-title{
     margin-top: 40px;
 }
-.left-title-g{
-    // margin-top: 20px;
-}
-
 .right-title {
     margin: 0 16px;
-
 }
 
 .container-left {

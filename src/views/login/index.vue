@@ -46,7 +46,7 @@
               </el-form-item>
 
               <el-form-item prop="password">
-                <el-input v-model="loginForm.password" type="password" placeholder="请输入A-16位包含字母大小写及数字密码" show-password
+                <el-input v-model="loginForm.password" type="password" placeholder="请输入6-16位密码（包含大小写字母、数字或符号）" show-password
                   :class="{ 'error-input': errorMessages.password }" />
                 <el-tooltip v-if="errorMessages.password" :content="errorMessages.password" placement="bottom"
                   effect="dark" :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
@@ -107,7 +107,7 @@
               </el-form-item>
 
               <el-form-item prop="password">
-                <el-input v-model="registerForm.password" type="password" placeholder="请输入6-16位包含字母大小写及数字密码"
+                <el-input v-model="registerForm.password" type="password" placeholder="请输入6-16位密码（包含大小写字母、数字或符号）"
                   show-password :class="{ 'error-input': errorMessages.password }" />
                 <el-tooltip v-if="errorMessages.password" :content="errorMessages.password" placement="bottom" effect="dark"
                   :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
@@ -207,7 +207,7 @@
               </el-form-item>
 
               <el-form-item prop="newPassword">
-                <el-input v-model="forgotForm.newPassword" type="password" placeholder="请输入新密码"
+                <el-input v-model="forgotForm.newPassword" type="password" placeholder="请输入6-16位新密码（包含大小写字母、数字或符号）"
                   show-password :class="{ 'error-input': errorMessages.password }" />
                 <el-tooltip v-if="errorMessages.password" :content="errorMessages.password" placement="bottom" effect="dark"
                   :show-after="0" :visible="true" :raw-content="false" :offset="8" :show-arrow="true"
@@ -314,7 +314,8 @@ interface LoginError {
 // 常量定义
 const COUNTDOWN_TIME = 120
 const MOBILE_REGEX = /^1[3-9]\d{9}$/
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,16}$/
+// 密码必须包含：大小写字母、数字或符号，长度6-16位
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])((?=.*\d)|(?=.*[!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/~]))[a-zA-Z\d!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/~]{6,16}$/
 
 // 组件实例
 const router = useRouter()
@@ -382,8 +383,8 @@ const loginRules = {
   }],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 16, message: '请输入6-16位包含字母大小写及数字密码', trigger: 'blur' },
-    { pattern: PASSWORD_REGEX, message: '密码必须包含大小写字母和数字', trigger: 'blur' }
+    { min: 6, max: 16, message: '请输入6-16位密码（包含大小写字母、数字或符号）', trigger: 'blur' },
+    { pattern: PASSWORD_REGEX, message: '密码必须包含大小写字母、数字或符号', trigger: 'blur' }
   ],
   agreement: [{
     validator: (_: any, value: boolean, callback: any) => {
@@ -405,8 +406,8 @@ const registerRules = reactive({
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 16, message: '请输入6-16位包含字母大小写及数字密码', trigger: 'blur' },
-    { pattern: PASSWORD_REGEX, message: '密码必须包含大小写字母和数字', trigger: 'blur' }
+    { min: 6, max: 16, message: '请输入6-16位密码（包含大小写字母、数字或符号）', trigger: 'blur' },
+    { pattern: PASSWORD_REGEX, message: '密码必须包含大小写字母、数字或符号', trigger: 'blur' }
   ],
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },
@@ -439,8 +440,8 @@ const forgotRules = reactive({
   ],
   newPassword: [
     { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, max: 16, message: '请输入6-16位包含字母大小写及数字密码', trigger: 'blur' },
-    { pattern: PASSWORD_REGEX, message: '密码必须包含大小写字母和数字', trigger: 'blur' }
+    { min: 6, max: 16, message: '请输入6-16位密码（包含大小写字母、数字或符号）', trigger: 'blur' },
+    { pattern: PASSWORD_REGEX, message: '密码必须包含大小写字母、数字或符号', trigger: 'blur' }
   ],
   confirmPassword: [
     { required: true, message: '请确认新密码', trigger: 'blur' },
