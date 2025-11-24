@@ -58,28 +58,32 @@ export default defineConfig({
             clientPort: 3003
         },
         proxy: (_a = {
-                // 1. 上传相关接口，优先匹配
-                '/file': {
-                    // target: 'http://192.168.15.200:9400',
-                    target: 'https://api-work.beesfpd.com',
-                    changeOrigin: true,
-                },
-                '/api/file': {
-                    // target: 'http://192.168.15.200:9400',
-                    target: 'https://api-work.beesfpd.com',
-                    changeOrigin: true,
-                },
-                '^/api/(?!test($|/)).*': {
-                    target: 'https://api-work.beesfpd.com/',
-                    changeOrigin: true,
-                },
-                //匹配所有api/test的请求地址
-                '^/api/test(?:$|/).*': {
-                    target: 'https://api-aigc.beesfpd.com/',
-                    changeOrigin: true,
-                    rewrite: (path) => path.replace(/^\/api\/test/, '/api')
-                }
+            // 1. 上传相关接口，优先匹配
+            '/file': {
+                // target: 'http://192.168.15.200:9400',
+                // target: 'https://api-work.beesfpd.com',
+                target: 'http://api-work.dev.ifeng.com',
+                changeOrigin: true,
             },
+            '/api/file': {
+                // target: 'http://192.168.15.200:9400',
+                // target: 'https://api-work.beesfpd.com',
+                target: 'http://api-work.dev.ifeng.com',
+                changeOrigin: true,
+            },
+            '^/api/(?!test($|/)).*': {
+                // target: 'https://api-work.beesfpd.com/',
+                target: 'http://api-work.dev.ifeng.com',
+                changeOrigin: true,
+            },
+            //匹配所有api/test的请求地址
+            '^/api/test(?:$|/).*': {
+                // target: 'https://api-aigc.beesfpd.com/',
+                target: 'http://api-work.dev.ifeng.com',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/api\/test/, '/api')
+            }
+        },
             // 3. 日志等（保持原有映射）
             _a[VITE_API_URL_PREFIX_LOG] = {
                 target: 'http://api.aigc-v1.beesfpd.com',

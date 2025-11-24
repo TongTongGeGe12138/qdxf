@@ -9,11 +9,12 @@
                 :background-color="menuBgColor" :text-color="menuTextColor" :active-text-color="menuActiveTextColor"
                 style="padding: 20px;">
                 <el-menu-item v-for="route in visibleRoutes" :key="route.path" :index="route.path">
-                    <img :src="getIconUrl(route.meta?.icon as string)"
-                        :alt="route.meta?.title as string" class="menu-icon" @click.stop />
+                    <img :src="getIconUrl(route.meta?.icon as string)" :alt="route.meta?.title as string"
+                        class="menu-icon" @click.stop />
                     <span class="menu-title">{{ t((route.meta?.title as string) || 'message.smartApps') }}</span>
                 </el-menu-item>
             </el-menu>
+            <InviteModal v-model="showInviteModal" :url="inviteUrl" />
         </el-aside>
 
         <el-container>
@@ -21,6 +22,10 @@
                 <div class="header-left">
                 </div>
                 <div class="header-right">
+                    <div class="invite-trigger" @click="showInviteModal = true">
+                        <img :src="getIconUrl('invite_gift')" alt="邀请好友" class="invite-icon" />
+                        <span>{{ t('message.inviteFriends') }}</span>
+                    </div>
                     <el-dropdown>
                         <span class="el-dropdown-link">
                             <el-avatar :icon="UserFilled" size="small" style="margin-right: 10px;" />
@@ -30,19 +35,22 @@
                             <el-dropdown-menu>
                                 <el-dropdown-item @click="goToAccount">
                                     <div class="icon-container">
-                                        <img :src="getIconUrl('zhgl')" :alt="t('message.accountManagement')" class="dropdown-icon" />
+                                        <img :src="getIconUrl('zhgl')" :alt="t('message.accountManagement')"
+                                            class="dropdown-icon" />
                                     </div>
                                     {{ t('message.accountManagement') }}
                                 </el-dropdown-item>
                                 <el-dropdown-item @click="toGang">
-                                    <div class="icon-container" >
-                                        <img :src="getIconUrl('grzx')" :alt="t('message.backToWebsite')" class="dropdown-icon"  />
+                                    <div class="icon-container">
+                                        <img :src="getIconUrl('grzx')" :alt="t('message.backToWebsite')"
+                                            class="dropdown-icon" />
                                     </div>
                                     {{ t('message.backToWebsite') }}
                                 </el-dropdown-item>
                                 <el-dropdown-item divided @click="handleLogout">
                                     <div class="icon-container">
-                                        <img :src="getIconUrl('tcdl')" :alt="t('message.logout')" class="dropdown-icon" />
+                                        <img :src="getIconUrl('tcdl')" :alt="t('message.logout')"
+                                            class="dropdown-icon" />
                                     </div>
                                     {{ t('message.logout') }}
                                 </el-dropdown-item>
@@ -90,7 +98,9 @@ import { UserFilled } from '@element-plus/icons-vue'
 import { isDark, toggleDark, applyTheme } from '../utils/theme'
 import ThemeTransition from '../components/ThemeTransition.vue'
 import LogoAnimation from '../components/LogoAnimation.vue'
+import InviteModal from '../components/InviteModal.vue'
 import { useUserStore } from '../stores/user'
+import { getReferralUrl } from '@/api/userCenter'
 
 const route = useRoute()
 const router = useRouter()
@@ -99,9 +109,24 @@ const { t } = useI18n()
 const isCollapse = ref(false)
 const loading = ref(false)
 const showQR = ref(false)
+const showInviteModal = ref(false)
+const inviteUrl = ref('')
 // const showPhoto = ref(false)
 // const ghImageUrl = new URL('../assets/gh_b35daf1fe99b_258.jpg', import.meta.url).href
 // const xxxIconUrl = new URL('../assets/xxx.svg', import.meta.url).href
+
+const fetchInviteUrl = async () => {
+    try {
+        const res = await getReferralUrl()
+        if (res.code === 200 && res.data) {
+            inviteUrl.value = res.data
+            console.log(res.data, 999);
+
+        }
+    } catch (error) {
+        console.error('Failed to fetch referral url:', error)
+    }
+}
 
 // 本地主题状态
 const darkMode = ref(isDark.value)
@@ -151,7 +176,16 @@ const handleThemeSwitch = () => {
     // Element Plus 官网式：依赖全局样式的颜色过渡，直接切换主题
     toggleDark()
 }
-const toGang = () =>{
+
+const handleMenuClick = (path: string) => {
+    router.push(path)
+}
+
+const openInviteModal = () => {
+    showInviteModal.value = true
+}
+
+const toGang = () => {
     window.open('https://www.beesfpd.com/', '_blank');
 }
 const getIconUrl = (name: string) => {
@@ -167,7 +201,7 @@ const getIconUrl = (name: string) => {
             return '';
         }
     }
-    
+
     // 处理png文件
     if (name.endsWith('.png')) {
         try {
@@ -177,7 +211,7 @@ const getIconUrl = (name: string) => {
             return '';
         }
     }
-    
+
     // 处理svg文件
     try {
         return new URL(`../assets/tb/${name}.svg`, import.meta.url).href;
@@ -206,7 +240,8 @@ onMounted(() => {
     applyTheme()
     document.body.classList.toggle('dark-mode', isDark.value);
     toggleIconMode();
-    
+    fetchInviteUrl();
+
     // 监听测试事件
     window.addEventListener('test-logo-animation', () => {
         testLoading()
@@ -280,6 +315,8 @@ const testLoading = () => {
     height: calc(100% - 60px);
     background-color: v-bind(menuBgColor) !important;
     transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .menu-title {
@@ -320,6 +357,27 @@ const testLoading = () => {
     transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.invite-trigger {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: var(--el-text-color-primary);
+    transition: opacity 0.3s;
+}
+
+.invite-trigger:hover {
+    opacity: 0.8;
+}
+
+.invite-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    /* 适配暗黑模式图标颜色，与 menu-icon 保持一致 logic */
+    filter: v-bind(menuIconFilter);
+}
+
 .theme-button {
     background-color: v-bind(themeButtonBgColor);
     border: none;
@@ -356,6 +414,7 @@ const testLoading = () => {
     border: none !important;
     transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 :deep(.el-menu) {
     background-color: v-bind(menuBgColor) !important;
     border: none !important;
@@ -551,6 +610,7 @@ const testLoading = () => {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

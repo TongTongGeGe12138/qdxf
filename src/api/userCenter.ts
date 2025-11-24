@@ -394,3 +394,10 @@ export function uploadFile(formData: FormData) {
   });
 }
 
+// 获取邀请链接
+export function getReferralUrl() {
+  return request.get<ApiResponse<string>>({
+    url: '/marketing/referral/url/beesfpd',
+  });
+}
+
